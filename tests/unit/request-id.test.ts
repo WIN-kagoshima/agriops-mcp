@@ -1,7 +1,11 @@
 import type { AddressInfo } from "node:net";
 import express from "express";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { getRequestId, requestIdMiddleware } from "../../src/server/request-id.js";
+import {
+  getRequestId,
+  getTrustedAgentIdentity,
+  requestIdMiddleware,
+} from "../../src/server/request-id.js";
 
 describe("requestIdMiddleware", () => {
   let baseUrl: string;
@@ -12,6 +16,14 @@ describe("requestIdMiddleware", () => {
     app.use(requestIdMiddleware);
     app.get("/echo", (_req, res) => {
       res.json({ requestId: getRequestId(res) });
+    });
+    app.get("/agent", (req, res) => {
+      res.json(
+        getTrustedAgentIdentity(req, {
+          agentIdHeader: "x-agent-id",
+          agentOwnerHeader: "x-agent-owner",
+        }),
+      );
     });
     await new Promise<void>((resolve) => {
       server = app.listen(0, "127.0.0.1", () => resolve());
@@ -65,5 +77,28 @@ describe("requestIdMiddleware", () => {
       headers: { "x-request-id": "a".repeat(200) },
     });
     expect(res.headers.get("x-request-id")?.length).toBeLessThanOrEqual(40);
+  });
+
+  it("copies only explicitly configured trusted agent identity headers", async () => {
+    const res = await fetch(`${baseUrl}/agent`, {
+      headers: {
+        "x-agent-id": "agent-ops-123",
+        "x-agent-owner": "team-agriops",
+        "x-untrusted-agent-id": "ignore-me",
+      },
+    });
+    const body = (await res.json()) as { agentId?: string; agentOwner?: string };
+    expect(body).toEqual({ agentId: "agent-ops-123", agentOwner: "team-agriops" });
+  });
+
+  it("drops malformed trusted agent identity values", async () => {
+    const res = await fetch(`${baseUrl}/agent`, {
+      headers: {
+        "x-agent-id": "agent with spaces",
+        "x-agent-owner": "a".repeat(300),
+      },
+    });
+    const body = (await res.json()) as Record<string, string>;
+    expect(body).toEqual({});
   });
 });

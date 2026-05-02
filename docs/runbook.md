@@ -302,12 +302,19 @@ public `allUsers` invocation.
 | `AGRIOPS_RATE_RPS` | `10` | Per-IP token refill rate. |
 | `AGRIOPS_RATE_BURST` | `30` | Per-IP burst capacity. |
 | `AGRIOPS_METRICS_BEARER` | (unset) | Bearer token gating `/metrics`. Leave unset for private-network scraping; set when scraping over the public ingress. |
+| `AGRIOPS_AGENT_ID_HEADER` | (unset) | Optional trusted gateway header to copy into logs as `agentId`. |
+| `AGRIOPS_AGENT_OWNER_HEADER` | (unset) | Optional trusted gateway header to copy into logs as `agentOwner`. |
 | `AGRIOPS_TOKEN_ENC_KEY` | (unset) | 32-byte AES-256 key (base64). Required for production OAuth use. |
 | `AGRIOPS_TOKEN_ENC_PASSPHRASE` | (unset) | Alternate to `AGRIOPS_TOKEN_ENC_KEY`; scrypt-derived key. |
 | `AGRIOPS_TOKEN_DIR` | `./.tokens` | Where the encrypted token files live. |
 | `SESSION_COOKIE_SECRET` | (required for HTTP) | Signs the anti-phishing session cookie. |
 | `EMAFF_SNAPSHOT_PATH` | `./snapshots/emaff-fude-kagoshima.sqlite` | Phase 1 farmland snapshot. |
 | `FAMIC_SNAPSHOT_PATH` | `./snapshots/famic-pesticide-2026.sqlite` | Phase 1 pesticide snapshot. |
+
+Only set `AGRIOPS_AGENT_ID_HEADER` / `AGRIOPS_AGENT_OWNER_HEADER` when the
+service is behind a trusted Agent Gateway or equivalent reverse proxy that strips
+client-supplied copies of those headers. The server treats these values as
+opaque audit labels; it never authorizes tool calls from them.
 
 ### 3.3 Logging
 

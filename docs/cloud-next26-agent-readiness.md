@@ -75,9 +75,9 @@ Actions:
 
 Future candidate:
 
-- Add optional `AGRIOPS_AGENT_ID_HEADER` and `AGRIOPS_AGENT_OWNER_HEADER`
-  settings that copy gateway-provided identities into logs after allowlisting
-  the header names.
+- Use optional `AGRIOPS_AGENT_ID_HEADER` and `AGRIOPS_AGENT_OWNER_HEADER`
+  settings to copy gateway-provided identities into logs after allowlisting the
+  header names. These fields are audit-only and must not authorize tools.
 
 ### Phase C - Smart Storage snapshots
 

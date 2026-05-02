@@ -13,7 +13,7 @@ import { createServer } from "./create-server.js";
 import { Lifecycle } from "./lifecycle.js";
 import { type Metrics, createMetrics } from "./metrics.js";
 import { createRateLimiter } from "./rate-limit.js";
-import { getRequestId, requestIdMiddleware } from "./request-id.js";
+import { getRequestId, getTrustedAgentIdentity, requestIdMiddleware } from "./request-id.js";
 import { mountWellKnown } from "./well-known.js";
 
 export interface HttpServerOptions {
@@ -75,6 +75,10 @@ export async function startHttp(
     logger,
     metrics,
   });
+  const trustedAgentHeaders = {
+    agentIdHeader: env("AGRIOPS_AGENT_ID_HEADER"),
+    agentOwnerHeader: env("AGRIOPS_AGENT_OWNER_HEADER"),
+  };
 
   const app = express();
   app.disable("x-powered-by");
@@ -138,7 +142,10 @@ export async function startHttp(
   // come before host-allowlist 421s, all come before any handler runs.
   app.all("/mcp", lifecycle.middleware, rateLimiter.middleware, async (req, res) => {
     const requestId = getRequestId(res);
-    const reqLogger = logger.child({ requestId });
+    const reqLogger = logger.child({
+      requestId,
+      ...getTrustedAgentIdentity(req, trustedAgentHeaders),
+    });
     const startedAt = Date.now();
     metrics.inc("mcp_requests_total");
 

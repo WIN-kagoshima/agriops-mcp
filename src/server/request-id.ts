@@ -19,6 +19,13 @@ import type { NextFunction, Request, Response } from "express";
  */
 
 const REQUEST_ID_RE = /^[\x21-\x7e]{8,128}$/;
+const TRUSTED_HEADER_NAME_RE = /^[a-z0-9][a-z0-9-]{0,63}$/i;
+const TRUSTED_AGENT_VALUE_RE = /^[\x21-\x7e]{1,256}$/;
+
+export interface TrustedAgentIdentityOptions {
+  agentIdHeader?: string;
+  agentOwnerHeader?: string;
+}
 
 export function requestIdMiddleware(req: Request, res: Response, next: NextFunction): void {
   const incoming = req.headers["x-request-id"];
@@ -37,4 +44,24 @@ export function getRequestId(res: Response): string {
   res.locals.requestId = fresh;
   res.setHeader("X-Request-Id", fresh);
   return fresh;
+}
+
+export function getTrustedAgentIdentity(
+  req: Request,
+  options: TrustedAgentIdentityOptions,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  const agentId = trustedHeaderValue(req, options.agentIdHeader);
+  const agentOwner = trustedHeaderValue(req, options.agentOwnerHeader);
+  if (agentId) out.agentId = agentId;
+  if (agentOwner) out.agentOwner = agentOwner;
+  return out;
+}
+
+function trustedHeaderValue(req: Request, configuredName: string | undefined): string | undefined {
+  const name = configuredName?.trim();
+  if (!name || !TRUSTED_HEADER_NAME_RE.test(name)) return undefined;
+  const value = req.headers[name.toLowerCase()];
+  if (typeof value !== "string" || !TRUSTED_AGENT_VALUE_RE.test(value)) return undefined;
+  return value;
 }
