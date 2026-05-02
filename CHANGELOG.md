@@ -8,6 +8,8 @@ Pre-`1.0.0` releases are explicitly **experimental**: tool names, input/output s
 
 ## [Unreleased]
 
+## [0.5.2] — Patch — production deploy hardening
+
 ### Added — snapshot-backed production deploys
 - Added `npm run release:check`, a release-readiness gate that validates package/tag/changelog consistency and `npm pack --dry-run` contents before publishing a GitHub Release.
 - Added `.github/workflows/production-smoke.yml`, an hourly/manual production smoke workflow that mints a Cloud Run ID token through Workload Identity Federation and runs `deploy:smoke` against the IAM-protected service.
@@ -154,7 +156,8 @@ Pre-`1.0.0` releases are explicitly **experimental**: tool names, input/output s
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/WIN-kagoshima/agriops-mcp/releases/tag/v0.5.0
 [0.4.0]: https://github.com/WIN-kagoshima/agriops-mcp/releases/tag/v0.4.0
