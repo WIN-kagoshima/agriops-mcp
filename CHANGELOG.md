@@ -8,6 +8,10 @@ Pre-`1.0.0` releases are explicitly **experimental**: tool names, input/output s
 
 ## [Unreleased]
 
+### Added
+- Added `docs/cloud-next26-agent-readiness.md`, mapping Google Cloud Next '26 Agent Platform, Smart Storage, Fraud Defense, and multi-AI security announcements to AgriOps MCP adoption decisions.
+- Snapshot builds now emit `*.sqlite.manifest.json` provenance files with source attribution, row counts, raw input hashes, and output hashes for GCS snapshot audit and future Smart Storage object-context workflows.
+
 ### Fixed
 - `deploy:smoke` now supports `--expected-version`, and the Cloud Run deploy workflow uses it to fail fast if post-deploy smoke is still hitting an older revision.
 

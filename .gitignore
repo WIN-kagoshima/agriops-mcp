@@ -39,6 +39,7 @@ test-results/
 # Snapshots: keep schema/scripts in repo, ignore generated DB binaries
 snapshots/*.sqlite
 snapshots/*.sqlite-*
+snapshots/*.manifest.json
 snapshots/raw/
 !snapshots/README.md
 !snapshots/.gitkeep

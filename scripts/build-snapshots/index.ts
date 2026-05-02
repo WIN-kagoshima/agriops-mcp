@@ -13,8 +13,10 @@
  * about.
  */
 
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, readdir } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { buildEmaffSnapshot } from "./build-emaff.js";
 import { buildFamicSnapshot } from "./build-famic.js";
@@ -23,6 +25,28 @@ interface BuilderResult {
   name: string;
   status: "ok" | "skipped" | "failed";
   message: string;
+  outputPath?: string;
+  rawPaths?: string[];
+  rowCount?: number;
+  source?: string;
+  attribution?: string;
+}
+
+interface SnapshotManifest {
+  schemaVersion: 1;
+  generatedAt: string;
+  builder: string;
+  outputPath: string;
+  outputBytes: number;
+  outputSha256: string;
+  rawInputs: Array<{
+    path: string;
+    bytes: number;
+    sha256: string;
+  }>;
+  rowCount: number;
+  source: string;
+  attribution: string;
 }
 
 async function ensureDir(path: string): Promise<void> {
@@ -58,6 +82,10 @@ async function run(): Promise<void> {
   for (const r of results) {
     const icon = r.status === "ok" ? "OK" : r.status === "skipped" ? "--" : "FAIL";
     console.log(`[${icon}] ${r.name}: ${r.message}`);
+    if (r.status === "ok") {
+      const manifestPath = await writeSnapshotManifest(r);
+      console.log(`     manifest: ${manifestPath}`);
+    }
   }
   if (results.some((r) => r.status === "failed")) {
     process.exitCode = 1;
@@ -90,6 +118,49 @@ async function tryRun(name: string, fn: () => Promise<BuilderResult>): Promise<B
       message: (err as Error).message,
     };
   }
+}
+
+async function writeSnapshotManifest(result: BuilderResult): Promise<string> {
+  if (
+    !result.outputPath ||
+    result.rowCount === undefined ||
+    !result.source ||
+    !result.attribution
+  ) {
+    throw new Error(`builder ${result.name} returned incomplete manifest metadata`);
+  }
+  const manifest: SnapshotManifest = {
+    schemaVersion: 1,
+    generatedAt: new Date().toISOString(),
+    builder: result.name,
+    outputPath: result.outputPath,
+    outputBytes: (await stat(result.outputPath)).size,
+    outputSha256: await sha256File(result.outputPath),
+    rawInputs: await Promise.all(
+      (result.rawPaths ?? []).map(async (path) => ({
+        path,
+        bytes: (await stat(path)).size,
+        sha256: await sha256File(path),
+      })),
+    ),
+    rowCount: result.rowCount,
+    source: result.source,
+    attribution: result.attribution,
+  };
+  const manifestPath = `${result.outputPath}.manifest.json`;
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  return manifestPath;
+}
+
+async function sha256File(path: string): Promise<string> {
+  const hash = createHash("sha256");
+  await new Promise<void>((resolve, reject) => {
+    const stream = createReadStream(path);
+    stream.on("data", (chunk) => hash.update(chunk));
+    stream.on("error", reject);
+    stream.on("end", resolve);
+  });
+  return hash.digest("hex");
 }
 
 run().catch((err: unknown) => {

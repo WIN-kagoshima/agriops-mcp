@@ -13,6 +13,8 @@ coverage
 *.sqlite
 *.sqlite-*
 !snapshots/*.sqlite
+*.manifest.json
+!snapshots/*.manifest.json
 snapshots/raw
 .tokens
 README*.md

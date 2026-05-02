@@ -172,6 +172,10 @@ This server only ships data sources that are open or whose licenses permit redis
 | JMA disaster XML | Japan Meteorological Business Act | Phase 1+, short cache only. |
 | WAGRI | Member agreement | **Out of scope for this OSS release** (Phase 7+, separate package). |
 
+Cloud Next '26 agent-readiness notes for Agent Platform, Smart Storage,
+Fraud Defense, and multi-AI security are tracked in
+[`docs/cloud-next26-agent-readiness.md`](docs/cloud-next26-agent-readiness.md).
+
 ## Security
 
 - No secrets in tool output, logs, errors, or UI bundles.

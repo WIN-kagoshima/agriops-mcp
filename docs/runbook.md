@@ -7,6 +7,10 @@ It is opinionated: pieces marked **REQUIRED** are non-negotiable for a
 production-grade rollout; pieces marked **OPTIONAL** can be deferred to
 later phases.
 
+For Google Cloud Next '26 Agent Platform, Smart Storage, Fraud Defense, and
+multi-AI security adoption decisions, see
+[`docs/cloud-next26-agent-readiness.md`](cloud-next26-agent-readiness.md).
+
 ---
 
 ## 1. Pre-flight
@@ -464,9 +468,18 @@ the same files from GCS after cloning the repository:
 ```bash
 gcloud storage cp snapshots/emaff-fude-kagoshima.sqlite \
   gs://mcp-win-agriops-snapshots/emaff-fude-kagoshima.sqlite
+gcloud storage cp snapshots/emaff-fude-kagoshima.sqlite.manifest.json \
+  gs://mcp-win-agriops-snapshots/emaff-fude-kagoshima.sqlite.manifest.json
 gcloud storage cp snapshots/famic-pesticide-2026.sqlite \
   gs://mcp-win-agriops-snapshots/famic-pesticide-2026.sqlite
+gcloud storage cp snapshots/famic-pesticide-2026.sqlite.manifest.json \
+  gs://mcp-win-agriops-snapshots/famic-pesticide-2026.sqlite.manifest.json
 ```
+
+The manifest files are not required at runtime, but they should travel with the
+SQLite objects. They provide source attribution, row counts, raw-input hashes,
+and output hashes for audit, rollback, and future Cloud Storage Smart Storage
+object-context workflows.
 
 For much larger datasets, mount snapshots from GCS instead of baking them into
 the image.

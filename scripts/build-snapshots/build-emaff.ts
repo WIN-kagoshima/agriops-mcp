@@ -6,6 +6,11 @@ interface BuilderResult {
   name: string;
   status: "ok" | "skipped" | "failed";
   message: string;
+  outputPath?: string;
+  rawPaths?: string[];
+  rowCount?: number;
+  source?: string;
+  attribution?: string;
 }
 
 interface EmaffFeature {
@@ -151,6 +156,11 @@ export async function buildEmaffSnapshot(options: BuildEmaffOptions): Promise<Bu
       name: "emaff",
       status: "ok",
       message: `Wrote ${inserted} field(s) from ${rawPaths.length} GeoJSON file(s) to ${options.outPath}`,
+      outputPath: options.outPath,
+      rawPaths,
+      rowCount: inserted,
+      source: "eMAFF Fude Polygon",
+      attribution: "Source: Ministry of Agriculture, Forestry and Fisheries eMAFF Fude Polygon",
     };
   } finally {
     db.close();

@@ -7,6 +7,11 @@ interface BuilderResult {
   name: string;
   status: "ok" | "skipped" | "failed";
   message: string;
+  outputPath?: string;
+  rawPaths?: string[];
+  rowCount?: number;
+  source?: string;
+  attribution?: string;
 }
 
 export interface BuildFamicOptions {
@@ -149,6 +154,11 @@ export async function buildFamicSnapshot(options: BuildFamicOptions): Promise<Bu
       name: "famic",
       status: "ok",
       message: `Wrote ${inserted} pesticide registration(s) to ${options.outPath}`,
+      outputPath: options.outPath,
+      rawPaths: rawInputs,
+      rowCount: inserted,
+      source: "FAMIC pesticide registrations",
+      attribution: "Source: FAMIC pesticide registration information",
     };
   } finally {
     db.close();

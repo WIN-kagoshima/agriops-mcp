@@ -142,6 +142,21 @@ describe("snapshot builders", () => {
     }
   });
 
+  it("writes snapshot provenance manifests", async () => {
+    const out = join(tmpDir, "manifest-famic.sqlite");
+    await mkdir(tmpDir, { recursive: true });
+
+    const result = await buildFamicSnapshot({
+      rawPath: "tests/fixtures/sample-famic.csv",
+      outPath: out,
+    });
+    expect(result.status).toBe("ok");
+    expect(result.outputPath).toBe(out);
+    expect(result.rawPaths).toEqual(["tests/fixtures/sample-famic.csv"]);
+    expect(result.rowCount).toBe(3);
+    expect(result.source).toBe("FAMIC pesticide registrations");
+  });
+
   it("normalizes official FAMIC CSV columns", async () => {
     const out = join(tmpDir, "famic-official.sqlite");
     await mkdir(tmpDir, { recursive: true });
