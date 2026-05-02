@@ -8,6 +8,9 @@ Pre-`1.0.0` releases are explicitly **experimental**: tool names, input/output s
 
 ## [Unreleased]
 
+### Fixed
+- `deploy:smoke` now supports `--expected-version`, and the Cloud Run deploy workflow uses it to fail fast if post-deploy smoke is still hitting an older revision.
+
 ## [0.5.2] — Patch — production deploy hardening
 
 ### Added — snapshot-backed production deploys

@@ -2,6 +2,7 @@ interface Options {
   baseUrl?: string;
   allowNotReady: boolean;
   authBearer?: string;
+  expectedVersion?: string;
   healthPath: string;
   metricsBearer?: string;
 }
@@ -48,6 +49,10 @@ function parseArgs(argv: string[]): Options {
         options.authBearer = next;
         if (inlineValue === undefined) i++;
         break;
+      case "--expected-version":
+        options.expectedVersion = next;
+        if (inlineValue === undefined) i++;
+        break;
       case "--health-path":
         options.healthPath = next.startsWith("/") ? next : `/${next}`;
         if (inlineValue === undefined) i++;
@@ -73,6 +78,7 @@ Options:
   --base-url <url>        Public base URL of the deployed server.
   --allow-not-ready       Treat /readyz 503 as a warning (useful before snapshots exist).
   --auth-bearer <tok>     Send this bearer token to all smoke-test requests.
+  --expected-version <v>  Require /livez or Server Card to report this version.
   --health-path <path>    Liveness path to check. Default: /healthz.
   --metrics-bearer <tok>  Also check /metrics using this bearer token.
 `);
@@ -181,6 +187,15 @@ async function main(): Promise<void> {
     : undefined;
 
   const health = await fetchText(`${baseUrl}${options.healthPath}`, { headers: defaultHeaders });
+  let healthVersion: string | undefined;
+  try {
+    const parsed = parseJson(health.text);
+    if (isRecord(parsed) && typeof parsed.version === "string") {
+      healthVersion = parsed.version;
+    }
+  } catch {
+    // Some health endpoints are plain text; the status check below is still authoritative.
+  }
   results.push(
     result(
       options.healthPath,
@@ -203,10 +218,12 @@ async function main(): Promise<void> {
   });
   let cardOk = false;
   let cardDetail = `status=${card.status}`;
+  let cardVersion: string | undefined;
   try {
     const parsed = parseJson(card.text);
     if (isRecord(parsed)) {
       const endpoints = isRecord(parsed.endpoints) ? parsed.endpoints : {};
+      cardVersion = typeof parsed.version === "string" ? parsed.version : undefined;
       cardOk =
         card.status === 200 &&
         parsed.name === "AgriOps MCP" &&
@@ -218,6 +235,19 @@ async function main(): Promise<void> {
     cardDetail = `status=${card.status}, parse_error=${(error as Error).message}`;
   }
   results.push(result("Server Card", cardOk, cardDetail));
+
+  if (options.expectedVersion) {
+    const observed = [healthVersion, cardVersion].filter(
+      (value): value is string => value !== undefined,
+    );
+    results.push(
+      result(
+        "deployed version",
+        observed.includes(options.expectedVersion),
+        `expected=${options.expectedVersion}, observed=${observed.length > 0 ? observed.join(",") : "unknown"}`,
+      ),
+    );
+  }
 
   const initialize = await callRpc(
     baseUrl,

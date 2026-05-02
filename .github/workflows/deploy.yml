@@ -102,6 +102,10 @@ jobs:
       - name: Install smoke-test dependencies
         run: npm ci --ignore-scripts
 
+      - name: Capture package version
+        id: package
+        run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+
       - name: Run deploy preflight
         run: |
           npm run deploy:preflight -- \
@@ -155,4 +159,5 @@ jobs:
           npm run deploy:smoke -- \
             --base-url="$MCP_BASE_URL" \
             --health-path=/livez \
+            --expected-version="${{ steps.package.outputs.version }}" \
             --auth-bearer="${{ steps.cloud-run-auth.outputs.id_token }}"

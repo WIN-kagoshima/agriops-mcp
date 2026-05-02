@@ -75,6 +75,7 @@ TOKEN="$(gcloud auth print-identity-token)"
 npm run deploy:smoke -- \
   --base-url=https://agriops-mcp-n5vdix22hq-an.a.run.app \
   --health-path=/livez \
+  --expected-version="$(node -p "require('./package.json').version")" \
   --auth-bearer="$TOKEN"
 ```
 

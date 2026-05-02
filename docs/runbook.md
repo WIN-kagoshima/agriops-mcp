@@ -159,7 +159,8 @@ missing — see §6.2.
 You can run the same checks with the bundled smoke-test script:
 
 ```bash
-npm run deploy:smoke -- --base-url=${BASE} --allow-not-ready
+EXPECTED_VERSION=$(node -p "require('./package.json').version")
+npm run deploy:smoke -- --base-url=${BASE} --expected-version=${EXPECTED_VERSION} --allow-not-ready
 ```
 
 Use `--allow-not-ready` only before eMAFF/FAMIC snapshots are present. Remove it
@@ -169,14 +170,14 @@ If Cloud Run is protected by IAM, pass an identity token:
 
 ```bash
 TOKEN=$(gcloud auth print-identity-token)
-npm run deploy:smoke -- --base-url=${BASE} --allow-not-ready --auth-bearer=${TOKEN}
+npm run deploy:smoke -- --base-url=${BASE} --expected-version=${EXPECTED_VERSION} --allow-not-ready --auth-bearer=${TOKEN}
 ```
 
 If your Google Cloud organization intercepts `/healthz`, use the equivalent
 `/livez` liveness alias:
 
 ```bash
-npm run deploy:smoke -- --base-url=${BASE} --health-path=/livez --allow-not-ready --auth-bearer=${TOKEN}
+npm run deploy:smoke -- --base-url=${BASE} --health-path=/livez --expected-version=${EXPECTED_VERSION} --allow-not-ready --auth-bearer=${TOKEN}
 ```
 
 ### 2.5 GitHub Actions deploy setup
@@ -194,7 +195,8 @@ these repository or environment secrets in GitHub:
 | `SNAPSHOT_BUCKET` | `mcp-win-agriops-snapshots` |
 
 The deploy workflow runs Cloud Build and then executes `npm run deploy:smoke`
-with an identity token. Because organization policy currently blocks
+with an identity token and `--expected-version` from `package.json`, so it fails
+if the service still routes to an older revision. Because organization policy currently blocks
 `allUsers`, the deployer service account has `roles/run.invoker` on the Cloud
 Run service. Cloud Build restores SQLite snapshots from `SNAPSHOT_BUCKET` before
 building the container, so GitHub Actions deploys do not depend on ignored local
