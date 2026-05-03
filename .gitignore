@@ -50,3 +50,6 @@ build/
 
 # Token store (Phase 4 dev only — never commit)
 .tokens/
+
+# Test temporary directories
+tests/_tmp_*/
