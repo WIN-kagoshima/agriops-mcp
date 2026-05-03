@@ -29,6 +29,8 @@ jobs:
           persist-credentials: false
 
       - name: Run analysis
+        id: scorecard
+        continue-on-error: true
         uses: ossf/scorecard-action@v2.4.3
         with:
           results_file: results.sarif
@@ -36,6 +38,12 @@ jobs:
           publish_results: true
 
       - name: Upload SARIF
+        if: hashFiles('results.sarif') != ''
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: results.sarif
+
+      - name: Surface Scorecard analysis status
+        if: steps.scorecard.outcome != 'success'
+        run: |
+          echo "::warning::OSSF Scorecard 'Run analysis' step finished with outcome=${{ steps.scorecard.outcome }}. SARIF was uploaded if it was generated. Trigger 'workflow_dispatch' to retry, and check upstream scorecard-action issues if this persists."

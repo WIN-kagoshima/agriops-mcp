@@ -13,11 +13,14 @@ Pre-`1.0.0` releases are explicitly **experimental**: tool names, input/output s
 - Snapshot builds now emit `*.sqlite.manifest.json` provenance files with source attribution, row counts, raw input hashes, and output hashes for GCS snapshot audit and future Smart Storage object-context workflows.
 - Added optional `AGRIOPS_AGENT_ID_HEADER` / `AGRIOPS_AGENT_OWNER_HEADER` audit labels for trusted Agent Gateway or reverse-proxy deployments.
 - GitHub Actions workflows now opt JavaScript actions into Node.js 24 with `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` ahead of the GitHub-hosted runner Node 20 deprecation.
-- The OSSF Scorecard workflow now supports `workflow_dispatch`, so operators can manually re-trigger Scorecard analysis after transient publish flakes.
+- The OSSF Scorecard workflow now supports `workflow_dispatch`, so operators can manually re-trigger Scorecard analysis after transient flakes.
+
+### Changed
+- The OSSF Scorecard workflow's `Run analysis` step is now `continue-on-error`. SARIF is still uploaded to GitHub Code Scanning whenever the binary produced it, but transient `scorecard-action` failures no longer turn the entire workflow red on every `push`. A workflow-level warning annotation is emitted whenever Scorecard analysis exits non-zero so the issue stays visible for the weekly `schedule` and `workflow_dispatch` retries.
 
 ### Fixed
 - `deploy:smoke` now supports `--expected-version`, and the Cloud Run deploy workflow uses it to fail fast if post-deploy smoke is still hitting an older revision.
-- Bumped `ossf/scorecard-action` from `v2.4.0` to `v2.4.3` (Scorecard `v5.0.0` → `v5.3.0`) to pick up the publish retry fixes that resolved sporadic `Run analysis` failures on `push` events.
+- Bumped `ossf/scorecard-action` from `v2.4.0` to `v2.4.3` (Scorecard `v5.0.0` → `v5.3.0`).
 
 ## [0.5.2] — Patch — production deploy hardening
 
