@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { withVizHint } from "../lib/viz-hint.js";
 import type { Deps } from "../server/deps.js";
 import { getToolAnnotations } from "../server/surface-catalog.js";
 import type { ToolMeta } from "../types/common.js";
@@ -762,7 +763,13 @@ export function registerGetMarketPrice(server: McpServer, _deps: Deps): void {
             ].join("\n"),
           },
         ],
-        structuredContent: structured as unknown as Record<string, unknown>,
+        structuredContent: withVizHint(structured as unknown as Record<string, unknown>, {
+          preferredView: "timeseries",
+          timeKey: "month",
+          valueKeys: ["estimatedPriceYen", "seasonalFactor"],
+          title: `${structured.crop} 市場価格（月別推計）`,
+          legend: { unit: "円/kg", tone: "success" },
+        }),
       };
     },
   );

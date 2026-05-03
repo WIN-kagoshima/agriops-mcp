@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { withVizHint } from "../lib/viz-hint.js";
 import type { Deps } from "../server/deps.js";
 import { getToolAnnotations } from "../server/surface-catalog.js";
 import type { ToolMeta } from "../types/common.js";
@@ -597,7 +598,15 @@ export function registerGetSswCropCompatibility(server: McpServer, _deps: Deps):
               ].join("\n"),
             },
           ],
-          structuredContent: structured as unknown as Record<string, unknown>,
+          structuredContent: withVizHint(structured as unknown as Record<string, unknown>, {
+            preferredView: "bar_compare",
+            labelKey: "crop",
+            valueKeys: ["totalScore"],
+            dataPath: "results",
+            threshold: 75,
+            title: "SSW 派遣適性スコア ランキング",
+            legend: { unit: "点", min: 0, max: 100, tone: "success" },
+          }),
         };
       }
 
@@ -663,7 +672,13 @@ export function registerGetSswCropCompatibility(server: McpServer, _deps: Deps):
             ].join("\n"),
           },
         ],
-        structuredContent: structured as unknown as Record<string, unknown>,
+        structuredContent: withVizHint(structured as unknown as Record<string, unknown>, {
+          preferredView: "radar",
+          axes: ["自動化困難度", "価値密度", "季節集中度", "技能習得速度", "労働力不足度"],
+          scoresPath: "results.0.scores",
+          axisMax: 20,
+          title: `${entry.crop} — SSW 適性レーダー`,
+        }),
       };
     },
   );

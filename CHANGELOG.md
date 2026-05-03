@@ -10,6 +10,51 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.10.0] — 2026-05-04 — 戦略室 UI 2.0: 市町村ドリルダウン + 8種アダプティブビジュアライゼーション
+
+### Added
+- **`viz_hint` protocol** (`src/lib/viz-hint.ts`): New `VizHint` discriminated union type + `withVizHint()` / `extractVizHint()` / `resolvePath()` helpers. Tools embed viz hints in `structuredContent`, and the dashboard auto-selects the best visualization. 8 view types supported: `choropleth`, `map_zoom`, `radar`, `timeseries`, `bar_compare`, `sankey`, `calendar_heatmap`, `table`.
+- **viz_hint added to 6 existing tools**:
+  - `get_ssw_crop_compatibility`: `radar` (single crop) or `bar_compare` (all crops)
+  - `get_labor_shortage_stats`: `choropleth` (JP-00 national) or `bar_compare` (single prefecture)
+  - `get_livestock_regional_stats`: `bar_compare` by sector
+  - `get_market_price`: `timeseries` (12-month price curve)
+  - `get_prefecture_crop_profile`: `calendar_heatmap` (12-month crop labor calendar)
+- **`get_municipality_stats` tool** (Phase 10): City-level agricultural statistics for ~150 municipalities in 19 prefectures (Kyushu/Shikoku/Tokai/Kinki/Chugoku). Input: `cityCode`, `prefectureCode`, or `cityName`. Returns: population, farm bodies, top SSW crop + score.
+- **`src/data/municipality-db.ts`**: Internal DB of ~65+ cities with agricultural workers (2020/2015), farm bodies, main crops, top SSW crop, lat/lng. Prefectures: JP-40〜47, JP-36〜39, JP-21/23/24, JP-29/30, JP-33〜35.
+- **TopoJSON MCP Resources** (`src/resources/topojson-resources.ts`): 4 TopoJSON boundary resources served as `resource://agriops/topojson/*`. Prefectures + 3 regional municipality files for Kyushu, Shikoku, Tokai/Kinki/Chugoku.
+- **`scripts/build-topojson.mjs`**: Build script for generating production-quality TopoJSON from 国土数値情報 N03 via `mapshaper`.
+- **Dashboard UI 2.0** (`src/ui/Dashboard.tsx`): Complete rewrite as a strategic command room shell with:
+  - **Breadcrumb navigation**: 国 → 都道府県 → 市町村 → 圃場 (clickable, ESC-aware)
+  - **Quick action buttons**: one-click access to national choropleth, SSW radar, livestock map, market prices
+  - **Prefecture selector**: 19 Sugu-kuru zone prefectures
+  - **ViewDispatcher**: auto-selects visualization from viz_hint
+- **8 new UI view components** (pure SVG, no external chart libraries):
+  - `Radar.tsx`: 5-axis pentagon radar chart for SSW compatibility
+  - `BarCompare.tsx`: horizontal bar comparison with threshold line
+  - `TimeSeries.tsx`: multi-series line/area chart
+  - `Sankey.tsx`: flow diagram for SSW rotation planning
+  - `CalendarHeatmap.tsx`: 12-month × crop labor intensity grid
+  - `DataTable.tsx`: sortable fallback table
+  - `MapChoropleth.tsx`: maplibre-gl choropleth with metric color scale
+  - `MapZoomDrill.tsx`: interactive drill-down map with municipality markers
+- **`_dispatch.tsx`**: ViewDispatcher component with exhaustive switch over all 8 view types
+- **`Breadcrumb.tsx`**: hierarchy navigation component
+- **`topojson-loader.ts`**: async TopoJSON loader with in-memory cache
+- **`fetch_topojson_resource` tool** (app-only): Serves TopoJSON asset files to the dashboard via `bridge.callTool`
+- **`useAppBridge.fetchResource()`**: New method to fetch MCP resources through the bridge
+- **`open_dashboard` upgraded**: Added `viewSpec` parameter for pre-selecting a visualization view
+- **`strategy_room_dashboard` prompt**: Receives an `analysis_goal` description and generates the optimal tool call + `open_dashboard` invocation sequence
+
+### Changed
+- Dashboard dark theme redesigned: Tailwind-inspired dark palette (`--bg: #0d1117`, `--accent: #34d399`)
+- `list_municipalities` upgraded from stub to real implementation using `municipality-db.ts`
+
+### Tests
+- New unit test suite: `tests/unit/get-municipality-stats.test.ts` (9 tests)
+- Smoke tests: prompts count updated 14→15 (`strategy_room_dashboard` added)
+- Conformance: JSONRPC resource URI regex updated to allow `resource://` scheme
+
 ## [1.9.0] — 2026-05-04 — 畜産×SSW戦略インテリジェンス (捕鳥・養豚・酪農・肉用牛)
 
 ### Added

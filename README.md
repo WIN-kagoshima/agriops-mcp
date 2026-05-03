@@ -32,6 +32,8 @@ AgriOps MCP exposes Japanese agricultural data — farmland polygons (eMAFF), 1 
 | 3 | `0.3.x` | + Elicitation Form mode |
 | 4 | `0.4.x` | + Elicitation URL mode + OAuth Client Credentials |
 | 5 | `0.5.x` | + MCP Apps UI dashboard (map + weather overlay) |
+| 6–9 | `1.x` | + crop calendar · market price · SSW compatibility · labor shortage stats · livestock stats |
+| 10 | `1.10.0` | + 戦略室 UI 2.0: municipality drill-down · 8 adaptive viz · viz_hint protocol · TopoJSON resources |
 
 ## Capabilities at a glance
 

@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { withVizHint } from "../lib/viz-hint.js";
 import type { Deps } from "../server/deps.js";
 import { getToolAnnotations } from "../server/surface-catalog.js";
 import type { ToolMeta } from "../types/common.js";
@@ -562,7 +563,23 @@ export function registerGetLaborShortageStats(server: McpServer, _deps: Deps): v
             ].join("\n"),
           },
         ],
-        structuredContent: structured as unknown as Record<string, unknown>,
+        structuredContent: withVizHint(structured as unknown as Record<string, unknown>,
+          prefectureCode === "JP-00"
+            ? {
+                preferredView: "choropleth",
+                metric: "changeRate5yr",
+                geoLevel: "prefecture",
+                title: "農業就業人口 5年変化率（%）",
+                legend: { unit: "%", min: -30, max: 0, tone: "danger" },
+              }
+            : {
+                preferredView: "bar_compare",
+                labelKey: "prefectureName",
+                valueKeys: ["over65Pct2020", "changeRate5yr"],
+                title: `${stats.prefectureName} 農業労働力統計`,
+                legend: { unit: "%", tone: "danger" },
+              },
+        ),
       };
     },
   );

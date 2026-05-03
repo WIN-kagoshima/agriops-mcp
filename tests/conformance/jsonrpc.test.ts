@@ -96,12 +96,12 @@ describe("MCP conformance", () => {
     }
   });
 
-  it("every published resource URI is a valid `ui://` or `data://` URI", async () => {
+  it("every published resource URI is a valid `ui://`, `data://`, `resource://`, or `tasks://` URI", async () => {
     const { client, close } = await bootClient();
     try {
       const list = await client.listResources();
       for (const r of list.resources) {
-        expect(r.uri).toMatch(/^(ui|data):\/\//);
+        expect(r.uri).toMatch(/^(ui|data|resource|tasks):\/\//);
         expect(r.mimeType).toBeTypeOf("string");
       }
     } finally {

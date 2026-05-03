@@ -17,6 +17,7 @@ export const DASHBOARD_URI = "ui://agriops/dashboard.html";
 const outputSchema = z.object({
   prefectureCode: z.string(),
   fieldId: z.string().nullable(),
+  viewSpec: z.string().nullable(),
   attribution: z.string(),
 });
 
@@ -32,11 +33,21 @@ export const inputSchema = z
       .max(64)
       .optional()
       .describe("eMAFF field ID to highlight on first render."),
+    viewSpec: z
+      .string()
+      .max(120)
+      .optional()
+      .describe(
+        "Optional view specification to pre-select a visualization. " +
+        "Examples: 'national_labor_choropleth', 'ssw_radar:みかん', 'municipality_drill:JP-46'. " +
+        "The dashboard will attempt to load the matching tool and render the appropriate view.",
+      ),
   })
   .strict();
 
 /**
  * Phase 5 entry point: opens the MCP Apps UI dashboard.
+ * Phase 10 upgrade: adds `viewSpec` to pre-select a visualization view.
  *
  * On hosts that support MCP Apps the result is rendered inline as a sandboxed
  * iframe. On hosts that do not, the `content[0].text` summary plus the
@@ -47,10 +58,14 @@ export function registerOpenDashboard(server: McpServer, deps: Deps): void {
   server.registerTool(
     meta.name,
     {
-      title: "Open the AgriOps MCP map dashboard",
+      title: "Open the AgriOps Strategic Dashboard",
       description:
-        "Open the interactive map + weather dashboard. On MCP Apps hosts (Claude, ChatGPT) the UI renders inline; " +
-        "on hosts without MCP Apps support a structured text summary is returned instead. Read-only.",
+        "Open the interactive strategic dashboard (戦略室 UI). " +
+        "Supports hierarchical drill-down from national → prefecture → municipality → field, " +
+        "with 8 adaptive visualizations (choropleth map, radar chart, bar compare, " +
+        "time series, sankey diagram, calendar heatmap, data table). " +
+        "On MCP Apps hosts (Claude, Cursor) the UI renders inline; " +
+        "on hosts without MCP Apps support a structured text summary is returned. Read-only.",
       inputSchema: inputSchema.shape,
       outputSchema: outputSchema.shape,
       annotations: getToolAnnotations(meta.name),
@@ -76,24 +91,28 @@ export function registerOpenDashboard(server: McpServer, deps: Deps): void {
         const initialState = {
           prefectureCode: parsed.data.initialPrefectureCode ?? "JP-46",
           fieldId: parsed.data.initialFieldId ?? null,
+          viewSpec: parsed.data.viewSpec ?? null,
           attribution:
-            "Map © OpenStreetMap contributors · Weather © Open-Meteo (CC-BY 4.0) · Farmland: 農林水産省 eMAFF 筆ポリゴン",
+            "Map © OpenStreetMap contributors · Weather © Open-Meteo (CC-BY 4.0) · " +
+            "Farmland: 農林水産省 eMAFF 筆ポリゴン · 農林業センサス2020",
         };
         const structured: z.infer<typeof outputSchema> = initialState;
+
+        const focusDesc = parsed.data.initialPrefectureCode
+          ? ` — ${parsed.data.initialPrefectureCode}`
+          : "";
+        const viewDesc = parsed.data.viewSpec ? ` (${parsed.data.viewSpec})` : "";
+
         return {
           content: [
             {
               type: "text",
-              text: `Opening the AgriOps MCP dashboard${
-                parsed.data.initialPrefectureCode
-                  ? ` focused on ${parsed.data.initialPrefectureCode}`
-                  : ""
-              }.`,
+              text: `Opening AgriOps strategic dashboard${focusDesc}${viewDesc}.`,
             },
             {
               type: "resource_link",
               uri: DASHBOARD_URI,
-              name: "AgriOps MCP map dashboard",
+              name: "AgriOps 戦略室ダッシュボード",
               mimeType: "text/html",
             },
           ],

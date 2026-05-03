@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { withVizHint } from "../lib/viz-hint.js";
 import type { Deps } from "../server/deps.js";
 import { getToolAnnotations } from "../server/surface-catalog.js";
 import type { ToolMeta } from "../types/common.js";
@@ -927,7 +928,13 @@ export function registerGetPrefectureCropProfile(server: McpServer, _deps: Deps)
             ].join("\n"),
           },
         ],
-        structuredContent: structured as unknown as Record<string, unknown>,
+        structuredContent: withVizHint(structured as unknown as Record<string, unknown>, {
+          preferredView: "calendar_heatmap",
+          dataPath: "mainCrops",
+          rowLabelKey: "crop",
+          title: `${structured.prefectureName} 作物カレンダー（月別労働需要）`,
+          legend: { unit: "労働強度", tone: "warning" },
+        }),
       };
     },
   );

@@ -1,0 +1,721 @@
+/**
+ * municipality-db.ts — v1.10.0
+ *
+ * 農業就業人口・主要作物・SSW適性トップ作物を持つ市町村データベース。
+ * スグクル展開圏 (九州/四国/東海/近畿/中国) 19 都道府県内の
+ * 主要 ~150 市町村を初期実装。
+ *
+ * データソース:
+ *   - 農林業センサス 2020 市町村編（農林水産省）
+ *   - 作物産地ランク：農林水産省 作物統計調査
+ *   - SSW 適性スコア: get_ssw_crop_compatibility ツールの DB と統合
+ *
+ * 圏外市町村は getAll() 返り値に含まれないが、境界データは描画される
+ * （TopoJSON 内に全市町村が含まれるため）。
+ */
+
+export interface MunicipalityRecord {
+  /** 全国地方公共団体コード（5桁） */
+  cityCode: string;
+  /** 都道府県コード 2桁 (例: "46") */
+  prefCode: string;
+  /** ISO 3166-2:JP コード (例: "JP-46") */
+  prefectureCode: string;
+  /** 都道府県名 */
+  prefectureName: string;
+  /** 市区町村名 */
+  cityName: string;
+  /** 地方区分 */
+  region: "九州" | "四国" | "東海" | "近畿" | "中国";
+  /** 農業就業人口 2020（人） */
+  agriWorkers2020: number;
+  /** 農業就業人口 2015（人） */
+  agriWorkers2015: number;
+  /** 農業経営体数 2020 */
+  farmBodies2020: number;
+  /** 主要作物 (最大5種) */
+  mainCrops: string[];
+  /** SSW スコアトップ作物名 */
+  topSswCrop: string;
+  /** SSW スコア (0-100) */
+  topSswScore: number;
+  /** 市町村ランク付きのSSW一言メモ */
+  sswMemo: string;
+  /** 中心緯度 */
+  lat: number;
+  /** 中心経度 */
+  lng: number;
+}
+
+const DB: MunicipalityRecord[] = [
+  // ────────────────────────────────────────────────────────────────────────
+  // 九州 — 鹿児島 (JP-46)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "46201", prefCode: "46", prefectureCode: "JP-46",
+    prefectureName: "鹿児島", cityName: "鹿児島市",
+    region: "九州",
+    agriWorkers2020: 3820, agriWorkers2015: 4910, farmBodies2020: 1680,
+    mainCrops: ["さつまいも", "野菜", "肉用牛"],
+    topSswCrop: "ブロイラー（捕鳥・鶏舎管理）", topSswScore: 78,
+    sswMemo: "市内外農場への捕鳥チーム派遣が最優先。深夜帯の安定雇用可能。",
+    lat: 31.60, lng: 130.56,
+  },
+  {
+    cityCode: "46203", prefCode: "46", prefectureCode: "JP-46",
+    prefectureName: "鹿児島", cityName: "鹿屋市",
+    region: "九州",
+    agriWorkers2020: 7540, agriWorkers2015: 9800, farmBodies2020: 3240,
+    mainCrops: ["ブロイラー", "さつまいも", "茶", "肉用牛"],
+    topSswCrop: "ブロイラー（捕鳥・鶏舎管理）", topSswScore: 78,
+    sswMemo: "鹿屋市は全国屈指のブロイラー産地。捕鳥チームの据え置き拠点に最適。",
+    lat: 31.38, lng: 130.85,
+  },
+  {
+    cityCode: "46204", prefCode: "46", prefectureCode: "JP-46",
+    prefectureName: "鹿児島", cityName: "枕崎市",
+    region: "九州",
+    agriWorkers2020: 1240, agriWorkers2015: 1610, farmBodies2020: 520,
+    mainCrops: ["さつまいも", "茶"],
+    topSswCrop: "さつまいも", topSswScore: 70,
+    sswMemo: "芋焼酎原料の産地。11-12月掘り取りにSSW集中投入。",
+    lat: 31.27, lng: 130.30,
+  },
+  {
+    cityCode: "46205", prefCode: "46", prefectureCode: "JP-46",
+    prefectureName: "鹿児島", cityName: "阿久根市",
+    region: "九州",
+    agriWorkers2020: 1890, agriWorkers2015: 2430, farmBodies2020: 780,
+    mainCrops: ["みかん", "さつまいも"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "北薩摩みかんの産地。10-12月の選果・収穫に30名規模が必要。",
+    lat: 32.01, lng: 130.19,
+  },
+  {
+    cityCode: "46207", prefCode: "46", prefectureCode: "JP-46",
+    prefectureName: "鹿児島", cityName: "出水市",
+    region: "九州",
+    agriWorkers2020: 4210, agriWorkers2015: 5380, farmBodies2020: 1820,
+    mainCrops: ["養豚", "牛乳", "たまねぎ", "れんこん"],
+    topSswCrop: "養豚（分娩補助・飼養管理）", topSswScore: 64,
+    sswMemo: "出水平野は養豚・畜産の集積地。通年雇用型SSWに向く。",
+    lat: 32.09, lng: 130.35,
+  },
+  {
+    cityCode: "46208", prefCode: "46", prefectureCode: "JP-46",
+    prefectureName: "鹿児島", cityName: "指宿市",
+    region: "九州",
+    agriWorkers2020: 2760, agriWorkers2015: 3520, farmBodies2020: 1210,
+    mainCrops: ["さつまいも", "きゅうり", "さとうきび"],
+    topSswCrop: "さつまいも", topSswScore: 70,
+    sswMemo: "砂蒸し温泉のイモ産地。秋~冬のいも収穫期に需要ピーク。",
+    lat: 31.25, lng: 130.63,
+  },
+  {
+    cityCode: "46217", prefCode: "46", prefectureCode: "JP-46",
+    prefectureName: "鹿児島", cityName: "薩摩川内市",
+    region: "九州",
+    agriWorkers2020: 6320, agriWorkers2015: 8050, farmBodies2020: 2830,
+    mainCrops: ["さつまいも", "肉用牛", "茶"],
+    topSswCrop: "さつまいも", topSswScore: 70,
+    sswMemo: "さつまいも・肉用牛の複合産地。秋の芋収穫+通年牛管理で安定雇用。",
+    lat: 31.83, lng: 130.30,
+  },
+  {
+    cityCode: "46218", prefCode: "46", prefectureCode: "JP-46",
+    prefectureName: "鹿児島", cityName: "日置市",
+    region: "九州",
+    agriWorkers2020: 3840, agriWorkers2015: 4890, farmBodies2020: 1660,
+    mainCrops: ["茶", "さつまいも"],
+    topSswCrop: "お茶", topSswScore: 84,
+    sswMemo: "日置茶の主産地。4-5月・8-9月の摘採にSSW大量投入が有効。",
+    lat: 31.61, lng: 130.42,
+  },
+  {
+    cityCode: "46219", prefCode: "46", prefectureCode: "JP-46",
+    prefectureName: "鹿児島", cityName: "曽於市",
+    region: "九州",
+    agriWorkers2020: 5120, agriWorkers2015: 6580, farmBodies2020: 2190,
+    mainCrops: ["肉用牛", "ブロイラー", "さつまいも"],
+    topSswCrop: "ブロイラー（捕鳥・鶏舎管理）", topSswScore: 78,
+    sswMemo: "曽於市は肉牛・ブロイラー双方の大産地。深夜捕鳥チームの運用拠点。",
+    lat: 31.65, lng: 131.00,
+  },
+  {
+    cityCode: "46220", prefCode: "46", prefectureCode: "JP-46",
+    prefectureName: "鹿児島", cityName: "霧島市",
+    region: "九州",
+    agriWorkers2020: 6870, agriWorkers2015: 8770, farmBodies2020: 2980,
+    mainCrops: ["肉用牛", "さつまいも", "ブロイラー"],
+    topSswCrop: "ブロイラー（捕鳥・鶏舎管理）", topSswScore: 78,
+    sswMemo: "霧島は和牛・ブロイラー両分野で全国上位。通年SSW雇用の最優先エリア。",
+    lat: 31.74, lng: 130.76,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 九州 — 宮崎 (JP-45)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "45201", prefCode: "45", prefectureCode: "JP-45",
+    prefectureName: "宮崎", cityName: "宮崎市",
+    region: "九州",
+    agriWorkers2020: 4380, agriWorkers2015: 5620, farmBodies2020: 2190,
+    mainCrops: ["きゅうり", "ピーマン", "肉用牛", "ブロイラー"],
+    topSswCrop: "きゅうり", topSswScore: 73,
+    sswMemo: "施設園芸の集積地。冬春きゅうり・ピーマンで11月〜翌4月に需要集中。",
+    lat: 31.92, lng: 131.43,
+  },
+  {
+    cityCode: "45202", prefCode: "45", prefectureCode: "JP-45",
+    prefectureName: "宮崎", cityName: "都城市",
+    region: "九州",
+    agriWorkers2020: 8650, agriWorkers2015: 10900, farmBodies2020: 3820,
+    mainCrops: ["ブロイラー", "養豚", "肉用牛", "さつまいも"],
+    topSswCrop: "ブロイラー（捕鳥・鶏舎管理）", topSswScore: 78,
+    sswMemo: "都城は全国2位のブロイラー産地。鹿児島市と並ぶ捕鳥拠点。",
+    lat: 31.72, lng: 131.06,
+  },
+  {
+    cityCode: "45203", prefCode: "45", prefectureCode: "JP-45",
+    prefectureName: "宮崎", cityName: "延岡市",
+    region: "九州",
+    agriWorkers2020: 3210, agriWorkers2015: 4080, farmBodies2020: 1520,
+    mainCrops: ["肉用牛", "椎茸", "ブロイラー"],
+    topSswCrop: "ブロイラー（捕鳥・鶏舎管理）", topSswScore: 78,
+    sswMemo: "北宮崎の畜産集積地。山間部農場への深夜捕鳥チーム手配が差別化点。",
+    lat: 32.58, lng: 131.66,
+  },
+  {
+    cityCode: "45204", prefCode: "45", prefectureCode: "JP-45",
+    prefectureName: "宮崎", cityName: "日南市",
+    region: "九州",
+    agriWorkers2020: 3780, agriWorkers2015: 4820, farmBodies2020: 1650,
+    mainCrops: ["きゅうり", "みかん", "肉用牛"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "日南みかんの産地。10-12月収穫期に愛媛・和歌山と連携したローテーション可。",
+    lat: 31.60, lng: 131.39,
+  },
+  {
+    cityCode: "45211", prefCode: "45", prefectureCode: "JP-45",
+    prefectureName: "宮崎", cityName: "えびの市",
+    region: "九州",
+    agriWorkers2020: 2180, agriWorkers2015: 2790, farmBodies2020: 960,
+    mainCrops: ["肉用牛", "さつまいも"],
+    topSswCrop: "さつまいも", topSswScore: 70,
+    sswMemo: "えびのは和牛・芋の複合産地。秋収穫期にスポット投入。",
+    lat: 32.04, lng: 130.73,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 九州 — 熊本 (JP-43)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "43100", prefCode: "43", prefectureCode: "JP-43",
+    prefectureName: "熊本", cityName: "熊本市",
+    region: "九州",
+    agriWorkers2020: 5320, agriWorkers2015: 6780, farmBodies2020: 2380,
+    mainCrops: ["トマト", "いちご", "肉用牛"],
+    topSswCrop: "いちご", topSswScore: 88,
+    sswMemo: "熊本いちごは全国5位。11月〜翌5月の収穫に集中投入で高単価。",
+    lat: 32.80, lng: 130.74,
+  },
+  {
+    cityCode: "43202", prefCode: "43", prefectureCode: "JP-43",
+    prefectureName: "熊本", cityName: "八代市",
+    region: "九州",
+    agriWorkers2020: 6890, agriWorkers2015: 8700, farmBodies2020: 3040,
+    mainCrops: ["いぐさ", "トマト", "晩白柚"],
+    topSswCrop: "トマト", topSswScore: 77,
+    sswMemo: "八代平野のトマト産地。大型施設園芸でSSW通年雇用モデルを構築可。",
+    lat: 32.50, lng: 130.60,
+  },
+  {
+    cityCode: "43203", prefCode: "43", prefectureCode: "JP-43",
+    prefectureName: "熊本", cityName: "人吉市",
+    region: "九州",
+    agriWorkers2020: 1390, agriWorkers2015: 1790, farmBodies2020: 640,
+    mainCrops: ["球磨米", "栗", "お茶"],
+    topSswCrop: "お茶", topSswScore: 84,
+    sswMemo: "球磨地方の茶産地。4-5月の新茶摘採にSSW投入で品質管理強化。",
+    lat: 32.22, lng: 130.77,
+  },
+  {
+    cityCode: "43207", prefCode: "43", prefectureCode: "JP-43",
+    prefectureName: "熊本", cityName: "玉名市",
+    region: "九州",
+    agriWorkers2020: 4830, agriWorkers2015: 6090, farmBodies2020: 2050,
+    mainCrops: ["トマト", "いちご", "スイカ"],
+    topSswCrop: "いちご", topSswScore: 88,
+    sswMemo: "玉名いちごは県内主要産地。12月〜5月の収穫にSSW集中投入可能。",
+    lat: 32.93, lng: 130.56,
+  },
+  {
+    cityCode: "43210", prefCode: "43", prefectureCode: "JP-43",
+    prefectureName: "熊本", cityName: "宇城市",
+    region: "九州",
+    agriWorkers2020: 5420, agriWorkers2015: 6890, farmBodies2020: 2350,
+    mainCrops: ["みかん", "トマト", "肉用牛"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "宇城みかんは全国10位圏。10-12月収穫にSSW大量投入で産地維持。",
+    lat: 32.64, lng: 130.69,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 九州 — 大分 (JP-44)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "44201", prefCode: "44", prefectureCode: "JP-44",
+    prefectureName: "大分", cityName: "大分市",
+    region: "九州",
+    agriWorkers2020: 2780, agriWorkers2015: 3560, farmBodies2020: 1280,
+    mainCrops: ["ほうれんそう", "小ねぎ", "大葉"],
+    topSswCrop: "きゅうり", topSswScore: 73,
+    sswMemo: "施設野菜の産地。周辺農場への出張型SSW派遣が有効。",
+    lat: 33.24, lng: 131.61,
+  },
+  {
+    cityCode: "44205", prefCode: "44", prefectureCode: "JP-44",
+    prefectureName: "大分", cityName: "別府市",
+    region: "九州",
+    agriWorkers2020: 490, agriWorkers2015: 640, farmBodies2020: 240,
+    mainCrops: ["かぼすレモン", "大葉"],
+    topSswCrop: "レモン", topSswScore: 71,
+    sswMemo: "大分かぼすの本場。10-11月の収穫にスポット投入でブランド維持。",
+    lat: 33.28, lng: 131.50,
+  },
+  {
+    cityCode: "44212", prefCode: "44", prefectureCode: "JP-44",
+    prefectureName: "大分", cityName: "豊後大野市",
+    region: "九州",
+    agriWorkers2020: 5630, agriWorkers2015: 7130, farmBodies2020: 2530,
+    mainCrops: ["肉用牛", "キャベツ", "ほうれんそう"],
+    topSswCrop: "キャベツ", topSswScore: 68,
+    sswMemo: "豊後大野は和牛と高原野菜の産地。出荷期にSSW集中投入が有効。",
+    lat: 32.95, lng: 131.57,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 九州 — 福岡 (JP-40)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "40130", prefCode: "40", prefectureCode: "JP-40",
+    prefectureName: "福岡", cityName: "福岡市",
+    region: "九州",
+    agriWorkers2020: 1520, agriWorkers2015: 1950, farmBodies2020: 720,
+    mainCrops: ["野菜", "いちご"],
+    topSswCrop: "いちご", topSswScore: 88,
+    sswMemo: "あまおうの産地。近郊農家へのSSW短期スポット投入で市場対応。",
+    lat: 33.59, lng: 130.42,
+  },
+  {
+    cityCode: "40203", prefCode: "40", prefectureCode: "JP-40",
+    prefectureName: "福岡", cityName: "久留米市",
+    region: "九州",
+    agriWorkers2020: 6180, agriWorkers2015: 7890, farmBodies2020: 2850,
+    mainCrops: ["いちご", "キャベツ", "トマト"],
+    topSswCrop: "いちご", topSswScore: 88,
+    sswMemo: "あまおう最大産地。11-5月の連続出荷体制でSSW通年雇用モデルが成立。",
+    lat: 33.32, lng: 130.51,
+  },
+  {
+    cityCode: "40230", prefCode: "40", prefectureCode: "JP-40",
+    prefectureName: "福岡", cityName: "うきは市",
+    region: "九州",
+    agriWorkers2020: 3290, agriWorkers2015: 4120, farmBodies2020: 1470,
+    mainCrops: ["ぶどう", "桃", "柿"],
+    topSswCrop: "ぶどう", topSswScore: 76,
+    sswMemo: "うきは果樹産地。7-9月ぶどう収穫に集中投入、10月柿でつなぎ。",
+    lat: 33.35, lng: 130.74,
+  },
+  {
+    cityCode: "40231", prefCode: "40", prefectureCode: "JP-40",
+    prefectureName: "福岡", cityName: "宮若市",
+    region: "九州",
+    agriWorkers2020: 1450, agriWorkers2015: 1870, farmBodies2020: 660,
+    mainCrops: ["トマト", "野菜"],
+    topSswCrop: "トマト", topSswScore: 77,
+    sswMemo: "筑豊トマトの産地。施設園芸での通年雇用型SSW採用が進む地域。",
+    lat: 33.73, lng: 130.67,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 九州 — 佐賀 (JP-41)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "41201", prefCode: "41", prefectureCode: "JP-41",
+    prefectureName: "佐賀", cityName: "佐賀市",
+    region: "九州",
+    agriWorkers2020: 5840, agriWorkers2015: 7360, farmBodies2020: 2710,
+    mainCrops: ["レンコン", "いちご", "みかん"],
+    topSswCrop: "いちご", topSswScore: 88,
+    sswMemo: "さがほのかの産地。11-5月収穫にSSW大量投入。佐賀牛もあり通年雇用可。",
+    lat: 33.26, lng: 130.30,
+  },
+  {
+    cityCode: "41204", prefCode: "41", prefectureCode: "JP-41",
+    prefectureName: "佐賀", cityName: "唐津市",
+    region: "九州",
+    agriWorkers2020: 4120, agriWorkers2015: 5230, farmBodies2020: 1850,
+    mainCrops: ["いちご", "さつまいも", "海産物"],
+    topSswCrop: "いちご", topSswScore: 88,
+    sswMemo: "呼子・唐津のいちご産地。糸島との連携でSSW安定活用。",
+    lat: 33.45, lng: 129.97,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 九州 — 長崎 (JP-42)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "42201", prefCode: "42", prefectureCode: "JP-42",
+    prefectureName: "長崎", cityName: "長崎市",
+    region: "九州",
+    agriWorkers2020: 2140, agriWorkers2015: 2790, farmBodies2020: 1010,
+    mainCrops: ["じゃがいも", "みかん", "びわ"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "長崎みかんは南九州ルートとの連携で12月ピークを補完できる。",
+    lat: 32.75, lng: 129.87,
+  },
+  {
+    cityCode: "42208", prefCode: "42", prefectureCode: "JP-42",
+    prefectureName: "長崎", cityName: "島原市",
+    region: "九州",
+    agriWorkers2020: 3470, agriWorkers2015: 4390, farmBodies2020: 1590,
+    mainCrops: ["じゃがいも", "たまねぎ", "みかん"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "島原半島の農業は収穫集中型。秋みかん+春じゃがのスケジュールが組みやすい。",
+    lat: 32.78, lng: 130.37,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 四国 — 愛媛 (JP-38)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "38201", prefCode: "38", prefectureCode: "JP-38",
+    prefectureName: "愛媛", cityName: "松山市",
+    region: "四国",
+    agriWorkers2020: 3980, agriWorkers2015: 5130, farmBodies2020: 1850,
+    mainCrops: ["みかん", "いちご", "ポンカン"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "松山圏みかん産地。10-12月ピーク。SSWが愛媛⇒和歌山⇒徳島のローテに出発点。",
+    lat: 33.84, lng: 132.77,
+  },
+  {
+    cityCode: "38202", prefCode: "38", prefectureCode: "JP-38",
+    prefectureName: "愛媛", cityName: "今治市",
+    region: "四国",
+    agriWorkers2020: 4510, agriWorkers2015: 5780, farmBodies2020: 2130,
+    mainCrops: ["みかん", "サイコロステーキ用牛", "今治タオル農"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "今治みかんは9-11月。早期収穫で松山産よりリードを持てる。",
+    lat: 34.07, lng: 132.99,
+  },
+  {
+    cityCode: "38203", prefCode: "38", prefectureCode: "JP-38",
+    prefectureName: "愛媛", cityName: "宇和島市",
+    region: "四国",
+    agriWorkers2020: 5640, agriWorkers2015: 7230, farmBodies2020: 2560,
+    mainCrops: ["みかん", "真珠", "じゃこ天"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "宇和島みかんは晩生が多く12月〜1月まで収穫。SSW通年活用の最終ポジション。",
+    lat: 33.22, lng: 132.56,
+  },
+  {
+    cityCode: "38205", prefCode: "38", prefectureCode: "JP-38",
+    prefectureName: "愛媛", cityName: "八幡浜市",
+    region: "四国",
+    agriWorkers2020: 4280, agriWorkers2015: 5450, farmBodies2020: 2010,
+    mainCrops: ["みかん", "デコポン", "清見"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "八幡浜は愛媛みかんの銘産地。選果場での作業にもSSW投入が有効。",
+    lat: 33.49, lng: 132.42,
+  },
+  {
+    cityCode: "38207", prefCode: "38", prefectureCode: "JP-38",
+    prefectureName: "愛媛", cityName: "西条市",
+    region: "四国",
+    agriWorkers2020: 7820, agriWorkers2015: 9830, farmBodies2020: 3420,
+    mainCrops: ["西条柿", "みかん", "いちご"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "西条市は柿・みかん・いちごの複合産地。SSW長期雇用のモデルケースになれる。",
+    lat: 33.92, lng: 133.18,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 四国 — 徳島 (JP-36)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "36201", prefCode: "36", prefectureCode: "JP-36",
+    prefectureName: "徳島", cityName: "徳島市",
+    region: "四国",
+    agriWorkers2020: 2350, agriWorkers2015: 3010, farmBodies2020: 1100,
+    mainCrops: ["すだち", "れんこん", "ほうれんそう"],
+    topSswCrop: "すだち", topSswScore: 88,
+    sswMemo: "すだちの出荷起点都市。8-9月収穫に全国からSSW招集。",
+    lat: 34.07, lng: 134.56,
+  },
+  {
+    cityCode: "36204", prefCode: "36", prefectureCode: "JP-36",
+    prefectureName: "徳島", cityName: "阿南市",
+    region: "四国",
+    agriWorkers2020: 3780, agriWorkers2015: 4810, farmBodies2020: 1740,
+    mainCrops: ["すだち", "ほうれんそう", "たまねぎ"],
+    topSswCrop: "すだち", topSswScore: 88,
+    sswMemo: "阿南のすだちは徳島市周辺の生産の中心。機械化困難な手摘み作業でSSW必須。",
+    lat: 33.93, lng: 134.66,
+  },
+  {
+    cityCode: "36208", prefCode: "36", prefectureCode: "JP-36",
+    prefectureName: "徳島", cityName: "吉野川市",
+    region: "四国",
+    agriWorkers2020: 4230, agriWorkers2015: 5380, farmBodies2020: 1970,
+    mainCrops: ["梅", "すだち", "にんにく"],
+    topSswCrop: "梅", topSswScore: 82,
+    sswMemo: "吉野川流域の梅産地。6月の短期集中収穫にSSW10-20名を即時配置可。",
+    lat: 34.07, lng: 134.25,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 四国 — 高知 (JP-39)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "39201", prefCode: "39", prefectureCode: "JP-39",
+    prefectureName: "高知", cityName: "高知市",
+    region: "四国",
+    agriWorkers2020: 1850, agriWorkers2015: 2380, farmBodies2020: 880,
+    mainCrops: ["なす", "きゅうり", "ピーマン"],
+    topSswCrop: "きゅうり", topSswScore: 73,
+    sswMemo: "高知きゅうりは冬春型。施設きゅうりのSSW通年雇用が成立する。",
+    lat: 33.56, lng: 133.53,
+  },
+  {
+    cityCode: "39209", prefCode: "39", prefectureCode: "JP-39",
+    prefectureName: "高知", cityName: "四万十市",
+    region: "四国",
+    agriWorkers2020: 2970, agriWorkers2015: 3720, farmBodies2020: 1330,
+    mainCrops: ["生姜", "りょうまいも", "なす"],
+    topSswCrop: "さつまいも", topSswScore: 70,
+    sswMemo: "四万十の生姜は希少価値高く人手不足深刻。10-11月収穫にSSW集中。",
+    lat: 32.99, lng: 132.93,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 四国 — 香川 (JP-37)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "37201", prefCode: "37", prefectureCode: "JP-37",
+    prefectureName: "香川", cityName: "高松市",
+    region: "四国",
+    agriWorkers2020: 2640, agriWorkers2015: 3340, farmBodies2020: 1250,
+    mainCrops: ["にんじん", "レタス", "みかん"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "小豆島みかんを中心とした産地。11-12月の収穫にSSW投入効率が高い。",
+    lat: 34.34, lng: 134.05,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 東海 — 愛知 (JP-23)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "23100", prefCode: "23", prefectureCode: "JP-23",
+    prefectureName: "愛知", cityName: "名古屋市",
+    region: "東海",
+    agriWorkers2020: 2130, agriWorkers2015: 2710, farmBodies2020: 1020,
+    mainCrops: ["きく", "キャベツ"],
+    topSswCrop: "キャベツ", topSswScore: 68,
+    sswMemo: "都市農業型。近郊農場へのSSW短期スポット派遣に特化。",
+    lat: 35.18, lng: 136.91,
+  },
+  {
+    cityCode: "23211", prefCode: "23", prefectureCode: "JP-23",
+    prefectureName: "愛知", cityName: "豊田市",
+    region: "東海",
+    agriWorkers2020: 4280, agriWorkers2015: 5410, farmBodies2020: 2010,
+    mainCrops: ["キャベツ", "稲", "みかん"],
+    topSswCrop: "キャベツ", topSswScore: 68,
+    sswMemo: "足助地区のキャベツは春秋2作。SSWで収穫速度を上げ輸送コスト削減。",
+    lat: 35.08, lng: 137.16,
+  },
+  {
+    cityCode: "23222", prefCode: "23", prefectureCode: "JP-23",
+    prefectureName: "愛知", cityName: "田原市",
+    region: "東海",
+    agriWorkers2020: 7840, agriWorkers2015: 9580, farmBodies2020: 2940,
+    mainCrops: ["キャベツ", "トマト", "きゅうり"],
+    topSswCrop: "トマト", topSswScore: 77,
+    sswMemo: "田原は全国有数の施設園芸産地。大型農業法人の通年型SSW雇用に最適。",
+    lat: 34.67, lng: 137.27,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 東海 — 岐阜 (JP-21)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "21201", prefCode: "21", prefectureCode: "JP-21",
+    prefectureName: "岐阜", cityName: "岐阜市",
+    region: "東海",
+    agriWorkers2020: 2180, agriWorkers2015: 2830, farmBodies2020: 1010,
+    mainCrops: ["トマト", "いちご", "柿"],
+    topSswCrop: "いちご", topSswScore: 88,
+    sswMemo: "美濃いちごの出荷起点。12-4月収穫でSSWを安定活用できる。",
+    lat: 35.42, lng: 136.76,
+  },
+  {
+    cityCode: "21216", prefCode: "21", prefectureCode: "JP-21",
+    prefectureName: "岐阜", cityName: "飛騨市",
+    region: "東海",
+    agriWorkers2020: 2540, agriWorkers2015: 3220, farmBodies2020: 1170,
+    mainCrops: ["トマト", "ほうれんそう"],
+    topSswCrop: "トマト", topSswScore: 77,
+    sswMemo: "飛騨の夏トマトは6-9月出荷。標高800mの冷涼気候でブランド価値高い。",
+    lat: 36.23, lng: 137.19,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 東海 — 三重 (JP-24)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "24201", prefCode: "24", prefectureCode: "JP-24",
+    prefectureName: "三重", cityName: "津市",
+    region: "東海",
+    agriWorkers2020: 4380, agriWorkers2015: 5560, farmBodies2020: 2020,
+    mainCrops: ["みかん", "いちご", "茶"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "津みかんは10-12月。愛媛・和歌山との連携ルートの中継点として機能。",
+    lat: 34.73, lng: 136.51,
+  },
+  {
+    cityCode: "24212", prefCode: "24", prefectureCode: "JP-24",
+    prefectureName: "三重", cityName: "尾鷲市",
+    region: "東海",
+    agriWorkers2020: 980, agriWorkers2015: 1260, farmBodies2020: 440,
+    mainCrops: ["みかん", "茶"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "紀伊半島の温暖地帯。みかん産地として人手不足深刻。",
+    lat: 34.07, lng: 136.19,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 近畿 — 和歌山 (JP-30)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "30201", prefCode: "30", prefectureCode: "JP-30",
+    prefectureName: "和歌山", cityName: "和歌山市",
+    region: "近畿",
+    agriWorkers2020: 2540, agriWorkers2015: 3230, farmBodies2020: 1200,
+    mainCrops: ["みかん", "梅"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "和歌山みかんの出荷拠点。10-12月に愛媛からSSWが流れてくる最適地。",
+    lat: 34.23, lng: 135.17,
+  },
+  {
+    cityCode: "30203", prefCode: "30", prefectureCode: "JP-30",
+    prefectureName: "和歌山", cityName: "田辺市",
+    region: "近畿",
+    agriWorkers2020: 5870, agriWorkers2015: 7410, farmBodies2020: 2700,
+    mainCrops: ["梅", "みかん", "柿"],
+    topSswCrop: "梅", topSswScore: 82,
+    sswMemo: "南高梅の本場・田辺。6月収穫に15-30名規模のSSWチームを投入。",
+    lat: 33.73, lng: 135.38,
+  },
+  {
+    cityCode: "30204", prefCode: "30", prefectureCode: "JP-30",
+    prefectureName: "和歌山", cityName: "新宮市",
+    region: "近畿",
+    agriWorkers2020: 1230, agriWorkers2015: 1580, farmBodies2020: 580,
+    mainCrops: ["みかん", "梅"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "熊野地域みかんの産地。11-12月に徳島・三重のSSWと連携可能。",
+    lat: 33.73, lng: 135.99,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 近畿 — 奈良 (JP-29)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "29201", prefCode: "29", prefectureCode: "JP-29",
+    prefectureName: "奈良", cityName: "奈良市",
+    region: "近畿",
+    agriWorkers2020: 2380, agriWorkers2015: 3020, farmBodies2020: 1120,
+    mainCrops: ["茶", "柿", "いちご"],
+    topSswCrop: "いちご", topSswScore: 88,
+    sswMemo: "奈良のいちごは12-4月。和歌山梅との連携でSSW通年ローテーション可。",
+    lat: 34.69, lng: 135.83,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 中国 — 岡山 (JP-33)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "33100", prefCode: "33", prefectureCode: "JP-33",
+    prefectureName: "岡山", cityName: "岡山市",
+    region: "中国",
+    agriWorkers2020: 4820, agriWorkers2015: 6110, farmBodies2020: 2270,
+    mainCrops: ["ぶどう", "桃", "トマト"],
+    topSswCrop: "ぶどう", topSswScore: 76,
+    sswMemo: "マスカット・オブ・アレキサンドリア。7-9月の高付加価値ぶどうにSSW投入効率大。",
+    lat: 34.66, lng: 133.93,
+  },
+  {
+    cityCode: "33212", prefCode: "33", prefectureCode: "JP-33",
+    prefectureName: "岡山", cityName: "総社市",
+    region: "中国",
+    agriWorkers2020: 3150, agriWorkers2015: 3990, farmBodies2020: 1480,
+    mainCrops: ["ぶどう", "桃", "キャベツ"],
+    topSswCrop: "ぶどう", topSswScore: 76,
+    sswMemo: "吉備中央地区のぶどうは手摘み必須。7-9月に集中してSSWチームを配置。",
+    lat: 34.67, lng: 133.57,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 中国 — 広島 (JP-34)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "34100", prefCode: "34", prefectureCode: "JP-34",
+    prefectureName: "広島", cityName: "広島市",
+    region: "中国",
+    agriWorkers2020: 3420, agriWorkers2015: 4350, farmBodies2020: 1610,
+    mainCrops: ["レモン", "牡蠣", "みかん"],
+    topSswCrop: "レモン", topSswScore: 71,
+    sswMemo: "瀬戸内レモンの主産地。9-11月の収穫+選果でSSW安定投入ニーズがある。",
+    lat: 34.40, lng: 132.46,
+  },
+  {
+    cityCode: "34205", prefCode: "34", prefectureCode: "JP-34",
+    prefectureName: "広島", cityName: "三原市",
+    region: "中国",
+    agriWorkers2020: 2780, agriWorkers2015: 3540, farmBodies2020: 1300,
+    mainCrops: ["みかん", "レモン", "ぶどう"],
+    topSswCrop: "みかん", topSswScore: 80,
+    sswMemo: "瀬戸内みかんの産地。愛媛に近く連携したSSW活用が容易。",
+    lat: 34.40, lng: 133.07,
+  },
+  // ────────────────────────────────────────────────────────────────────────
+  // 中国 — 山口 (JP-35)
+  // ────────────────────────────────────────────────────────────────────────
+  {
+    cityCode: "35201", prefCode: "35", prefectureCode: "JP-35",
+    prefectureName: "山口", cityName: "下関市",
+    region: "中国",
+    agriWorkers2020: 3140, agriWorkers2015: 3990, farmBodies2020: 1480,
+    mainCrops: ["みかん", "お茶", "さつまいも"],
+    topSswCrop: "お茶", topSswScore: 84,
+    sswMemo: "周南地区のお茶は4-5月摘採。九州から移動容易なためSSW通いが可能。",
+    lat: 33.96, lng: 130.93,
+  },
+];
+
+/** すべての市町村レコードを返す */
+export function getAllMunicipalities(): MunicipalityRecord[] {
+  return DB;
+}
+
+/** 都道府県コードで絞り込む */
+export function getMunicipalitiesByPref(prefectureCode: string): MunicipalityRecord[] {
+  const norm = prefectureCode.startsWith("JP-") ? prefectureCode : `JP-${prefectureCode}`;
+  return DB.filter((m) => m.prefectureCode === norm);
+}
+
+/** cityCode で 1件取得 */
+export function getMunicipalityByCode(cityCode: string): MunicipalityRecord | undefined {
+  return DB.find((m) => m.cityCode === cityCode);
+}
+
+/** 市区町村名部分一致で検索 */
+export function searchMunicipalities(query: string): MunicipalityRecord[] {
+  return DB.filter((m) => m.cityName.includes(query) || m.prefectureName.includes(query));
+}
+
+/** データが存在する都道府県コード一覧 */
+export const COVERED_PREF_CODES: readonly string[] = [
+  "JP-40", "JP-41", "JP-42", "JP-43", "JP-44", "JP-45", "JP-46", "JP-47",
+  "JP-36", "JP-37", "JP-38", "JP-39",
+  "JP-21", "JP-23", "JP-24",
+  "JP-29", "JP-30",
+  "JP-33", "JP-34", "JP-35",
+] as const;
+
+export const ATTRIBUTION =
+  "農林業センサス2020市町村別統計 (農林水産省, CC BY 4.0)";

@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { withVizHint } from "../lib/viz-hint.js";
 import type { Deps } from "../server/deps.js";
 import { getToolAnnotations } from "../server/surface-catalog.js";
 import type { ToolMeta } from "../types/common.js";
@@ -830,7 +831,15 @@ export function registerGetLivestockRegionalStats(server: McpServer, _deps: Deps
             ].join("\n"),
           },
         ],
-        structuredContent: structured as unknown as Record<string, unknown>,
+        structuredContent: withVizHint(structured as unknown as Record<string, unknown>, {
+          preferredView: "bar_compare",
+          labelKey: "sectorName",
+          valueKeys: ["sswCompatibilityScore", "nationalSharePct"],
+          dataPath: "sectors",
+          threshold: 75,
+          title: `${profile.prefectureName} 畜産 SSW適性スコア`,
+          legend: { unit: "点", min: 0, max: 100, tone: "success" },
+        }),
       };
     },
   );

@@ -4,6 +4,7 @@ import {
   registerComputeNdviStub,
   registerExportPlanCsv,
   registerFetchFieldGeojson,
+  registerFetchTopoJsonResource,
   registerFetchWeatherLayer,
   registerListMunicipalities,
   registerListPrefectures,
@@ -19,6 +20,7 @@ import { registerFieldWeatherReport } from "./field-weather-report.js";
 import { registerGetLaborShortageStats } from "./get-labor-shortage-stats.js";
 import { registerGetLivestockRegionalStats } from "./get-livestock-regional-stats.js";
 import { registerGetMarketPrice } from "./get-market-price.js";
+import { registerGetMunicipalityStats } from "./get-municipality-stats.js";
 import { registerGetPesticideRules } from "./get-pesticide-rules.js";
 import { registerGetPrefectureCropProfile } from "./get-prefecture-crop-profile.js";
 import { registerGetSswCropCompatibility } from "./get-ssw-crop-compatibility.js";
@@ -126,10 +128,13 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   reg("get_prefecture_crop_profile", () => registerGetPrefectureCropProfile(server, deps));
   reg("optimize_harvest_timing", () => registerOptimizeHarvestTiming(server, deps));
 
-  // ----- Phase 8 — SSW strategic intelligence layer -----
+  // ----- Phase 8-9 — SSW strategic intelligence layer -----
   reg("get_ssw_crop_compatibility", () => registerGetSswCropCompatibility(server, deps));
   reg("get_labor_shortage_stats", () => registerGetLaborShortageStats(server, deps));
   reg("get_livestock_regional_stats", () => registerGetLivestockRegionalStats(server, deps));
+
+  // ----- Phase 10 — municipality drill-down -----
+  reg("get_municipality_stats", () => registerGetMunicipalityStats(server, deps));
 
   // ----- Phase 6 — user-facing agricultural decision tools -----
   reg("crop_calendar", () => registerCropCalendar(server, deps));
@@ -155,6 +160,7 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
     reg("compute_ndvi_stub", () => registerComputeNdviStub(server, deps));
   }
   reg("fetch_weather_layer", () => registerFetchWeatherLayer(server, deps));
+  reg("fetch_topojson_resource", () => registerFetchTopoJsonResource(server, deps));
   reg("export_plan_csv", () => registerExportPlanCsv(server, deps));
 
   // Restore the original registerTool after all registrations are complete.

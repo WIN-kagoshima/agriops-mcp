@@ -19,3 +19,4 @@ export { registerSearchOperators } from "./search-operators.js";
 export { registerExportPlanCsv } from "./export-plan-csv.js";
 export { registerSummarizeFarmland } from "./summarize-farmland.js";
 export { registerComputeNdviStub } from "./compute-ndvi-stub.js";
+export { registerFetchTopoJsonResource } from "./fetch-topojson-resource.js";

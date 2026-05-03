@@ -23,7 +23,8 @@ AgriOps MCP は、日本の農業データ（eMAFF 筆ポリゴン、Open-Meteo 
 | 3 | `0.3.x` | + Elicitation Form mode |
 | 4 | `0.4.x` | + Elicitation URL mode + OAuth Client Credentials |
 | 5 | `0.5.x` | + MCP Apps UI ダッシュボード（地図 + 気象オーバレイ） |
-| 6 | `1.5.0` | + ペルソナ別ツール 5 本（作期・散布・リスク予報など）+ prompt 5 本 |
+| 6–9 | `1.x` | + 作期カレンダー・市場価格・SSW適性スコア・農業労働力統計・畜産統計 |
+| 10 | `1.10.0` | + **戦略室 UI 2.0**: 市町村ドリルダウン · 8 種アダプティブビジュアライゼーション · viz_hint プロトコル · TopoJSON リソース |
 
 ## クイックスタート（stdio）
 

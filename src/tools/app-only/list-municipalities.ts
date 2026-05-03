@@ -1,5 +1,10 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import {
+  ATTRIBUTION,
+  COVERED_PREF_CODES,
+  getMunicipalitiesByPref,
+} from "../../data/municipality-db.js";
 import type { Deps } from "../../server/deps.js";
 import { registerAppOnlyTool } from "./_helpers.js";
 
@@ -11,30 +16,49 @@ const inputSchema = z
 
 export function registerListMunicipalities(server: McpServer, deps: Deps): void {
   if (!deps.emaff) return;
-  const emaff = deps.emaff;
   registerAppOnlyTool(
     server,
     "list_municipalities",
     {
-      title: "List municipalities present in the snapshot for a prefecture",
+      title: "List municipalities (city-level data) for a prefecture",
       description:
-        "Returns the distinct (cityCode, name) pairs that have at least one farmland record in the loaded snapshot. Read-only.",
+        "Returns (cityCode, cityName, lat, lng, topSswCrop) for municipalities that have " +
+        "agricultural data in the internal DB. Used by the dashboard map to populate the " +
+        "city-level choropleth layer. Read-only.",
       inputSchema,
       deps,
     },
     async (args) => {
-      // Use a wide-radius search around the prefecture centroid as a proxy.
-      // A real implementation would be a dedicated SQL query; this works for
-      // the demo snapshot.
-      const summary = await emaff.areaSummary({ prefectureCode: args.prefectureCode });
+      const records = getMunicipalitiesByPref(args.prefectureCode);
+      const isCovered = (COVERED_PREF_CODES as readonly string[]).includes(args.prefectureCode);
+
+      const municipalities = records.map((r) => ({
+        cityCode: r.cityCode,
+        cityName: r.cityName,
+        lat: r.lat,
+        lng: r.lng,
+        topSswCrop: r.topSswCrop,
+        topSswScore: r.topSswScore,
+        mainCrops: r.mainCrops,
+      }));
+
       return {
         content: [
-          { type: "text", text: `${summary.totalFields} field(s) in ${args.prefectureCode}.` },
+          {
+            type: "text",
+            text:
+              municipalities.length > 0
+                ? `${args.prefectureCode}: ${municipalities.length} 市町村のデータあり`
+                : `${args.prefectureCode} は現在データ準備中です (カバー対象: ${(COVERED_PREF_CODES as readonly string[]).join(", ")}）`,
+          },
         ],
         structuredContent: {
           prefectureCode: args.prefectureCode,
-          municipalities: [],
-          summary,
+          municipalities,
+          count: municipalities.length,
+          isCovered,
+          coveredPrefectures: COVERED_PREF_CODES,
+          attribution: ATTRIBUTION,
         },
       };
     },

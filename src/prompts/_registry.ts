@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Deps } from "../server/deps.js";
 import { registerAnnualDispatchPlanPrompt } from "./annual-dispatch-plan.js";
 import { registerSswStrategyBriefingPrompt } from "./ssw-strategy-briefing.js";
+import { registerStrategyRoomDashboardPrompt } from "./strategy-room-dashboard.js";
 import { registerAreaBriefingPrompt } from "./area-briefing.js";
 import { registerDailyBriefingPrompt } from "./daily-briefing.js";
 import { registerDataFreshnessCheckPrompt } from "./data-freshness-check.js";
@@ -16,7 +17,7 @@ import { registerStaffDeployPlanPrompt } from "./staff-deploy-plan.js";
 import { registerWeatherRiskAlertPrompt } from "./weather-risk-alert.js";
 
 /**
- * 14 user-controlled prompts (slash commands). They are exposed
+ * 15 user-controlled prompts (slash commands). They are exposed
  * unconditionally; the underlying tools they reference may not be available
  * in early phases, in which case the prompt simply tells the LLM to
  * apologise and explain what is missing.
@@ -38,6 +39,7 @@ export function registerAllPrompts(server: McpServer, deps: Deps): string[] {
   registerRegionDispatchDemandPrompt(server, deps);
   registerAnnualDispatchPlanPrompt(server, deps);
   registerSswStrategyBriefingPrompt(server, deps);
+  registerStrategyRoomDashboardPrompt(server, deps);
   return [
     "field_summary",
     "pesticide_advice",
@@ -53,5 +55,8 @@ export function registerAllPrompts(server: McpServer, deps: Deps): string[] {
     "region_dispatch_demand",
     "annual_dispatch_plan",
     "ssw_strategy_briefing",
+    "strategy_room_dashboard",
   ];
 }
+
+export const PROMPT_COUNT = 15;
