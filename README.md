@@ -18,7 +18,7 @@ AgriOps MCP exposes Japanese agricultural data — farmland polygons (eMAFF), 1 
 
 ## Status
 
-Pre-1.0, **experimental**. Tool names, prompt names, and resource URIs may change between minor versions until `1.0.0`. See [CHANGELOG.md](./CHANGELOG.md).
+**Stable since `1.0.0`**. Tool names, prompt names, resource URIs, and input/output schemas are frozen under SemVer. Breaking changes require a `2.0.0`. See [CHANGELOG.md](./CHANGELOG.md).
 
 | Phase | Version | Capabilities |
 |---|---|---|

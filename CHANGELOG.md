@@ -4,9 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Pre-`1.0.0` releases are explicitly **experimental**: tool names, input/output schemas, resource URIs, and prompt names may change between minor versions.
+From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt names are **stable** under Semantic Versioning. Breaking changes require a major version bump.
+
+Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
+
+## [1.0.0] — Stable — public surface frozen
+
+This release marks the first stable API surface. Tool names, prompt names, resource URIs, and input/output schemas are now frozen under SemVer. Breaking changes will require a `2.0.0`. The `0.x` series was explicitly experimental.
 
 ### Added
 - Added `docs/cloud-next26-agent-readiness.md`, mapping Google Cloud Next '26 Agent Platform, Smart Storage, Fraud Defense, and multi-AI security announcements to AgriOps MCP adoption decisions.
@@ -14,18 +20,18 @@ Pre-`1.0.0` releases are explicitly **experimental**: tool names, input/output s
 - Added optional `AGRIOPS_AGENT_ID_HEADER` / `AGRIOPS_AGENT_OWNER_HEADER` audit labels for trusted Agent Gateway or reverse-proxy deployments.
 - GitHub Actions workflows now opt JavaScript actions into Node.js 24 with `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` ahead of the GitHub-hosted runner Node 20 deprecation.
 - The OSSF Scorecard workflow now supports `workflow_dispatch`, so operators can manually re-trigger Scorecard analysis after transient flakes.
-- Added `tests/conformance/red-team.test.ts` (11 scenarios) that exercises prompt-injection / unbounded-`limit` / fractional-`limit` / path-traversal / oversized-input / secret-shaped-argument / size-cap / console-leak probes against the live MCP surface. Closes the "red-team conformance test" item in `docs/cloud-next26-agent-readiness.md`.
-- Added `docs/agent-gateway-deployment.md` with concrete reverse-proxy / Agent Gateway placement guidance (NGINX, Envoy, Cloud Armor, Gemini Enterprise Agent Gateway), an endpoint exposure matrix, identity-header propagation notes, and a verification checklist that reuses `npm run deploy:smoke`. Closes the "gateway deployment note" item in `docs/cloud-next26-agent-readiness.md`.
-- Added `examples/agent-workflow/` — a deterministic, key-free reference plan that drives `search_farmland → get_weather_1km → get_pesticide_rules → open_dashboard` end-to-end and links it to Anthropic Claude / Google Gemini / OpenAI / ADK tool-use loops. Closes the "example agent" item in `docs/cloud-next26-agent-readiness.md`.
+- Added `tests/conformance/red-team.test.ts` (11 scenarios) that exercises prompt-injection / unbounded-`limit` / fractional-`limit` / path-traversal / oversized-input / secret-shaped-argument / size-cap / console-leak probes against the live MCP surface.
+- Added `docs/agent-gateway-deployment.md` with concrete reverse-proxy / Agent Gateway placement guidance (NGINX, Envoy, Cloud Armor, Gemini Enterprise Agent Gateway), an endpoint exposure matrix, identity-header propagation notes, and a verification checklist.
+- Added `examples/agent-workflow/` — a deterministic, key-free reference plan for `search_farmland → get_weather_1km → get_pesticide_rules → open_dashboard` with wiring guidance for Anthropic Claude / Google Gemini / OpenAI / ADK tool-use loops.
 
 ### Changed
-- The OSSF Scorecard workflow's `Run analysis` step is now `continue-on-error`. SARIF is still uploaded to GitHub Code Scanning whenever the binary produced it, but transient `scorecard-action` failures no longer turn the entire workflow red on every `push`. A workflow-level warning annotation is emitted whenever Scorecard analysis exits non-zero so the issue stays visible for the weekly `schedule` and `workflow_dispatch` retries.
-- `examples/stdio-typescript/run.mjs` now resolves the bundled server entry point via `fileURLToPath` instead of `URL.pathname`, fixing a Windows-only "Connection closed" failure caused by leading-slash drive paths.
+- The OSSF Scorecard workflow's `Run analysis` step is now `continue-on-error`. SARIF is still uploaded to GitHub Code Scanning whenever the binary produced it, with a `::warning::` annotation on non-zero exit.
+- `examples/stdio-typescript/run.mjs` now resolves the bundled server entry point via `fileURLToPath`, fixing a Windows-only "Connection closed" failure.
 
 ### Fixed
 - `deploy:smoke` now supports `--expected-version`, and the Cloud Run deploy workflow uses it to fail fast if post-deploy smoke is still hitting an older revision.
 - Bumped `ossf/scorecard-action` from `v2.4.0` to `v2.4.3` (Scorecard `v5.0.0` → `v5.3.0`).
-- `surface-catalog.ts` now records `introduced: "0.5.1"` for `get_weather_warning`, matching when the JMA tool actually shipped (it was incorrectly tagged `0.6.0`, which would have placed it in a future release window).
+- `surface-catalog.ts` now records `introduced: "0.5.1"` for `get_weather_warning`, matching when the JMA tool actually shipped.
 
 ## [0.5.2] — Patch — production deploy hardening
 
@@ -175,7 +181,8 @@ Pre-`1.0.0` releases are explicitly **experimental**: tool names, input/output s
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v0.5.2...v1.0.0
 [0.5.2]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/WIN-kagoshima/agriops-mcp/releases/tag/v0.5.0

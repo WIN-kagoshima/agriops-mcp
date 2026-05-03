@@ -110,7 +110,7 @@ export function createServer(options: CreateServerOptions): {
         "This server exposes Japanese agricultural data — farmland polygons (eMAFF), 1 km mesh weather (Open-Meteo), and pesticide registrations (FAMIC).",
         "Cross-tool patterns: use `search_farmland` to get a `field_id`, then `get_weather_1km` with the field's centroid for site-specific weather, then `get_pesticide_rules` for the registered crop.",
         "All data sources include a license attribution string in `structuredContent.attribution`. Surface it when summarising the data to end users.",
-        "Pre-1.0 the surface is experimental: tool names and shapes may change between minor versions.",
+        "Stable since 1.0.0: tool names, resource URIs, prompt names, and input/output schemas are frozen under SemVer.",
       ].join(" "),
     },
   );

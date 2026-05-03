@@ -9,7 +9,7 @@ AgriOps MCP は、日本の農業データ（eMAFF 筆ポリゴン、Open-Meteo 
 
 ## ステータス
 
-`1.0.0` 未満は **experimental**。`1.0.0` 到達まではマイナーバージョン間でツール名・引数・リソース URI が変わる可能性があります。詳細は [CHANGELOG.md](./CHANGELOG.md)。
+**`1.0.0` から安定版**。ツール名・プロンプト名・リソース URI・入出力スキーマは SemVer のもと凍結されています。破壊的変更は `2.0.0` 以降。詳細は [CHANGELOG.md](./CHANGELOG.md)。
 
 | Phase | バージョン | 主な機能 |
 |---|---|---|

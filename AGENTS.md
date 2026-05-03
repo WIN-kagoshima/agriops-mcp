@@ -1,4 +1,4 @@
-# AGENTS.md
+﻿# AGENTS.md
 
 This file is the entry point for **AI coding assistants** (Cursor Composer/Agent, Claude Code, OpenAI Codex CLI, etc.) working in this repository. Read it before doing anything else.
 
@@ -56,10 +56,12 @@ The current phase is encoded in `package.json` `version`:
 | `0.3.x` | Phase 3 | + Elicitation Form mode |
 | `0.4.x` | Phase 4 | + Elicitation URL mode + OAuth Client Credentials |
 | `0.5.x` | Phase 5 | + MCP Apps UI dashboard |
-| `0.6.x` | Phase 6 | + Tasks primitive (out of current scope) |
-| `1.0.0` | Stable | Tool/resource/prompt names frozen under SemVer |
+| `0.6.x` | Phase 6 | + Tasks primitive (future) |
+| **`1.0.0`** | **Stable — current** | **Surface frozen. 17 tools, 5 prompts, 1 resource.** |
+| `1.x.x` | Stable+ | Additive only (new tools/prompts/resources). No renames or removals. |
+| `2.0.0+` | Next major | Breaking surface changes allowed. |
 
-Until `1.0.0` the surface is explicitly **experimental**.
+From `1.0.0` the surface is **stable** under SemVer. Breaking changes require a major version bump. Add new tools/prompts/resources — do not rename or remove published ones.
 
 ## Where things live
 

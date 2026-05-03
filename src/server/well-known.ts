@@ -109,7 +109,7 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
       core: "2025-11-25",
       apps: "2026-01-26",
     },
-    experimental: true,
+    experimental: false,
   };
 }
 
