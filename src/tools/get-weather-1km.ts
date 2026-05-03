@@ -57,6 +57,7 @@ export function registerGetWeather1km(server: McpServer, deps: Deps): void {
         "An `attribution` string MUST be quoted when surfacing the data to end users. " +
         "Read-only and idempotent; safe to retry.",
       inputSchema: inputSchema.shape,
+      outputSchema: WeatherForecastSchema.shape,
       annotations: getToolAnnotations(meta.name),
     },
     async (raw: unknown) => {

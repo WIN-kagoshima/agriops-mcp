@@ -55,6 +55,7 @@ export function registerSearchFarmland(server: McpServer, deps: Deps): void {
         "Search Japanese farmland (eMAFF Fude polygons) by address, prefecture, municipality, or registered crop. " +
         "Read-only. Returns up to 100 polygons per call with a `nextCursor` for pagination.",
       inputSchema: baseSchema.shape,
+      outputSchema: FarmlandSearchResultSchema.shape,
       annotations: getToolAnnotations(meta.name),
     },
     async (raw: unknown) => {

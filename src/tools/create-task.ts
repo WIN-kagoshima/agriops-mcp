@@ -32,9 +32,31 @@ export const inputSchema = z
           "for the given prefecture/city codes asynchronously.",
       ),
     args: z
-      .record(z.unknown())
+      .object({
+        prefecture_code: z
+          .string()
+          .regex(/^JP-\d{2}$/)
+          .optional()
+          .describe("Required for area_summary_async. ISO 3166-2:JP prefecture code, e.g. JP-46."),
+        city_code: z
+          .string()
+          .regex(/^\d{5}$/)
+          .optional()
+          .describe("Required for area_summary_async. Five-digit municipality code."),
+        delay_ms: z
+          .number()
+          .int()
+          .min(0)
+          .max(5000)
+          .optional()
+          .describe(
+            "For echo tasks only: artificial delay in milliseconds (0–5000). Defaults to 200.",
+          ),
+      })
       .optional()
-      .describe("Kind-specific arguments passed verbatim to the task handler."),
+      .describe(
+        "Kind-specific arguments. For echo: delay_ms. For area_summary_async: prefecture_code and/or city_code.",
+      ),
   })
   .strict();
 
@@ -74,7 +96,7 @@ export function registerCreateTask(server: McpServer, deps: Deps): void {
       const task = deps.taskStore.create(kind);
 
       // Kick off the work in the background (non-blocking).
-      runTask(task.id, kind, args ?? {}, deps).catch((err) => {
+      runTask(task.id, kind, args ?? {}, deps).catch((err: unknown) => {
         deps.logger.error("Background task failed", { taskId: task.id, kind, error: String(err) });
       });
 
@@ -105,12 +127,9 @@ export function registerCreateTask(server: McpServer, deps: Deps): void {
  * Dispatcher: runs the appropriate handler for each task kind.
  * Called asynchronously — errors are caught by the caller.
  */
-async function runTask(
-  taskId: string,
-  kind: TaskKind,
-  args: Record<string, unknown>,
-  deps: Deps,
-): Promise<void> {
+type TaskArgs = NonNullable<CreateTaskInput["args"]>;
+
+async function runTask(taskId: string, kind: TaskKind, args: TaskArgs, deps: Deps): Promise<void> {
   const store = deps.taskStore;
   if (!store) return;
 
@@ -121,7 +140,7 @@ async function runTask(
 
     if (kind === "echo") {
       // Minimal delay so callers can observe the pending → running → done transition.
-      const delayMs = typeof args.delay_ms === "number" ? Math.min(args.delay_ms, 5000) : 200;
+      const delayMs = args.delay_ms ?? 200;
       await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
       result = { echoed: args, delay_ms: delayMs };
     } else if (kind === "area_summary_async") {
@@ -129,8 +148,8 @@ async function runTask(
         throw new Error("eMAFF adapter is not available — cannot run area_summary_async.");
       }
       result = await deps.emaff.areaSummary({
-        prefectureCode: typeof args.prefecture_code === "string" ? args.prefecture_code : undefined,
-        cityCode: typeof args.city_code === "string" ? args.city_code : undefined,
+        prefectureCode: args.prefecture_code,
+        cityCode: args.city_code,
       });
     } else {
       const _exhaustive: never = kind;

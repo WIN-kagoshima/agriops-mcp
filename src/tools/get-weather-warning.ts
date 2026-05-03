@@ -39,6 +39,23 @@ const SEVERITY_RANK: Record<JmaWarning["severity"], number> = {
   tokubetsu: 3,
 };
 
+const JmaWarningItemSchema = z.object({
+  prefectureCode: z.string(),
+  areaName: z.string(),
+  kind: z.string(),
+  severity: z.enum(["tokubetsu", "warning", "advisory", "info"]),
+  issuedAt: z.string(),
+  sourceUrl: z.string(),
+  headline: z.string().nullable(),
+});
+
+const outputSchema = z.object({
+  warnings: z.array(JmaWarningItemSchema),
+  fetchedAt: z.string(),
+  attribution: z.string(),
+  count: z.number().int(),
+});
+
 export function registerGetWeatherWarning(server: McpServer, deps: Deps): void {
   if (!deps.jma) return;
   const jma = deps.jma;
@@ -53,6 +70,7 @@ export function registerGetWeatherWarning(server: McpServer, deps: Deps): void {
         "treat the result as real-time. The `attribution` string MUST be cited when surfacing data to " +
         "end users. Read-only.",
       inputSchema: inputSchema.shape,
+      outputSchema: outputSchema.shape,
       annotations: getToolAnnotations(meta.name),
     },
     async (raw: unknown) => {

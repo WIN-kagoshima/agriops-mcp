@@ -34,12 +34,14 @@ interface JmaWarningOptions {
   feedUrl?: string;
   logger?: Logger;
   fetchImpl?: typeof fetch;
+  version?: string;
 }
 
 export class JmaWarningAdapter implements JmaAdapter {
   private readonly feedUrl: string;
   private readonly logger: Logger | undefined;
   private readonly fetchImpl: typeof fetch;
+  private readonly version: string;
   private readonly cache = new TtlCache<string, JmaWarning[]>(CACHE_TTL_MS);
   private fetchedAt: string | null = null;
 
@@ -47,6 +49,7 @@ export class JmaWarningAdapter implements JmaAdapter {
     this.feedUrl = options.feedUrl ?? FEED_URL;
     this.logger = options.logger;
     this.fetchImpl = options.fetchImpl ?? fetch;
+    this.version = options.version ?? "0.0.0";
   }
 
   async getActiveWarnings(input: { prefectureCode?: string }): Promise<{
@@ -87,7 +90,7 @@ export class JmaWarningAdapter implements JmaAdapter {
       res = await this.fetchImpl(this.feedUrl, {
         headers: {
           accept: "application/atom+xml, application/xml;q=0.9",
-          "user-agent": "agriops-mcp/0.5.1 (+https://github.com/WIN-kagoshima/agriops-mcp)",
+          "user-agent": `agriops-mcp/${this.version} (+https://github.com/WIN-kagoshima/agriops-mcp)`,
         },
       });
     } catch (err) {

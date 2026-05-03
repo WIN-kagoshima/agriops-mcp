@@ -73,6 +73,7 @@ export function createServer(options: CreateServerOptions): {
         ? overrides.jma
         : new JmaWarningAdapter({
             logger: logger.child({ component: "jma" }),
+            version,
           }),
     emaff,
     famic,

@@ -10,6 +10,15 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+### Added
+- **`snapshot_status` tool** (phase 5, model-visible, read-only): reports freshness, row counts, and attribution for eMAFF/FAMIC SQLite snapshots by reading their companion manifest JSON files. Returns `ageHours`, `stale` flag, `lastIncrementalAt`, and attribution for each snapshot. Accepts a configurable `staleAfterHours` threshold (default: 2160 h / 90 days). Enables agents to verify data currency before making time-sensitive agricultural decisions.
+- **`outputSchema` on four core tools**: `get_weather_1km`, `search_farmland`, `area_summary`, and `get_weather_warning` now declare `outputSchema` in their `registerTool` config. Hosts that support the MCP 2025-03-26 spec can validate/parse structured tool output without relying on free-text content.
+- **`create_task` args schema tightened**: `args` field changed from `Record<string, unknown>` to a typed Zod object with `prefecture_code`, `city_code`, and `delay_ms` properties, each with regex/range validation. Removes implicit `as unknown` casts and improves LLM hint quality.
+- **JMA user-agent version is now dynamic**: `JmaWarningAdapter` accepts an optional `version` parameter (passed from `create-server.ts` via `deps.version`) and uses it in the `User-Agent` header instead of the previously hardcoded `0.5.1`.
+
+### Changed
+- `surface-catalog.ts`: added `snapshot_status` tool metadata entry (`introduced: "1.2.0"`, `read-only`, `model` visibility).
+
 ## [1.1.0] — 2026-05-03 — Agri metrics, Tasks Primitive, eMAFF incremental, ADK example
 
 ### Added

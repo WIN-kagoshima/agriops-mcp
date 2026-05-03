@@ -21,6 +21,7 @@ import { registerGetWeatherWarning } from "./get-weather-warning.js";
 import { registerNearbyFarms } from "./nearby-farms.js";
 import { registerOpenDashboard } from "./open-dashboard.js";
 import { registerSearchFarmland } from "./search-farmland.js";
+import { registerSnapshotStatus } from "./snapshot-status.js";
 
 /**
  * Single source of truth for tool registration.
@@ -109,7 +110,8 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   reg("create_task", () => registerCreateTask(server, deps));
   reg("get_task_status", () => registerGetTaskStatus(server, deps));
 
-  // ----- Phase 5 — MCP Apps UI dashboard -----
+  // ----- Phase 5 — snapshot freshness + MCP Apps UI dashboard -----
+  reg("snapshot_status", () => registerSnapshotStatus(server, deps));
   reg("open_dashboard", () => registerOpenDashboard(server, deps));
 
   // ----- Phase 5 app-only helpers (LLM-invisible) -----

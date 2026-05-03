@@ -132,6 +132,12 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     annotations: DRAFT_NON_IDEMPOTENT,
   },
   // ----- Phase 5 -----
+  snapshot_status: {
+    sideEffect: "read-only",
+    introduced: "1.2.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
   open_dashboard: {
     sideEffect: "read-only",
     introduced: "0.5.0",
