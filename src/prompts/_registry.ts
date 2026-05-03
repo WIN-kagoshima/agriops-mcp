@@ -7,12 +7,14 @@ import { registerFieldSummaryPrompt } from "./field-summary.js";
 import { registerFieldVisitChecklistPrompt } from "./field-visit-checklist.js";
 import { registerHarvestReadinessPrompt } from "./harvest-readiness.js";
 import { registerIrrigationSchedulePrompt } from "./irrigation-schedule.js";
+import { registerMarketTrendBriefingPrompt } from "./market-trend-briefing.js";
 import { registerPesticideAdvicePrompt } from "./pesticide-advice.js";
+import { registerRegionDispatchDemandPrompt } from "./region-dispatch-demand.js";
 import { registerStaffDeployPlanPrompt } from "./staff-deploy-plan.js";
 import { registerWeatherRiskAlertPrompt } from "./weather-risk-alert.js";
 
 /**
- * 10 user-controlled prompts (slash commands). They are exposed
+ * 12 user-controlled prompts (slash commands). They are exposed
  * unconditionally; the underlying tools they reference may not be available
  * in early phases, in which case the prompt simply tells the LLM to
  * apologise and explain what is missing.
@@ -30,6 +32,8 @@ export function registerAllPrompts(server: McpServer, deps: Deps): string[] {
   registerHarvestReadinessPrompt(server, deps);
   registerDailyBriefingPrompt(server, deps);
   registerFieldVisitChecklistPrompt(server, deps);
+  registerMarketTrendBriefingPrompt(server, deps);
+  registerRegionDispatchDemandPrompt(server, deps);
   return [
     "field_summary",
     "pesticide_advice",
@@ -41,5 +45,7 @@ export function registerAllPrompts(server: McpServer, deps: Deps): string[] {
     "harvest_readiness",
     "daily_briefing",
     "field_visit_checklist",
+    "market_trend_briefing",
+    "region_dispatch_demand",
   ];
 }

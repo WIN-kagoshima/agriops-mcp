@@ -7,7 +7,7 @@ import { createLogger } from "../../src/lib/logger.js";
 import { createServer } from "../../src/server/create-server.js";
 
 describe("Prompts", () => {
-  it("exposes all 10 prompts", async () => {
+  it("exposes all 12 prompts", async () => {
     const config = loadConfig();
     const logger = createLogger({ level: "warn" });
     const { server } = createServer({
@@ -36,9 +36,11 @@ describe("Prompts", () => {
         "harvest_readiness",
         "daily_briefing",
         "field_visit_checklist",
+        "market_trend_briefing",
+        "region_dispatch_demand",
       ]),
     );
-    expect(names).toHaveLength(10);
+    expect(names).toHaveLength(12);
 
     await client.close();
     await server.close();

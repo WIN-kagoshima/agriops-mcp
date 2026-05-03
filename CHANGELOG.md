@@ -10,6 +10,22 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-05-04 — Sugu-kuru regional expansion: Kyushu / Shikoku / Tokai + market data
+
+### Added
+- **`get_market_price` tool**: Reference wholesale price data for 13 agricultural products and timber (野菜・果物・米・茶・花き・スギ丸太・ヒノキ丸太). Built-in seasonal price factors, regional origin notes, and ALIC / 林野庁 attribution. Supports Kyushu (JP-40…JP-47), Shikoku (JP-36…JP-39), and Tokai 3-pref (JP-21, JP-23, JP-24) origin filtering.
+- **`get_prefecture_crop_profile` tool**: Per-prefecture crop profile covering all 15 target prefectures. Each entry contains main crops ranked by output, harvest months, peak SSW labor months, labor intensity (low/medium/high/very_high), market notes, and a `ssw_dispatch_note` written specifically for Sugu-kuru dispatch decision-making.
+- **`crop_calendar` — 4 new crops**: すだち (with Shikoku-native windows including 徳島 harvest schedule), びわ (Shikoku window), 花き (with Tokai-native window for 愛知 year-round greenhouse operations). Total: **17 crops**.
+- **`crop_calendar` — `shikoku` and `tokai` regions**: Added native regional windows for `かんきつ` (Ehime 段々畑 specifics), `すだち` (Tokushima), `花き` (Aichi/Tokai year-round flower greenhouse). Other crops fall back to Kyushu base with ±shift.
+- **`market_trend_briefing` prompt**: Agent-driven market briefing that calls `get_market_price` + `crop_calendar` + `get_weather_1km` and produces a structured analysis: price trend summary table, harvest calendar for the month, SSW dispatch demand evaluation, and notable topics. Designed for Sugu-kuru weekly decision meetings.
+- **`region_dispatch_demand` prompt**: Multi-region SSW dispatch demand forecast. Calls `get_prefecture_crop_profile`, `get_market_price`, and `crop_calendar` across all specified prefectures and synthesizes a demand matrix, recommended deployment allocation, risks, and weekly action items. Direct support for Sugu-kuru's 九州全域 + 四国 + 東海3県 strategy.
+- **`well-known.ts`**: Added ALIC and 林野庁 to `data_sources` list.
+- **`surface-catalog.ts`**: Added Phase 7 entries for both new tools and both new prompts.
+
+### Changed
+- **`crop_calendar` region enum**: Added `"tokai"` as a named region alongside `"shikoku"`. Both now use native windows when available, falling back to Kyushu base with zero shift otherwise.
+- **`prompts.test.ts`**: Updated to expect 12 prompts (was 10) with new names included in `arrayContaining`.
+
 ## [1.5.1] — 2026-05-04 — crop_calendar expansion, README.ja.md refresh, data-freshness workflow
 
 ### Added
@@ -276,7 +292,8 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.5.1...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.3.0...v1.4.0

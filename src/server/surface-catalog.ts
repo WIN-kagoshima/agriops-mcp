@@ -247,6 +247,19 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     visibility: "model",
     annotations: READ_ONLY,
   },
+  // ----- Phase 7 — Sugu-kuru regional expansion + market data -----
+  get_market_price: {
+    sideEffect: "read-only",
+    introduced: "1.6.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
+  get_prefecture_crop_profile: {
+    sideEffect: "read-only",
+    introduced: "1.6.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
 };
 
 /**
@@ -275,6 +288,8 @@ export const PROMPT_METADATA: Record<string, PromptMetadata> = {
   harvest_readiness: { introduced: "1.4.0" },
   daily_briefing: { introduced: "1.5.0" },
   field_visit_checklist: { introduced: "1.5.0" },
+  market_trend_briefing: { introduced: "1.6.0" },
+  region_dispatch_demand: { introduced: "1.6.0" },
 };
 
 export const RESOURCE_METADATA: Record<string, ResourceMetadata> = {

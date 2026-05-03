@@ -104,6 +104,16 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
         license: "open-data",
         attribution: "FAMIC 農薬登録情報",
       },
+      {
+        name: "ALIC agricultural market price reference",
+        license: "open-data",
+        attribution: "農畜産業振興機構 (ALIC) 野菜情報・果実情報",
+      },
+      {
+        name: "Forestry Agency timber market reference",
+        license: "open-data",
+        attribution: "林野庁 木材需給報告書",
+      },
     ],
     spec: {
       core: "2025-11-25",
@@ -137,6 +147,7 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
       scenarios: 23,
       conformanceChecks: 11,
       lastRun: "2026-05-04",
+      note: "v1.6.0: +2 tools (get_market_price, get_prefecture_crop_profile), +2 prompts, crop_calendar expanded to 17 crops with shikoku/tokai native windows",
       repository: "https://github.com/WIN-kagoshima/agriops-mcp/tree/main/tests",
     },
     /** Container image for self-hosted deployments. */

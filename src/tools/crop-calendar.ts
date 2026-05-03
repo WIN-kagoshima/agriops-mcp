@@ -24,6 +24,7 @@ const inputSchema = z
         "tohoku",
         "kanto",
         "chubu",
+        "tokai",
         "kinki",
         "chugoku",
         "shikoku",
@@ -31,7 +32,12 @@ const inputSchema = z
         "okinawa",
       ])
       .optional()
-      .describe("Climate region. Defaults to kyushu. Shifts timing windows accordingly."),
+      .describe(
+        "Climate region. Defaults to kyushu. " +
+          "'shikoku' uses Ehime/Kochi-specific windows for citrus/yuzu. " +
+          "'tokai' uses Aichi/Mie-specific windows for cabbage/tea/flowers. " +
+          "Other regions shift kyushu timing by ±1 month.",
+      ),
   })
   .strict();
 
@@ -57,6 +63,7 @@ const SHIFT: Record<string, number> = {
   tohoku: 1,
   kanto: 0,
   chubu: 0,
+  tokai: 0,
   kinki: 0,
   chugoku: 0,
   shikoku: 0,
@@ -429,6 +436,193 @@ const CROP_DB: CropEntry[] = [
           notes: "品種により時期が異なる。早生〜晩生の順",
         },
       ],
+      shikoku: [
+        {
+          activity: "剪定（冬）",
+          startMonth: 1,
+          endMonth: 2,
+          notes: "愛媛の段々畑では急斜面作業。枯れ枝・強徒長枝を除去",
+        },
+        {
+          activity: "摘果（第 1 回）",
+          startMonth: 6,
+          endMonth: 7,
+          notes: "宇和島・松山地区の温州みかん。小玉・傷果を落とす",
+        },
+        {
+          activity: "防除（ミカンハダニ・黒点病）",
+          startMonth: 5,
+          endMonth: 9,
+          notes: "愛媛の主産地では有機JAS対応農家も多い。天敵利用も検討",
+        },
+        {
+          activity: "摘果（第 2 回）",
+          startMonth: 7,
+          endMonth: 8,
+          notes: "最終着果調整。せとか・伊予柑は第 2 回が重要",
+        },
+        {
+          activity: "着色管理・マルチ",
+          startMonth: 9,
+          endMonth: 10,
+          notes: "宇和海沿岸の急傾斜園でマルチ敷設。糖度向上",
+        },
+        {
+          activity: "収穫（温州ミカン）",
+          startMonth: 10,
+          endMonth: 11,
+          notes: "愛媛は早生品種が10月から。伊予柑は12〜2月",
+        },
+        {
+          activity: "収穫（せとか・デコポン）",
+          startMonth: 2,
+          endMonth: 3,
+          notes: "高糖度晩生品種。2〜3月が収穫最盛",
+        },
+      ],
+    },
+  },
+  {
+    crop: "すだち",
+    aliases: ["スダチ", "酢橘", "徳島すだち"],
+    windows: {
+      kyushu: [
+        { activity: "摘果", startMonth: 6, endMonth: 7, notes: "着果量調整で大玉化" },
+        { activity: "防除（カイガラムシ）", startMonth: 5, endMonth: 8, notes: "IPM対応薬剤選択" },
+        {
+          activity: "収穫（青果）",
+          startMonth: 8,
+          endMonth: 9,
+          notes: "青い状態で収穫。糖度より香りを重視",
+        },
+      ],
+      shikoku: [
+        {
+          activity: "剪定",
+          startMonth: 2,
+          endMonth: 3,
+          notes: "徳島産地の剪定適期。樹冠内部の採光確保",
+        },
+        { activity: "摘果", startMonth: 6, endMonth: 7, notes: "着果量調整。摘果後に追肥" },
+        {
+          activity: "防除（カイガラムシ・黒点病）",
+          startMonth: 5,
+          endMonth: 8,
+          notes: "鳴門・板野地区の慣行防除体系を確認",
+        },
+        {
+          activity: "収穫（青果・最盛期）",
+          startMonth: 8,
+          endMonth: 9,
+          notes: "全国産出の98%が徳島産。8〜9月に収穫集中。手摘みのみ",
+        },
+        {
+          activity: "収穫（黄熟果）",
+          startMonth: 10,
+          endMonth: 11,
+          notes: "果皮が黄色くなった熟果。加工用・搾り汁向け",
+        },
+      ],
+    },
+  },
+  {
+    crop: "びわ",
+    aliases: ["ビワ", "枇杷", "loquat"],
+    windows: {
+      kyushu: [
+        {
+          activity: "摘蕾・摘花",
+          startMonth: 10,
+          endMonth: 11,
+          notes: "着果調整。収量×品質のバランス",
+        },
+        {
+          activity: "袋掛け",
+          startMonth: 1,
+          endMonth: 2,
+          notes: "寒さ・鳥害防止。大玉化のために1果房1袋",
+        },
+        {
+          activity: "収穫",
+          startMonth: 5,
+          endMonth: 6,
+          notes: "長崎・熊本が九州の主産地。着色が均一になったら収穫",
+        },
+      ],
+      shikoku: [
+        { activity: "摘蕾・摘花", startMonth: 10, endMonth: 11, notes: "着果数を房ごとに制限" },
+        { activity: "袋掛け", startMonth: 12, endMonth: 1, notes: "防寒・防鳥。愛媛では1月に実施" },
+        {
+          activity: "収穫",
+          startMonth: 5,
+          endMonth: 6,
+          notes: "愛媛・高知のびわは5〜6月収穫。手摘みで丁寧に",
+        },
+      ],
+    },
+  },
+  {
+    crop: "花き",
+    aliases: ["花卉", "切り花", "菊", "キク", "百合", "ユリ", "バラ", "flowers"],
+    windows: {
+      kyushu: [
+        {
+          activity: "定植（秋冬作）",
+          startMonth: 8,
+          endMonth: 10,
+          notes: "ハウスでの秋冬菊・百合の定植",
+        },
+        {
+          activity: "電照（菊の電照管理）",
+          startMonth: 10,
+          endMonth: 1,
+          notes: "開花調整のための夜間照明。出荷日から逆算して設定",
+        },
+        {
+          activity: "収穫・調製（通年）",
+          startMonth: 1,
+          endMonth: 12,
+          notes: "通年でハウス収穫。需要期前後は増員対応",
+        },
+        {
+          activity: "収穫ピーク（盆向け）",
+          startMonth: 7,
+          endMonth: 8,
+          notes: "8/13〜15の盆需要で最大出荷",
+        },
+        {
+          activity: "収穫ピーク（正月向け）",
+          startMonth: 12,
+          endMonth: 1,
+          notes: "年末年始の贈答需要で高単価",
+        },
+      ],
+      tokai: [
+        {
+          activity: "定植（菊・バラ・洋ラン）",
+          startMonth: 1,
+          endMonth: 12,
+          notes: "愛知の花き農家は通年栽培。渥美半島に集積。月ごとに品目ローテーション",
+        },
+        {
+          activity: "電照・遮光管理",
+          startMonth: 1,
+          endMonth: 12,
+          notes: "開花日をコントロールする光管理が年間を通じて必要",
+        },
+        {
+          activity: "収穫・調製（通年）",
+          startMonth: 1,
+          endMonth: 12,
+          notes: "切り花の収穫・水揚げ・調製・箱詰めが毎日発生。SSWの通年雇用が可能",
+        },
+        {
+          activity: "出荷ピーク（彼岸・盆・正月）",
+          startMonth: 3,
+          endMonth: 3,
+          notes: "春彼岸（3月）・お盆（8月）・正月（12〜1月）が最繁忙。出荷量2〜3倍増",
+        },
+      ],
     },
   },
   {
@@ -514,7 +708,8 @@ export function registerCropCalendar(server: McpServer, _deps: Deps): void {
       description:
         "Returns a month-by-month farming calendar for a given crop and climate region. " +
         "Covers sowing, transplanting, pest control windows, and harvest timing. " +
-        "Built-in database covers 13 crops (稲, さつまいも, キャベツ, トマト, 茶, ナス, きゅうり, たまねぎ, 大豆, じゃがいも, さとうきび, かんきつ, とうもろこし) with regional time-shifts for other areas. " +
+        "Built-in database covers 17 crops (稲, さつまいも, キャベツ, トマト, 茶, ナス, きゅうり, たまねぎ, 大豆, じゃがいも, さとうきび, かんきつ, とうもろこし, すだち, びわ, 花き) " +
+        "with native windows for 'shikoku' (citrus/sudachi/loquat) and 'tokai' (flowers/cabbage). " +
         "Read-only and idempotent.",
       inputSchema: inputSchema.shape,
       outputSchema: outputSchema.shape,
@@ -557,8 +752,8 @@ export function registerCropCalendar(server: McpServer, _deps: Deps): void {
         };
       }
 
-      const baseWindows = entry.windows.kyushu ?? [];
-      const shift = SHIFT[selectedRegion] ?? 0;
+      const baseWindows = entry.windows[selectedRegion] ?? entry.windows.kyushu ?? [];
+      const shift = entry.windows[selectedRegion] ? 0 : (SHIFT[selectedRegion] ?? 0);
       const calendar = baseWindows.map((w) => ({
         activity: w.activity,
         startMonth: clampMonth(w.startMonth + shift),

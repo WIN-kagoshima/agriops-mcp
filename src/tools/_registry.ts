@@ -16,7 +16,9 @@ import { registerCreateStaffDeployPlan } from "./create-staff-deploy-plan.js";
 import { registerCreateTask } from "./create-task.js";
 import { registerCropCalendar } from "./crop-calendar.js";
 import { registerFieldWeatherReport } from "./field-weather-report.js";
+import { registerGetMarketPrice } from "./get-market-price.js";
 import { registerGetPesticideRules } from "./get-pesticide-rules.js";
+import { registerGetPrefectureCropProfile } from "./get-prefecture-crop-profile.js";
 import { registerGetTaskStatus } from "./get-task-status.js";
 import { registerGetWeather1km } from "./get-weather-1km.js";
 import { registerGetWeatherWarning } from "./get-weather-warning.js";
@@ -114,6 +116,10 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   // ----- Phase 4 — async task management -----
   reg("create_task", () => registerCreateTask(server, deps));
   reg("get_task_status", () => registerGetTaskStatus(server, deps));
+
+  // ----- Phase 7 — Sugu-kuru regional expansion + market data -----
+  reg("get_market_price", () => registerGetMarketPrice(server, deps));
+  reg("get_prefecture_crop_profile", () => registerGetPrefectureCropProfile(server, deps));
 
   // ----- Phase 6 — user-facing agricultural decision tools -----
   reg("crop_calendar", () => registerCropCalendar(server, deps));
