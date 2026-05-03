@@ -13,6 +13,8 @@ import {
 } from "./app-only/index.js";
 import { registerAreaSummary } from "./area-summary.js";
 import { registerCreateStaffDeployPlan } from "./create-staff-deploy-plan.js";
+import { registerCreateTask } from "./create-task.js";
+import { registerGetTaskStatus } from "./get-task-status.js";
 import { registerGetPesticideRules } from "./get-pesticide-rules.js";
 import { registerGetWeather1km } from "./get-weather-1km.js";
 import { registerGetWeatherWarning } from "./get-weather-warning.js";
@@ -102,6 +104,10 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   if (deps.emaff) {
     reg("create_staff_deploy_plan", () => registerCreateStaffDeployPlan(server, deps));
   }
+
+  // ----- Phase 4 — async task management -----
+  reg("create_task", () => registerCreateTask(server, deps));
+  reg("get_task_status", () => registerGetTaskStatus(server, deps));
 
   // ----- Phase 5 — MCP Apps UI dashboard -----
   reg("open_dashboard", () => registerOpenDashboard(server, deps));

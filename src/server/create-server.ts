@@ -6,6 +6,7 @@ import { JmaWarningAdapter } from "../adapters/weather/jma-warning.js";
 import { OpenMeteoWeatherAdapter } from "../adapters/weather/open-meteo.js";
 import { InMemoryTokenStore } from "../auth/token-store.js";
 import { InMemoryElicitationStore } from "../elicitation/store.js";
+import { InMemoryTaskStore } from "../tasks/index.js";
 import type { Config } from "../lib/config.js";
 import type { Logger } from "../lib/logger.js";
 import { registerAllPrompts } from "../prompts/_registry.js";
@@ -78,6 +79,7 @@ export function createServer(options: CreateServerOptions): {
     tokenStore: overrides?.tokenStore ?? new InMemoryTokenStore(),
     elicitationStore: overrides?.elicitationStore ?? new InMemoryElicitationStore(),
     metrics: overrides?.metrics,
+    taskStore: overrides?.taskStore ?? new InMemoryTaskStore(),
   };
 
   if (!emaff) {

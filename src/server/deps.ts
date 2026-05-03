@@ -9,6 +9,7 @@ import type { ElicitationStore } from "../elicitation/store.js";
 import type { Config } from "../lib/config.js";
 import type { Logger } from "../lib/logger.js";
 import type { Metrics } from "./metrics.js";
+import type { TaskStore } from "../tasks/index.js";
 
 /**
  * Dependency container injected into every tool/prompt.
@@ -33,6 +34,12 @@ export interface Deps {
    * a transport.
    */
   metrics?: Metrics;
+  /**
+   * Task store for long-running async tool operations. Defaults to an
+   * in-process `InMemoryTaskStore`; replace with a persistent backend
+   * (Cloud Firestore, etc.) for multi-replica deployments.
+   */
+  taskStore?: TaskStore;
   /** ISO timestamp when the server was created — used in attribution lines and Server Card. */
   bootedAt: string;
   /** Server SemVer from package.json. */

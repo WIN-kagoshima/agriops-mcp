@@ -192,6 +192,24 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     visibility: "app",
     annotations: READ_ONLY,
   },
+  // ----- Phase 4 — async task management -----
+  create_task: {
+    sideEffect: "mutating",
+    introduced: "1.1.0",
+    visibility: "model",
+    annotations: {
+      readOnlyHint: false,
+      idempotentHint: false,
+      openWorldHint: false,
+      destructiveHint: false,
+    },
+  },
+  get_task_status: {
+    sideEffect: "read-only",
+    introduced: "1.1.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
 };
 
 /**
@@ -222,6 +240,11 @@ export const RESOURCE_METADATA: Record<string, ResourceMetadata> = {
     title: "AgriOps MCP map dashboard",
     introduced: "0.5.0",
     mimeType: "text/html",
+  },
+  "tasks://{task_id}": {
+    title: "Background task status",
+    introduced: "1.1.0",
+    mimeType: "application/json",
   },
 };
 
