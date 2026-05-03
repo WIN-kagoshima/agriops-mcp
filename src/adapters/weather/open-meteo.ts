@@ -24,6 +24,10 @@ interface OpenMeteoForecastResponse {
     precipitation: number[];
     wind_speed_10m: number[];
     relative_humidity_2m: number[];
+    // Agri indicators (optional — present when requested)
+    et0_fao_evapotranspiration?: number[];
+    soil_temperature_0cm?: number[];
+    soil_moisture_0_to_1cm?: number[];
   };
 }
 
@@ -78,7 +82,8 @@ export class OpenMeteoWeatherAdapter implements WeatherAdapter {
     url.searchParams.set("longitude", input.lng.toFixed(4));
     url.searchParams.set(
       "hourly",
-      "temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m",
+      "temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m," +
+        "et0_fao_evapotranspiration,soil_temperature_0cm,soil_moisture_0_to_1cm",
     );
     url.searchParams.set("timezone", input.timezone ?? "Asia/Tokyo");
     url.searchParams.set("forecast_hours", String(input.hours));
@@ -126,6 +131,15 @@ export class OpenMeteoWeatherAdapter implements WeatherAdapter {
         precipitationMm: hourly.precipitation[i] ?? 0,
         windSpeedMs: hourly.wind_speed_10m[i] ?? 0,
         relativeHumidity: hourly.relative_humidity_2m[i] ?? 0,
+        ...(hourly.et0_fao_evapotranspiration !== undefined
+          ? { et0EvapotranspirationMm: hourly.et0_fao_evapotranspiration[i] }
+          : {}),
+        ...(hourly.soil_temperature_0cm !== undefined
+          ? { soilTemperatureC: hourly.soil_temperature_0cm[i] }
+          : {}),
+        ...(hourly.soil_moisture_0_to_1cm !== undefined
+          ? { soilMoisture: hourly.soil_moisture_0_to_1cm[i] }
+          : {}),
       })),
       alerts: [],
     };

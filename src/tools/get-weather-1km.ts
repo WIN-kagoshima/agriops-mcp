@@ -50,8 +50,11 @@ export function registerGetWeather1km(server: McpServer, deps: Deps): void {
       title: "Get 1 km mesh weather forecast",
       description:
         "Returns an hourly weather forecast for the given (lat, lng). Phase 0 uses Open-Meteo (free, CC-BY 4.0). " +
-        "The result includes temperature, precipitation, wind, and relative humidity for up to 168 hours, " +
-        "plus an `attribution` string that MUST be quoted when surfacing the data to end users. " +
+        "The result includes temperature, precipitation, wind, and relative humidity for up to 168 hours. " +
+        "Agricultural indicators are also included: ET₀ evapotranspiration (mm, FAO-56 Penman-Monteith, " +
+        "key for irrigation scheduling), soil temperature at 0 cm (°C, for germination/root decisions), " +
+        "and volumetric soil moisture 0–1 cm (m³/m³, for field operation timing). " +
+        "An `attribution` string MUST be quoted when surfacing the data to end users. " +
         "Read-only and idempotent; safe to retry.",
       inputSchema: inputSchema.shape,
       annotations: getToolAnnotations(meta.name),
@@ -120,9 +123,26 @@ function summarise(f: import("../types/weather.js").WeatherForecast): string {
   const minT = temps.length ? Math.min(...temps).toFixed(1) : "?";
   const maxT = temps.length ? Math.max(...temps).toFixed(1) : "?";
   const totalRain = f.hourly.reduce((acc, h) => acc + (h.precipitationMm || 0), 0).toFixed(1);
-  return [
+
+  const lines = [
     `Forecast for (${f.location.lat.toFixed(3)}, ${f.location.lng.toFixed(3)}, tz=${f.location.timezone}),`,
     `${f.hourly.length} hourly points from ${first.time} to ${last.time}.`,
     `Range: ${minT}°C to ${maxT}°C, total precipitation ${totalRain} mm.`,
-  ].join(" ");
+  ];
+
+  // Agri indicators — append when present in the response.
+  const et0Values = f.hourly
+    .map((h) => h.et0EvapotranspirationMm)
+    .filter((v): v is number => v !== undefined);
+  if (et0Values.length) {
+    const totalEt0 = et0Values.reduce((acc, v) => acc + v, 0).toFixed(1);
+    lines.push(`ET₀ evapotranspiration: ${totalEt0} mm total (${et0Values.length} h).`);
+  }
+  const latestSoilMoisture = [...f.hourly].reverse().find((h) => h.soilMoisture !== undefined)
+    ?.soilMoisture;
+  if (latestSoilMoisture !== undefined) {
+    lines.push(`Latest soil moisture (0–1 cm): ${latestSoilMoisture.toFixed(3)} m³/m³.`);
+  }
+
+  return lines.join(" ");
 }

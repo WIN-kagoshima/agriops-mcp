@@ -6,6 +6,28 @@ export const HourlyWeatherSchema = z.object({
   precipitationMm: z.number().min(0).describe("Precipitation, mm, over the previous hour."),
   windSpeedMs: z.number().min(0).describe("Wind speed at 10 m, m/s."),
   relativeHumidity: z.number().min(0).max(100).describe("Relative humidity, %."),
+  // Agri-specific indicators — present when the Open-Meteo agri parameter set is requested.
+  et0EvapotranspirationMm: z
+    .number()
+    .min(0)
+    .optional()
+    .describe(
+      "Reference evapotranspiration ET₀, mm (FAO-56 Penman-Monteith). " +
+        "Key for irrigation scheduling: actual crop ET = ET₀ × Kc (crop coefficient).",
+    ),
+  soilTemperatureC: z
+    .number()
+    .optional()
+    .describe("Soil temperature at 0 cm depth, °C. Affects germination and root activity."),
+  soilMoisture: z
+    .number()
+    .min(0)
+    .max(1)
+    .optional()
+    .describe(
+      "Volumetric soil water content in the 0–1 cm layer, m³/m³ (0 = bone dry, ~0.4 = saturated). " +
+        "Useful for deciding whether to irrigate or delay field operations.",
+    ),
 });
 
 export type HourlyWeather = z.infer<typeof HourlyWeatherSchema>;

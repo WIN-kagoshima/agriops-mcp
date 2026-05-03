@@ -37,6 +37,61 @@ describe("OpenMeteoWeatherAdapter", () => {
     expect(r.hourly).toHaveLength(2);
     expect(r.hourly[0]?.temperatureC).toBe(20.5);
     expect(r.location.timezone).toBe("Asia/Tokyo");
+    // Agri fields absent when server does not return them
+    expect(r.hourly[0]?.et0EvapotranspirationMm).toBeUndefined();
+    expect(r.hourly[0]?.soilMoisture).toBeUndefined();
+  });
+
+  it("parses agri indicators (ET₀, soil temperature, soil moisture) when present", async () => {
+    const fetchImpl = vi.fn(async () =>
+      ok({
+        latitude: 31.59,
+        longitude: 130.55,
+        timezone: "Asia/Tokyo",
+        hourly: {
+          time: ["2026-05-01T09:00", "2026-05-01T10:00"],
+          temperature_2m: [22, 23],
+          precipitation: [0, 0],
+          wind_speed_10m: [2, 2.5],
+          relative_humidity_2m: [60, 62],
+          et0_fao_evapotranspiration: [0.12, 0.14],
+          soil_temperature_0cm: [18.5, 19.0],
+          soil_moisture_0_to_1cm: [0.28, 0.27],
+        },
+      }),
+    );
+    const adapter = new OpenMeteoWeatherAdapter({ fetchImpl });
+
+    const r = await adapter.getForecast({ lat: 31.59, lng: 130.55, hours: 2 });
+
+    expect(r.hourly[0]?.et0EvapotranspirationMm).toBeCloseTo(0.12);
+    expect(r.hourly[1]?.et0EvapotranspirationMm).toBeCloseTo(0.14);
+    expect(r.hourly[0]?.soilTemperatureC).toBeCloseTo(18.5);
+    expect(r.hourly[0]?.soilMoisture).toBeCloseTo(0.28);
+  });
+
+  it("includes agri variables in the URL query string", async () => {
+    const fetchImpl = vi.fn(async () =>
+      ok({
+        latitude: 31.59,
+        longitude: 130.55,
+        timezone: "Asia/Tokyo",
+        hourly: {
+          time: ["2026-05-01T09:00"],
+          temperature_2m: [20],
+          precipitation: [0],
+          wind_speed_10m: [1],
+          relative_humidity_2m: [50],
+        },
+      }),
+    );
+    const adapter = new OpenMeteoWeatherAdapter({ fetchImpl });
+    await adapter.getForecast({ lat: 31.59, lng: 130.55, hours: 1 });
+
+    const calledUrl = String((fetchImpl.mock.calls[0] as unknown[])[0]);
+    expect(calledUrl).toContain("et0_fao_evapotranspiration");
+    expect(calledUrl).toContain("soil_temperature_0cm");
+    expect(calledUrl).toContain("soil_moisture_0_to_1cm");
   });
 
   it("caches subsequent identical calls within the TTL", async () => {
