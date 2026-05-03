@@ -17,6 +17,7 @@ import { registerCreateTask } from "./create-task.js";
 import { registerCropCalendar } from "./crop-calendar.js";
 import { registerFieldWeatherReport } from "./field-weather-report.js";
 import { registerGetLaborShortageStats } from "./get-labor-shortage-stats.js";
+import { registerGetLivestockRegionalStats } from "./get-livestock-regional-stats.js";
 import { registerGetMarketPrice } from "./get-market-price.js";
 import { registerGetPesticideRules } from "./get-pesticide-rules.js";
 import { registerGetPrefectureCropProfile } from "./get-prefecture-crop-profile.js";
@@ -128,6 +129,7 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   // ----- Phase 8 — SSW strategic intelligence layer -----
   reg("get_ssw_crop_compatibility", () => registerGetSswCropCompatibility(server, deps));
   reg("get_labor_shortage_stats", () => registerGetLaborShortageStats(server, deps));
+  reg("get_livestock_regional_stats", () => registerGetLivestockRegionalStats(server, deps));
 
   // ----- Phase 6 — user-facing agricultural decision tools -----
   reg("crop_calendar", () => registerCropCalendar(server, deps));

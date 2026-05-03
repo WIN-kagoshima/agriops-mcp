@@ -10,6 +10,20 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.9.0] — 2026-05-04 — 畜産×SSW戦略インテリジェンス (捕鳥・養豚・酪農・肉用牛)
+
+### Added
+- **`get_livestock_regional_stats` tool**: Prefecture-level livestock statistics based on 農林水産省 畜産統計調査 2023. Covers 4 sectors: broiler (ブロイラー/捕鳥), pig (養豚), beef cattle (肉用牛), dairy (酪農). For each sector: national rank, headcount, farm count, SSW compatibility score (0-100), key operations, and SSW dispatch notes. Key data: 鹿児島 #1 in broiler (1.5 billion birds/yr) + pig + beef cattle simultaneously — Sugu-kuru's home base is the most concentrated livestock region in Japan. Supports 17 prefectures including JP-00 national total.
+- **`get_ssw_crop_compatibility` expanded to livestock**: Added 4 畜産農業 entries:
+  - `ブロイラー（捕鳥）`: Score 78 — labor shortage score **20/20** (highest in all agriculture). Night-time bird catching (23:00–06:00) is the most automation-resistant, human-avoidance-prone operation in Japanese agriculture. Kagoshima/Miyazaki are #1/#2 nationally.
+  - `養豚（分娩補助）`: Score 64 — year-round employment possible. Kagoshima/Miyazaki #1/#2.
+  - `酪農（搾乳）`: Score 60 — ideal for SSW residency model (fixed daily schedule). Hokkaido 64% national share.
+  - `肉用牛（和牛飼養管理）`: Score 63 — branded wagyu (鹿児島黒牛・宮崎牛) farms have high payment capacity.
+
+### Changed
+- `surface-catalog.ts`: Phase 9 entry for `get_livestock_regional_stats`.
+- `package.json`: version bumped to `1.9.0`.
+
 ## [1.8.0] — 2026-05-04 — SSW Strategic Intelligence Layer (スグクル戦略室)
 
 ### Added

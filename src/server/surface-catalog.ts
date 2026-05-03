@@ -279,6 +279,12 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     visibility: "model",
     annotations: READ_ONLY,
   },
+  get_livestock_regional_stats: {
+    sideEffect: "read-only",
+    introduced: "1.9.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
 };
 
 /**

@@ -1,6 +1,6 @@
 {
   "name": "@win-kagoshima/agriops-mcp",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "AgriOps MCP server  EJapanese agricultural land + weather + pesticide data for SSW workforce dispatching. Reference implementation of MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.",
   "type": "module",
   "license": "Apache-2.0",

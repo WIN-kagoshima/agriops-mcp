@@ -311,6 +311,109 @@ const CROP_COMPATIBILITY_DB: CropCompatibility[] = [
     caveat: "収穫期間が極めて短く、前後の季節に他の作物と組み合わせる必要がある。",
     bestPrefectures: ["JP-30(和歌山)", "JP-43(熊本)"],
   },
+  // ===== 畜産 =====
+  {
+    crop: "ブロイラー（捕鳥・鶏舎管理）",
+    aliases: ["肉用鶏", "ブロイラー", "地鶏", "鶏", "捕鳥", "養鶏", "broiler", "poultry"],
+    sswCategory: "畜産農業",
+    scores: {
+      automationResistance: 20,
+      valueDensity: 14,
+      seasonalConcentration: 6,
+      skillAcquisitionSpeed: 18,
+      laborShortageLevel: 20,
+    },
+    totalScore: 78,
+    harvestMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    keyActivities: [
+      "捕鳥・出荷（深夜23時〜翌6時、約50〜70日ごと）",
+      "鶏舎清掃・消毒（捕鳥後）",
+      "初生雛の導入補助",
+      "給餌・飲水管理",
+    ],
+    sswNote:
+      "人手不足スコア20/20 — 農業全作業中最高。深夜・重労働・機械化不可の「究極のSSW専用作業」。" +
+      "1回の捕鳥に15〜30名が深夜3〜6時間従事。鹿児島・宮崎（全国1〜2位）はスグクルの地元で" +
+      "農場との距離が近く、深夜チームを組める唯一の派遣会社になれる。" +
+      "通年作業のため年間を通じた安定雇用が可能（捕鳥は約50〜70日ごとに発生）。" +
+      "作業習得が速く、初めての畜産SSWに最適。",
+    caveat:
+      "深夜作業（23:00〜6:00が標準）のため住環境・睡眠サイクルへの配慮が必要。" +
+      "農場内の衛生管理（防疫）ルールの徹底指導が必須。",
+    bestPrefectures: ["JP-46(鹿児島)", "JP-45(宮崎)", "JP-43(熊本)", "JP-44(大分)", "JP-03(岩手)"],
+  },
+  {
+    crop: "養豚（分娩補助・飼養管理）",
+    aliases: ["豚", "養豚", "豚舎", "pig", "swine", "分娩補助"],
+    sswCategory: "畜産農業",
+    scores: {
+      automationResistance: 16,
+      valueDensity: 12,
+      seasonalConcentration: 4,
+      skillAcquisitionSpeed: 14,
+      laborShortageLevel: 18,
+    },
+    totalScore: 64,
+    harvestMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    keyActivities: ["分娩補助・仔豚管理", "豚の移動・仕分け", "飼養管理", "衛生管理・消毒"],
+    sswNote:
+      "年間を通じた安定雇用が可能。分娩補助は経験を積むほど価値が高まる熟練作業。" +
+      "鹿児島（全国1位）・宮崎（同2位）の大規模農場は法人化が進みSSW受入体制が整っている。" +
+      "豚の移動・出荷作業は体力を要するがSSWが最も戦力化しやすい作業のひとつ。",
+    caveat:
+      "臭気・衛生環境への適応が必要。農場内の防疫ルール（踏み込み消毒等）の徹底が必須。" +
+      "分娩補助の熟練には3〜6ヶ月の研修期間を見込む。",
+    bestPrefectures: ["JP-46(鹿児島)", "JP-45(宮崎)", "JP-12(千葉)", "JP-01(北海道)"],
+  },
+  {
+    crop: "酪農（搾乳・飼養管理）",
+    aliases: ["乳用牛", "乳牛", "酪農", "搾乳", "dairy"],
+    sswCategory: "畜産農業",
+    scores: {
+      automationResistance: 14,
+      valueDensity: 13,
+      seasonalConcentration: 3,
+      skillAcquisitionSpeed: 12,
+      laborShortageLevel: 18,
+    },
+    totalScore: 60,
+    harvestMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    keyActivities: [
+      "搾乳（1日2〜3回・時間固定）",
+      "飼料給与",
+      "哺育管理（子牛）",
+      "糞尿処理",
+    ],
+    sswNote:
+      "1日も休めない搾乳作業は「農業界の工場勤務」。完全通年雇用が可能で定住化モデルに最適。" +
+      "北海道が全国64%を占めるが、愛知・熊本・鹿児島にも安定した需要がある。" +
+      "農水省の調査で、特定技能の受入実績が畜産分野で最も多い作業類型。",
+    caveat:
+      "早朝・夜間の搾乳が必要で不規則な生活サイクル。長期コミットが必要。" +
+      "自動搾乳機（ロボット搾乳）の普及により将来の自動化リスクがある（特に北海道大規模農場）。",
+    bestPrefectures: ["JP-01(北海道)", "JP-23(愛知)", "JP-43(熊本)", "JP-46(鹿児島)"],
+  },
+  {
+    crop: "肉用牛（飼養管理・和牛）",
+    aliases: ["和牛", "黒毛和牛", "肉牛", "beef cattle", "肉用牛", "牛"],
+    sswCategory: "畜産農業",
+    scores: {
+      automationResistance: 15,
+      valueDensity: 16,
+      seasonalConcentration: 5,
+      skillAcquisitionSpeed: 11,
+      laborShortageLevel: 16,
+    },
+    totalScore: 63,
+    harvestMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    keyActivities: ["飼料給与（1日2回）", "繁殖管理補助", "糞尿処理", "市場出荷補助"],
+    sswNote:
+      "鹿児島黒牛・宮崎牛・豊後牛などブランド和牛農家は高収益でSSW賃金支払い余力あり。" +
+      "毎日の飼養管理作業で通年雇用が可能。繁殖農家は技術習得に時間がかかるが肥育農家はSSWでも比較的早期に戦力化できる。",
+    caveat:
+      "繁殖管理（人工授精補助等）は専門技術が必要で即戦力化は難しい。肥育作業からのスタートを推奨。",
+    bestPrefectures: ["JP-46(鹿児島)", "JP-45(宮崎)", "JP-44(大分)", "JP-01(北海道)"],
+  },
   {
     crop: "稲",
     aliases: ["米", "水稲", "コメ", "rice"],
