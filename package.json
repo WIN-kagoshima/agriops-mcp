@@ -52,6 +52,7 @@
     "test:conformance": "vitest run tests/conformance",
     "test:ui": "playwright test",
     "snapshots:build": "tsx scripts/build-snapshots/index.ts",
+    "snapshots:audit": "tsx scripts/snapshots-audit.ts",
     "inspector": "npx @modelcontextprotocol/inspector node dist/server.js --stdio",
     "deploy:preflight": "tsx scripts/deploy-preflight.ts",
     "deploy:smoke": "tsx scripts/deploy-smoke.ts",

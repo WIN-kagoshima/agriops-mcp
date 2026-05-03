@@ -10,6 +10,10 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+### Added
+- Added `tests/scenarios/` eval suite (4 files, 23 scenarios): `weather-risk`, `pesticide`, `staff-plan`, and `adversarial` multi-turn tests that exercise the complete Phase 0–5 tool surface with deterministic Kagoshima fixtures. Scenarios cover the canonical `search_farmland → get_weather_1km → get_pesticide_rules → open_dashboard` agent workflow and a 7-step adversarial escalation.
+- Added `scripts/snapshots-audit.ts` and `npm run snapshots:audit` — freshness and integrity gate for SQLite snapshot files. Checks manifest `generatedAt` age (default 90 days, configurable via `--max-age-days`), re-computes SHA-256, and verifies file-size consistency. Exits 1 on any failure so CI can gate on stale or corrupted snapshots.
+
 ## [1.0.0] — Stable — public surface frozen
 
 This release marks the first stable API surface. Tool names, prompt names, resource URIs, and input/output schemas are now frozen under SemVer. Breaking changes will require a `2.0.0`. The `0.x` series was explicitly experimental.
