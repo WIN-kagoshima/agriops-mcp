@@ -10,6 +10,20 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.7.0] — 2026-05-04 — Harvest optimizer, expanded market DB, Kinki/Chugoku prefectures
+
+### Added
+- **`optimize_harvest_timing` tool**: Synthesizes weather forecast (Open-Meteo), crop calendar, and market price seasonality into a scored recommendation for the optimal harvest month. Returns per-month scores across weather risk / market trend / labor demand axes with SSW dispatch note. Supports 8 crops (さつまいも, みかん, キャベツ, トマト, 稲, いちご, 花き, すだち).
+- **`get_prefecture_crop_profile` expanded to 19 prefectures**: Added Kinki 2-pref (JP-30 Wakayama 有田みかん・南高梅, JP-29 Nara 富有柿・古都華いちご) and Chugoku 2-pref (JP-34 Hiroshima 瀬戸田レモン, JP-33 Okayama マスカット・白桃). Each with harvest months, labor intensity, and `ssw_dispatch_note`.
+- **`get_market_price` expanded to 19 products**: Added すいか (熊本産春すいか), メロン (熊本産アンデスメロン), ぶどう (岡山マスカット/ピオーネ), なし (鳥取二十世紀梨), りんご (青森ふじ), 梅 (和歌山南高梅). Full seasonal factors and regional origin notes.
+- **`annual_dispatch_plan` prompt**: 12-month SSW deployment plan generator. Calls `get_prefecture_crop_profile` + `get_market_price` + `crop_calendar` across all specified prefectures and produces a month-by-month schedule table, Q1–Q4 strategy, agricultural off-season utilization plan, and weather risk calendar.
+
+### Changed
+- `get_prefecture_crop_profile` input enum and `PrefectureProfile` type now include `"kinki"` and `"chugoku"` regions.
+- Conformance test `tool-annotations.test.ts`: added `optimize_harvest_timing` to `expectedRemote` set (uses weather API → `openWorldHint: true`).
+- `tests/smoke/prompts.test.ts`: updated to expect 13 prompts.
+- `surface-catalog.ts`: Phase 7 entry for `optimize_harvest_timing` and `annual_dispatch_plan` prompt.
+
 ## [1.6.0] — 2026-05-04 — Sugu-kuru regional expansion: Kyushu / Shikoku / Tokai + market data
 
 ### Added
@@ -292,7 +306,8 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.4.0...v1.5.0

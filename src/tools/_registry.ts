@@ -25,6 +25,7 @@ import { registerGetWeatherWarning } from "./get-weather-warning.js";
 import { registerMultiFieldCompare } from "./multi-field-compare.js";
 import { registerNearbyFarms } from "./nearby-farms.js";
 import { registerOpenDashboard } from "./open-dashboard.js";
+import { registerOptimizeHarvestTiming } from "./optimize-harvest-timing.js";
 import { registerSearchFarmland } from "./search-farmland.js";
 import { registerSeasonalRiskForecast } from "./seasonal-risk-forecast.js";
 import { registerSnapshotStatus } from "./snapshot-status.js";
@@ -120,6 +121,7 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   // ----- Phase 7 — Sugu-kuru regional expansion + market data -----
   reg("get_market_price", () => registerGetMarketPrice(server, deps));
   reg("get_prefecture_crop_profile", () => registerGetPrefectureCropProfile(server, deps));
+  reg("optimize_harvest_timing", () => registerOptimizeHarvestTiming(server, deps));
 
   // ----- Phase 6 — user-facing agricultural decision tools -----
   reg("crop_calendar", () => registerCropCalendar(server, deps));

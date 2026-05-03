@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Deps } from "../server/deps.js";
+import { registerAnnualDispatchPlanPrompt } from "./annual-dispatch-plan.js";
 import { registerAreaBriefingPrompt } from "./area-briefing.js";
 import { registerDailyBriefingPrompt } from "./daily-briefing.js";
 import { registerDataFreshnessCheckPrompt } from "./data-freshness-check.js";
@@ -14,7 +15,7 @@ import { registerStaffDeployPlanPrompt } from "./staff-deploy-plan.js";
 import { registerWeatherRiskAlertPrompt } from "./weather-risk-alert.js";
 
 /**
- * 12 user-controlled prompts (slash commands). They are exposed
+ * 13 user-controlled prompts (slash commands). They are exposed
  * unconditionally; the underlying tools they reference may not be available
  * in early phases, in which case the prompt simply tells the LLM to
  * apologise and explain what is missing.
@@ -34,6 +35,7 @@ export function registerAllPrompts(server: McpServer, deps: Deps): string[] {
   registerFieldVisitChecklistPrompt(server, deps);
   registerMarketTrendBriefingPrompt(server, deps);
   registerRegionDispatchDemandPrompt(server, deps);
+  registerAnnualDispatchPlanPrompt(server, deps);
   return [
     "field_summary",
     "pesticide_advice",
@@ -47,5 +49,6 @@ export function registerAllPrompts(server: McpServer, deps: Deps): string[] {
     "field_visit_checklist",
     "market_trend_briefing",
     "region_dispatch_demand",
+    "annual_dispatch_plan",
   ];
 }

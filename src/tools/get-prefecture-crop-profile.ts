@@ -30,6 +30,12 @@ const SUPPORTED_PREFECTURES = [
   "JP-21", // 岐阜
   "JP-23", // 愛知
   "JP-24", // 三重
+  // Kinki
+  "JP-30", // 和歌山
+  "JP-29", // 奈良
+  // Chugoku
+  "JP-34", // 広島
+  "JP-33", // 岡山
 ] as const;
 
 type PrefCode = (typeof SUPPORTED_PREFECTURES)[number];
@@ -42,7 +48,9 @@ const inputSchema = z
         "ISO 3166-2:JP prefecture code. " +
           "Kyushu: JP-40(福岡) JP-41(佐賀) JP-42(長崎) JP-43(熊本) JP-44(大分) JP-45(宮崎) JP-46(鹿児島) JP-47(沖縄). " +
           "Shikoku: JP-36(徳島) JP-37(香川) JP-38(愛媛) JP-39(高知). " +
-          "Tokai: JP-21(岐阜) JP-23(愛知) JP-24(三重).",
+          "Tokai: JP-21(岐阜) JP-23(愛知) JP-24(三重). " +
+          "Kinki: JP-30(和歌山) JP-29(奈良). " +
+          "Chugoku: JP-34(広島) JP-33(岡山).",
       ),
   })
   .strict();
@@ -60,7 +68,7 @@ interface CropProfile {
 interface PrefectureProfile {
   prefectureCode: PrefCode;
   prefectureName: string;
-  region: "kyushu" | "shikoku" | "tokai";
+  region: "kyushu" | "shikoku" | "tokai" | "kinki" | "chugoku";
   mainCrops: CropProfile[];
   peakLaborMonths: number[];
   ssw_dispatch_note: string;
@@ -635,12 +643,174 @@ const PREFECTURE_DB: PrefectureProfile[] = [
       "茶の一番茶（5月）とみかん収穫（11〜12月）が二大ピーク。津・松阪エリアから熊野・尾鷲への移動が必要。",
     attribution: "農林水産省 作物統計 / 三重県農林水産部",
   },
+
+  // ===== 近畿 =====
+  {
+    prefectureCode: "JP-30",
+    prefectureName: "和歌山県",
+    region: "kinki",
+    mainCrops: [
+      {
+        crop: "みかん（有田みかん）",
+        rank: 1,
+        harvestMonths: [10, 11, 12, 1],
+        peakLaborMonths: [10, 11, 12],
+        laborIntensity: "very_high",
+        laborNotes:
+          "有田地区の段々畑。急斜面での手摘み収穫が主体。みかんとモノレール・運搬作業も多い",
+        marketNote: "有田みかんは全国ブランド。全国2位の産地。糖度重視の選果基準が厳しい",
+      },
+      {
+        crop: "柿（富有柿・刀根早生）",
+        rank: 2,
+        harvestMonths: [10, 11],
+        peakLaborMonths: [10, 11],
+        laborIntensity: "high",
+        laborNotes: "収穫・選果・箱詰め。高所作業が多く脚立使用。刀根早生は10月初旬",
+        marketNote: "和歌山は全国1位の柿産地。刀根早生は早期出荷で高値",
+      },
+      {
+        crop: "梅（南高梅）",
+        rank: 3,
+        harvestMonths: [6, 7],
+        peakLaborMonths: [6],
+        laborIntensity: "very_high",
+        laborNotes:
+          "みなべ・田辺地区が産地。落下した梅を拾う作業と木から収穫する作業の両方あり。短期集中",
+        marketNote: "南高梅は全国最高級ブランド。全国シェア約60%",
+      },
+    ],
+    peakLaborMonths: [6, 10, 11, 12],
+    ssw_dispatch_note:
+      "有田みかんの秋収穫（10〜12月）と南高梅の梅雨期収穫（6月）が二大ピーク。" +
+      "近畿圏のスグクル展開拠点として有田・御坊エリアを検討価値あり。段々畑経験者が重宝される。",
+    attribution: "農林水産省 作物統計 / 和歌山県農林水産部",
+  },
+  {
+    prefectureCode: "JP-29",
+    prefectureName: "奈良県",
+    region: "kinki",
+    mainCrops: [
+      {
+        crop: "柿（富有柿・御所柿）",
+        rank: 1,
+        harvestMonths: [10, 11],
+        peakLaborMonths: [10, 11],
+        laborIntensity: "high",
+        laborNotes: "五條・御所地区が産地。収穫・干し柿加工（あんぽ柿）への対応も",
+        marketNote: "奈良は全国2〜3位の柿産地。御所柿・富有柿・あんぽ柿で多様なブランド",
+      },
+      {
+        crop: "いちご（古都華）",
+        rank: 2,
+        harvestMonths: [12, 1, 2, 3, 4, 5],
+        peakLaborMonths: [1, 2],
+        laborIntensity: "high",
+        laborNotes: "奈良市・大和郡山地区のハウスいちご。古都華は県オリジナル品種",
+        marketNote: "古都華は高糖度・大粒で市場評価高い。12〜5月が出荷期",
+      },
+      {
+        crop: "大和茶",
+        rank: 3,
+        harvestMonths: [4, 5, 6],
+        peakLaborMonths: [5],
+        laborIntensity: "medium",
+        laborNotes: "山添村・大和高原の茶産地。一番茶期（5月）に集中",
+        marketNote: "大和茶は京都・宇治ブレンド向けの高品質茶葉。産地ブランドとして確立",
+      },
+    ],
+    peakLaborMonths: [5, 10, 11, 1, 2],
+    ssw_dispatch_note:
+      "柿収穫（10〜11月）といちご収穫（冬季）で二分。大阪・京都へのアクセスが良く拠点を置きやすいエリア。",
+    attribution: "農林水産省 作物統計 / 奈良県農林部",
+  },
+
+  // ===== 中国 =====
+  {
+    prefectureCode: "JP-34",
+    prefectureName: "広島県",
+    region: "chugoku",
+    mainCrops: [
+      {
+        crop: "レモン（瀬戸田レモン）",
+        rank: 1,
+        harvestMonths: [10, 11, 12, 1, 2, 3],
+        peakLaborMonths: [11, 12],
+        laborIntensity: "high",
+        laborNotes: "尾道・因島・大崎上島などの島嶼部。船でのアクセスが必要なケースも",
+        marketNote: "国産レモンの全国シェア約60%。瀬戸田レモンは最高ブランド。輸入レモンより高値",
+      },
+      {
+        crop: "みかん・柑橘（瀬戸内）",
+        rank: 2,
+        harvestMonths: [10, 11, 12],
+        peakLaborMonths: [11, 12],
+        laborIntensity: "high",
+        laborNotes: "因島・江田島・大崎上島の段々畑。手摘み収穫",
+        marketNote: "瀬戸内の温暖な気候で高糖度。地域ブランドとして価値向上中",
+      },
+      {
+        crop: "キャベツ・野菜",
+        rank: 3,
+        harvestMonths: [11, 12, 1, 2, 3, 4, 5],
+        peakLaborMonths: [12, 1, 2],
+        laborIntensity: "medium",
+        laborNotes: "三原・東広島の平野部農業。機械化進展",
+        marketNote: "関西・中国市場向け冬春野菜",
+      },
+    ],
+    peakLaborMonths: [11, 12, 1],
+    ssw_dispatch_note:
+      "レモン収穫（11〜12月）が最大の需要。島嶼部へのアクセスにフェリー利用が必要なケースあり。" +
+      "尾道・三原エリアを拠点とすれば複数の離島産地をカバーできる。",
+    attribution: "農林水産省 作物統計 / 広島県農林水産局",
+  },
+  {
+    prefectureCode: "JP-33",
+    prefectureName: "岡山県",
+    region: "chugoku",
+    mainCrops: [
+      {
+        crop: "ぶどう（マスカット・ピオーネ）",
+        rank: 1,
+        harvestMonths: [7, 8, 9, 10],
+        peakLaborMonths: [8, 9],
+        laborIntensity: "very_high",
+        laborNotes:
+          "笠岡・倉敷・赤磐地区。摘粒・袋掛け・収穫すべて手作業。繊細な果実のため丁寧さが必須",
+        marketNote: "マスカット・オブ・アレキサンドリアは最高級品。ピオーネも全国1位の産地",
+      },
+      {
+        crop: "白桃・もも",
+        rank: 2,
+        harvestMonths: [7, 8],
+        peakLaborMonths: [7, 8],
+        laborIntensity: "very_high",
+        laborNotes: "袋掛け・収穫・選果。傷つきやすく手作業が絶対。高所作業梯子使用",
+        marketNote: "岡山白桃は全国最高ブランド。1玉1000〜3000円の高単価",
+      },
+      {
+        crop: "トマト（倉敷・総社）",
+        rank: 3,
+        harvestMonths: [11, 12, 1, 2, 3, 4, 5],
+        peakLaborMonths: [1, 2, 3],
+        laborIntensity: "high",
+        laborNotes: "施設トマトの収穫・誘引作業。冬春の通年需要",
+        marketNote: "岡山のハウストマトは関西市場で評価高い",
+      },
+    ],
+    peakLaborMonths: [7, 8, 9, 1, 2],
+    ssw_dispatch_note:
+      "ぶどう・白桃の夏季収穫（7〜9月）が最大需要。非常に繊細な作業が要求されるため経験者優遇。" +
+      "倉敷・総社エリアに農業法人が集積。JR 沿線でアクセス良好。",
+    attribution: "農林水産省 作物統計 / 岡山県農林水産部",
+  },
 ];
 
 const outputSchema = z.object({
   prefectureCode: z.string(),
   prefectureName: z.string(),
-  region: z.enum(["kyushu", "shikoku", "tokai"]),
+  region: z.enum(["kyushu", "shikoku", "tokai", "kinki", "chugoku"]),
   mainCrops: z.array(
     z.object({
       crop: z.string(),
@@ -666,7 +836,9 @@ export function registerGetPrefectureCropProfile(server: McpServer, _deps: Deps)
       description:
         "Returns the main agricultural crops, harvest seasons, labor intensity, and SSW dispatch notes " +
         "for a given prefecture. Covers all of Kyushu (JP-40…JP-47), Shikoku (JP-36…JP-39), " +
-        "and Tokai 3 prefectures (JP-21 Gifu, JP-23 Aichi, JP-24 Mie). " +
+        "Tokai 3 prefectures (JP-21 Gifu, JP-23 Aichi, JP-24 Mie), " +
+        "Kinki 2 prefectures (JP-30 Wakayama, JP-29 Nara), " +
+        "and Chugoku 2 prefectures (JP-34 Hiroshima, JP-33 Okayama). " +
         "Designed for Sugu-kuru dispatch planning: identifies peak labor months, crop-specific demand, " +
         "and regional notes for SSW worker deployment decisions. Read-only and idempotent.",
       inputSchema: inputSchema.shape,

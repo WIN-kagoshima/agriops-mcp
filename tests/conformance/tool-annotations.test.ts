@@ -105,6 +105,7 @@ describe("Tool annotations conformance", () => {
         "get_weather_1km",
         "get_weather_warning",
         "fetch_weather_layer",
+        "optimize_harvest_timing",
       ]);
       for (const t of live.tools) {
         const a = annotationsOf(t);
