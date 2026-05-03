@@ -3,6 +3,7 @@ import type { Deps } from "../server/deps.js";
 import { registerAreaBriefingPrompt } from "./area-briefing.js";
 import { registerDataFreshnessCheckPrompt } from "./data-freshness-check.js";
 import { registerFieldSummaryPrompt } from "./field-summary.js";
+import { registerHarvestReadinessPrompt } from "./harvest-readiness.js";
 import { registerIrrigationSchedulePrompt } from "./irrigation-schedule.js";
 import { registerPesticideAdvicePrompt } from "./pesticide-advice.js";
 import { registerStaffDeployPlanPrompt } from "./staff-deploy-plan.js";
@@ -24,6 +25,7 @@ export function registerAllPrompts(server: McpServer, deps: Deps): string[] {
   registerWeatherRiskAlertPrompt(server, deps);
   registerIrrigationSchedulePrompt(server, deps);
   registerDataFreshnessCheckPrompt(server, deps);
+  registerHarvestReadinessPrompt(server, deps);
   return [
     "field_summary",
     "pesticide_advice",
@@ -32,5 +34,6 @@ export function registerAllPrompts(server: McpServer, deps: Deps): string[] {
     "weather_risk_alert",
     "irrigation_schedule",
     "data_freshness_check",
+    "harvest_readiness",
   ];
 }

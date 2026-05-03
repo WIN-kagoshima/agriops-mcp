@@ -10,6 +10,19 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.4.0] — 2026-05-04 — User-facing agricultural decision tools
+
+### Added
+- **`crop_calendar` tool**: Returns a month-by-month farming calendar for a given crop and climate region. Built-in database covers 5 major crops (稲, さつまいも, キャベツ, トマト, 茶) with regional time-shift for all 9 climate zones. Includes sowing, transplanting, pest control windows, and harvest timing.
+- **`field_weather_report` tool**: Given a single eMAFF field ID, fetches the field's location, runs a multi-day weather forecast, checks for active JMA warnings, and returns a unified risk-flagged report. Combines get_weather_1km + get_weather_warning into one agent-friendly call. Risk flags: heavy_rain, strong_wind, high_evapotranspiration, drought_stress, heat_stress, frost_risk, jma_warning_active.
+- **`spray_window` tool**: Analyzes hourly weather to find safe time windows for pesticide spraying. Evaluates wind speed (configurable threshold, default 3 m/s), precipitation (must be 0), and humidity (40–90% optimal). Returns ranked contiguous slots with washoff risk assessment.
+- **`harvest_readiness` prompt**: Cross-references the 7-day weather outlook with FAMIC pesticide pre-harvest interval rules to advise whether a field is safe to harvest. Accepts crop, coordinates, last spray date, and pesticide name. Returns a 3-level judgement (収穫可/要待機/要確認) with recommended harvest day and safety notes.
+
+### Changed
+- **`surface-catalog.ts`**: Added `TOOL_METADATA` entries for `crop_calendar`, `field_weather_report`, `spray_window` (Phase 6, read-only, model visibility) and `PROMPT_METADATA` for `harvest_readiness` (introduced 1.4.0).
+- **`_registry.ts` (tools)**: Phase 6 registration block. `crop_calendar` and `spray_window` are unconditional; `field_weather_report` requires `deps.emaff`.
+- **`_registry.ts` (prompts)**: Added `harvest_readiness` to prompt list (now 8 prompts total).
+
 ## [1.3.0] — 2026-05-03 — Prompt improvements, CONTRIBUTING guide, prefecture map fix
 
 ### Added

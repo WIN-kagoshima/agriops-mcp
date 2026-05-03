@@ -14,6 +14,8 @@ import {
 import { registerAreaSummary } from "./area-summary.js";
 import { registerCreateStaffDeployPlan } from "./create-staff-deploy-plan.js";
 import { registerCreateTask } from "./create-task.js";
+import { registerCropCalendar } from "./crop-calendar.js";
+import { registerFieldWeatherReport } from "./field-weather-report.js";
 import { registerGetPesticideRules } from "./get-pesticide-rules.js";
 import { registerGetTaskStatus } from "./get-task-status.js";
 import { registerGetWeather1km } from "./get-weather-1km.js";
@@ -22,6 +24,7 @@ import { registerNearbyFarms } from "./nearby-farms.js";
 import { registerOpenDashboard } from "./open-dashboard.js";
 import { registerSearchFarmland } from "./search-farmland.js";
 import { registerSnapshotStatus } from "./snapshot-status.js";
+import { registerSprayWindow } from "./spray-window.js";
 
 /**
  * Single source of truth for tool registration.
@@ -109,6 +112,13 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   // ----- Phase 4 — async task management -----
   reg("create_task", () => registerCreateTask(server, deps));
   reg("get_task_status", () => registerGetTaskStatus(server, deps));
+
+  // ----- Phase 6 — user-facing agricultural decision tools -----
+  reg("crop_calendar", () => registerCropCalendar(server, deps));
+  reg("spray_window", () => registerSprayWindow(server, deps));
+  if (deps.emaff) {
+    reg("field_weather_report", () => registerFieldWeatherReport(server, deps));
+  }
 
   // ----- Phase 5 — snapshot freshness + MCP Apps UI dashboard -----
   reg("snapshot_status", () => registerSnapshotStatus(server, deps));
