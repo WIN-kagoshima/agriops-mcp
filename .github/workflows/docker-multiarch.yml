@@ -1,0 +1,124 @@
+name: Docker multi-arch image
+
+# Builds linux/amd64 + linux/arm64 images and pushes them to
+# GitHub Container Registry (ghcr.io). The image is intended for
+# developers who want to run AgriOps MCP locally (e.g. Apple Silicon
+# Macs, Raspberry Pi, or AWS Graviton) without a full Cloud Run setup.
+#
+# Triggered automatically on SemVer tags; can also be run manually.
+#
+# Images produced:
+#   ghcr.io/<owner>/agriops-mcp:v1.2.3   (exact tag)
+#   ghcr.io/<owner>/agriops-mcp:1         (major)
+#   ghcr.io/<owner>/agriops-mcp:latest    (latest stable; skipped for pre-releases)
+#
+# NOTE: Snapshots are NOT baked in. Operators must volume-mount or
+# copy snapshots into the container, or rebuild with --build-arg
+# BAKE_SNAPSHOTS=1 (see Dockerfile). See docs/runbook.md §2.3.
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git ref to build (branch, tag, or SHA)"
+        required: false
+        default: "main"
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/agriops-mcp
+
+jobs:
+  build-push:
+    name: Build and push (${{ github.ref_name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      # QEMU enables emulated cross-compilation for arm64 on the amd64 runner.
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Derive version string and decide whether this is a pre-release.
+      - name: Derive image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # Produce:
+          #   v1.2.3       → tags: 1.2.3, 1, latest
+          #   v1.2.3-rc.1  → tags: 1.2.3-rc.1  (no "latest")
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') && startsWith(github.ref, 'refs/tags/') }}
+            type=sha,prefix=sha-,format=short,enable=${{ github.event_name == 'workflow_dispatch' }}
+          labels: |
+            org.opencontainers.image.title=AgriOps MCP
+            org.opencontainers.image.description=MCP server for Japanese agricultural land, weather, and pesticide data
+            org.opencontainers.image.licenses=Apache-2.0
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}#readme
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Layer cache: pull from the registry cache manifest to avoid
+          # rebuilding layers that haven't changed between tags.
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          provenance: true
+          sbom: true
+
+      - name: Summarise pushed image
+        run: |
+          echo "### Docker multi-arch image" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Tags pushed:**" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.meta.outputs.tags }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Platforms:** linux/amd64, linux/arm64" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Quick start (no snapshots):**" >> "$GITHUB_STEP_SUMMARY"
+          echo '```bash' >> "$GITHUB_STEP_SUMMARY"
+          echo "docker run --rm -p 8080:8080 \\" >> "$GITHUB_STEP_SUMMARY"
+          echo "  -e PORT=8080 \\" >> "$GITHUB_STEP_SUMMARY"
+          echo "  -e MCP_BASE_URL=http://localhost:8080 \\" >> "$GITHUB_STEP_SUMMARY"
+          echo "  ghcr.io/${{ env.IMAGE_NAME }}:${{ github.ref_name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

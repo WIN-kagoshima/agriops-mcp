@@ -1,17 +1,16 @@
 # AgriOps MCP — Client examples
 
-Three minimal clients that connect to the AgriOps MCP server,
-list the available tools, and call `get_weather_1km` for an AgriOps sample
-Field (鹿児島県, ~31.5N 130.5E).
+Minimal clients and configuration snippets that connect to the AgriOps MCP server.
 
 | Folder | Transport | What it shows |
 | --- | --- | --- |
 | [`stdio-typescript/`](stdio-typescript) | stdio | Official `@modelcontextprotocol/sdk` client driving the server as a child process. |
 | [`stdio-python/`](stdio-python) | stdio | Official `mcp[cli]` Python client (`mcp.client.stdio`). |
 | [`http-curl/`](http-curl) | Streamable HTTP | Plain `curl` calls against the `/mcp` endpoint. Useful when integrating from any language. |
-| [`agent-workflow/`](agent-workflow) | stdio | Multi-tool workflow (`search_farmland → get_weather_1km → get_pesticide_rules → open_dashboard`) — the canonical reference plan for an LLM tool-use loop (Claude / Gemini / OpenAI / ADK). |
+| [`agent-workflow/`](agent-workflow) | stdio | Multi-tool workflow (`search_farmland → get_weather_1km → get_pesticide_rules → open_dashboard`) — canonical reference plan for an LLM tool-use loop (Claude / Gemini / OpenAI / ADK). |
+| [`claude-desktop/`](claude-desktop) | stdio / HTTP | `claude_desktop_config.json` snippets for Claude Desktop and Cursor, plus a troubleshooting guide. |
 
-All three target the same surface so you can compare them side by side.
+The SDK examples target the same surface so you can compare them side by side.
 None of them require any keys, snapshots, or external accounts: they
 exercise Phase 0 (`get_weather_1km`, Open-Meteo) only.
 

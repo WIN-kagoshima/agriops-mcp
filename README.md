@@ -105,7 +105,7 @@ The server exposes:
 - `GET /readyz` — readiness probe with per-adapter status.
 - `GET /metrics` — Prometheus exposition (bearer-token gated when `AGRIOPS_METRICS_BEARER` is set).
 
-Production deployment, key rotation, incident response, and SLO targets are documented in [`docs/runbook.md`](docs/runbook.md). Metrics, log format, rate limiting, and alerting recommendations are in [`docs/observability.md`](docs/observability.md).
+Production deployment, key rotation, incident response, and SLO targets are documented in [`docs/runbook.md`](docs/runbook.md). Metrics, log format, rate limiting, and alerting recommendations are in [`docs/observability.md`](docs/observability.md). For system design and the adapter/tool/phase model, see [`docs/architecture.md`](docs/architecture.md).
 
 ### Deployed reference endpoint
 

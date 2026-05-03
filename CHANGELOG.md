@@ -11,6 +11,10 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 ## [Unreleased]
 
 ### Added
+- Added `.github/workflows/docker-multiarch.yml` — builds and pushes `linux/amd64 + linux/arm64` images to `ghcr.io/win-kagoshima/agriops-mcp` on SemVer tags (Docker layer cache via registry manifest; SBOM + provenance attestation via `docker/build-push-action`).
+- Added `docs/architecture.md` — system diagram, request lifecycle, directory structure, adapter pattern, tool registration lifecycle, `search_farmland` data-flow trace, phase model, DI/testability pattern, security boundaries, and checklists for adding new tools and data sources.
+- Added `examples/claude-desktop/` — `claude_desktop_config.json` snippets for stdio and Streamable HTTP modes, Cursor `.cursor/mcp.json` config, troubleshooting guide, and quick-test prompts.
+- Expanded Server Card (`/.well-known/mcp-server.json`) with `clients` (known-tested MCP clients), `observability` (metrics/health/readiness URLs), `eval` (test-suite summary), and `container` (image reference, platforms, Node/distroless versions) sections.
 - Added `tests/scenarios/` eval suite (4 files, 23 scenarios): `weather-risk`, `pesticide`, `staff-plan`, and `adversarial` multi-turn tests that exercise the complete Phase 0–5 tool surface with deterministic Kagoshima fixtures. Scenarios cover the canonical `search_farmland → get_weather_1km → get_pesticide_rules → open_dashboard` agent workflow and a 7-step adversarial escalation. Run with `npm run test:scenarios`.
 - Added `scripts/snapshots-audit.ts` and `npm run snapshots:audit` — freshness and integrity gate for SQLite snapshot files. Checks manifest `generatedAt` age (default 90 days, configurable via `--max-age-days`), re-computes SHA-256, and verifies file-size consistency. Exits 1 on any failure so CI can gate on stale or corrupted snapshots.
 - Added `docs/observability.md` covering `/livez`, `/readyz`, `/metrics` (Prometheus text format), log NDJSON fields, Cloud Logging / Google Managed Prometheus / Cloud Trace integration, rate-limiting parameters, snapshot freshness monitoring, and alerting recommendations.

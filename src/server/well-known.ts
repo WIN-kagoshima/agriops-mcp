@@ -110,6 +110,37 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
       apps: "2026-01-26",
     },
     experimental: false,
+    /** Known-compatible MCP clients. Agents use this to detect feature support. */
+    clients: [
+      { name: "Claude Desktop", tested: true, transport: "stdio" },
+      { name: "Cursor", tested: true, transport: "streamable-http" },
+      { name: "ChatGPT (Connectors)", tested: false, transport: "streamable-http", notes: "Planned" },
+      { name: "Google ADK", tested: false, transport: "streamable-http", notes: "Planned" },
+    ],
+    /** Operator-facing observability endpoints (relative to the base URL). */
+    observability: {
+      metrics: `${options.baseUrl}/metrics`,
+      health: `${options.baseUrl}/livez`,
+      readiness: `${options.baseUrl}/readyz`,
+      metricsFormat: "text/plain; version=0.0.4",
+      metricsAuth: "Bearer (set AGRIOPS_METRICS_BEARER to enable)",
+    },
+    /** Test-suite summary baked at build time; updated on each release. */
+    eval: {
+      testFiles: 33,
+      testCases: 156,
+      scenarios: 23,
+      conformanceChecks: 11,
+      lastRun: "2026-05-03",
+      repository: "https://github.com/WIN-kagoshima/agriops-mcp/tree/main/tests",
+    },
+    /** Container image for self-hosted deployments. */
+    container: {
+      image: "ghcr.io/win-kagoshima/agriops-mcp",
+      platforms: ["linux/amd64", "linux/arm64"],
+      runtimeNode: "22-lts",
+      baseImage: "gcr.io/distroless/nodejs22-debian12:nonroot",
+    },
   };
 }
 

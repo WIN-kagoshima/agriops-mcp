@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "agriops-mcp": {
+      "command": "node",
+      "args": [
+        "/path/to/agriops-mcp/dist/server.js",
+        "--stdio"
+      ],
+      "env": {
+        "LOG_LEVEL": "warn"
+      }
+    }
+  }
+}
