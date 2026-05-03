@@ -10,6 +10,18 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.8.0] — 2026-05-04 — SSW Strategic Intelligence Layer (スグクル戦略室)
+
+### Added
+- **`get_ssw_crop_compatibility` tool**: Returns an SSW (特定技能外国人 agricultural category) compatibility score for 15 crops on 5 axes (automation resistance, value density, seasonal concentration, skill acquisition speed, labor shortage level — each 0-20 pts, total 100). Rankings: いちご/みかん=85, すだち=88 (S-rank); 花き/お茶/さつまいも/ぶどう/びわ/レモン in A-range. Omit the `crop` arg to get the full ranked table. Methodology based on 農水省特定技能ガイドライン + ALIC market data + 農林業センサス 2020.
+- **`get_labor_shortage_stats` tool**: Prefecture-level agricultural labor force statistics based on 農林業センサス 2020 (農林水産省). Covers 20 entries (JP-00 national + 19 prefectures: Kyushu 8, Shikoku 4, Tokai 3, Kinki 2, Chugoku 2). Returns workforce size (2020/2015), 5-year change rate, average age, over-65%, farm management body count, shortage severity rating (深刻/高い/中程度/低い) with qualitative notes. Key finding: national agricultural workforce down 22% in 5 years, average age 67.8, 70% over 65.
+- **`ssw_strategy_briefing` prompt**: The "Sugu-kuru 戦略室" master prompt. Accepts `focus_region`, `analysis_month`, `priority` (urgent_shortage/high_value/year_round/quick_onboarding), `available_workers`, and `horizon` (this_season/next_6months/annual/3year). Orchestrates 5 tools in sequence (crop compatibility → labor stats → prefecture profiles → market prices → crop calendar) and instructs the model to produce a structured strategy report with: 1-page strategy summary, prefecture scorecard, crop-SSW matching analysis, 12-month demand calendar, Sugu-kuru competitive advantage, and risk register.
+
+### Changed
+- `tests/smoke/prompts.test.ts`: updated expected count from 13 to 14, added `ssw_strategy_briefing`.
+- `surface-catalog.ts`: Phase 8 entries for `get_ssw_crop_compatibility`, `get_labor_shortage_stats`, `ssw_strategy_briefing`.
+- `package.json`: version bumped to `1.8.0`.
+
 ## [1.7.0] — 2026-05-04 — Harvest optimizer, expanded market DB, Kinki/Chugoku prefectures
 
 ### Added

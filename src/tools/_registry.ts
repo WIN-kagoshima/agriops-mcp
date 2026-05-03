@@ -16,9 +16,11 @@ import { registerCreateStaffDeployPlan } from "./create-staff-deploy-plan.js";
 import { registerCreateTask } from "./create-task.js";
 import { registerCropCalendar } from "./crop-calendar.js";
 import { registerFieldWeatherReport } from "./field-weather-report.js";
+import { registerGetLaborShortageStats } from "./get-labor-shortage-stats.js";
 import { registerGetMarketPrice } from "./get-market-price.js";
 import { registerGetPesticideRules } from "./get-pesticide-rules.js";
 import { registerGetPrefectureCropProfile } from "./get-prefecture-crop-profile.js";
+import { registerGetSswCropCompatibility } from "./get-ssw-crop-compatibility.js";
 import { registerGetTaskStatus } from "./get-task-status.js";
 import { registerGetWeather1km } from "./get-weather-1km.js";
 import { registerGetWeatherWarning } from "./get-weather-warning.js";
@@ -122,6 +124,10 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   reg("get_market_price", () => registerGetMarketPrice(server, deps));
   reg("get_prefecture_crop_profile", () => registerGetPrefectureCropProfile(server, deps));
   reg("optimize_harvest_timing", () => registerOptimizeHarvestTiming(server, deps));
+
+  // ----- Phase 8 — SSW strategic intelligence layer -----
+  reg("get_ssw_crop_compatibility", () => registerGetSswCropCompatibility(server, deps));
+  reg("get_labor_shortage_stats", () => registerGetLaborShortageStats(server, deps));
 
   // ----- Phase 6 — user-facing agricultural decision tools -----
   reg("crop_calendar", () => registerCropCalendar(server, deps));

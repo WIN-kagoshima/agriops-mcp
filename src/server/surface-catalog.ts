@@ -266,6 +266,19 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     visibility: "model",
     annotations: READ_ONLY_REMOTE,
   },
+  // ----- Phase 8 — SSW strategic intelligence layer -----
+  get_ssw_crop_compatibility: {
+    sideEffect: "read-only",
+    introduced: "1.8.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
+  get_labor_shortage_stats: {
+    sideEffect: "read-only",
+    introduced: "1.8.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
 };
 
 /**
@@ -297,6 +310,7 @@ export const PROMPT_METADATA: Record<string, PromptMetadata> = {
   market_trend_briefing: { introduced: "1.6.0" },
   region_dispatch_demand: { introduced: "1.6.0" },
   annual_dispatch_plan: { introduced: "1.7.0" },
+  ssw_strategy_briefing: { introduced: "1.8.0" },
 };
 
 export const RESOURCE_METADATA: Record<string, ResourceMetadata> = {
