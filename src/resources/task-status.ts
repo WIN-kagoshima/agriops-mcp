@@ -30,8 +30,8 @@ export function registerTaskStatusResource(server: McpServer, deps: Deps): void 
       title: "Background task status",
       description:
         "Returns the current status and result of a background task created by `create_task`. " +
-          "Content is JSON: { id, kind, status, created_at, updated_at, result?, error? }. " +
-          "Poll this resource until status is 'done' or 'error'.",
+        "Content is JSON: { id, kind, status, created_at, updated_at, result?, error? }. " +
+        "Poll this resource until status is 'done' or 'error'.",
       mimeType: "application/json",
     },
     async (_uri, variables) => {

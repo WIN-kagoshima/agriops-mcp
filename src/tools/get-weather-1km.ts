@@ -138,8 +138,9 @@ function summarise(f: import("../types/weather.js").WeatherForecast): string {
     const totalEt0 = et0Values.reduce((acc, v) => acc + v, 0).toFixed(1);
     lines.push(`ET₀ evapotranspiration: ${totalEt0} mm total (${et0Values.length} h).`);
   }
-  const latestSoilMoisture = [...f.hourly].reverse().find((h) => h.soilMoisture !== undefined)
-    ?.soilMoisture;
+  const latestSoilMoisture = [...f.hourly]
+    .reverse()
+    .find((h) => h.soilMoisture !== undefined)?.soilMoisture;
   if (latestSoilMoisture !== undefined) {
     lines.push(`Latest soil moisture (0–1 cm): ${latestSoilMoisture.toFixed(3)} m³/m³.`);
   }

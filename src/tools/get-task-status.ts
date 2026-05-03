@@ -24,10 +24,10 @@ export function registerGetTaskStatus(server: McpServer, deps: Deps): void {
       title: "Get task status",
       description:
         "Returns the current status of a background task created by `create_task`. " +
-          "Statuses: pending → running → done | error. " +
-          "When `done`, `structuredContent.result` contains the task output. " +
-          "When `error`, `structuredContent.error` contains the failure message. " +
-          "Read-only and idempotent; safe to poll repeatedly.",
+        "Statuses: pending → running → done | error. " +
+        "When `done`, `structuredContent.result` contains the task output. " +
+        "When `error`, `structuredContent.error` contains the failure message. " +
+        "Read-only and idempotent; safe to poll repeatedly.",
       inputSchema: inputSchema.shape,
       annotations: getToolAnnotations(meta.name),
     },

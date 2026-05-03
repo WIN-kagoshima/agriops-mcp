@@ -49,10 +49,7 @@ export class InMemoryTaskStore implements TaskStore {
     return t ? { ...t } : undefined;
   }
 
-  update(
-    id: string,
-    patch: Partial<Pick<Task, "status" | "result" | "error">>,
-  ): Task | undefined {
+  update(id: string, patch: Partial<Pick<Task, "status" | "result" | "error">>): Task | undefined {
     const t = this.tasks.get(id);
     if (!t) return undefined;
     const updated: Task = { ...t, ...patch, updatedAt: new Date().toISOString() };

@@ -10,8 +10,8 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { describe, expect, it } from "vitest";
 import { loadConfig } from "../../src/lib/config.js";
 import { createLogger } from "../../src/lib/logger.js";
-import { createMetrics } from "../../src/server/metrics.js";
 import { createServer } from "../../src/server/create-server.js";
+import { createMetrics } from "../../src/server/metrics.js";
 import { buildEmaff, buildFamic, buildJma, buildWeather } from "../scenarios/_harness.js";
 
 async function bootWithMetrics() {
@@ -33,7 +33,10 @@ async function bootWithMetrics() {
   });
 
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-  const client = new Client({ name: "metrics-test-runner", version: "0.0.1" }, { capabilities: {} });
+  const client = new Client(
+    { name: "metrics-test-runner", version: "0.0.1" },
+    { capabilities: {} },
+  );
   await Promise.all([client.connect(clientTransport), server.connect(serverTransport)]);
 
   return {

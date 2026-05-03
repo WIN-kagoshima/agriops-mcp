@@ -10,6 +10,16 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.1.0] — Agri metrics, Tasks Primitive, eMAFF incremental, ADK example
+
+### Added
+- **ET₀ evapotranspiration and soil indicators** (`HourlyWeatherSchema` extension): `get_weather_1km` now returns `et0EvapotranspirationMm` (FAO-56 Penman-Monteith, mm — key for irrigation scheduling), `soilTemperatureC` (0 cm depth, °C — germination/root decisions), and `soilMoisture` (0–1 cm volumetric water content, m³/m³ — field operation timing). Open-Meteo adapter requests the corresponding `et0_fao_evapotranspiration`, `soil_temperature_0cm`, `soil_moisture_0_to_1cm` variables. Tests: `+3` in `open-meteo.test.ts`.
+- **Tasks Primitive** (`src/tasks/`): `create_task` (kinds: `echo`, `area_summary_async`) and `get_task_status` model-visible tools + `tasks://{task_id}` dynamic `ResourceTemplate`. Allows clients to kick off long-running work and poll status without blocking a single tool call. `InMemoryTaskStore` is the default; swap for Cloud Firestore / Cloud Tasks in multi-replica deployments. Tests: `+8` in `tasks.test.ts`.
+- **eMAFF incremental snapshot builds** (`scripts/build-snapshots --incremental`): `buildEmaffSnapshot` now accepts `incremental?: boolean`. When set on an existing database, rows are applied with `INSERT ... ON CONFLICT DO UPDATE` rather than dropping and recreating the table. R*Tree index is updated via `INSERT OR REPLACE`. An `updated_at` column is added (auto-migrated on first incremental run). `SnapshotManifest` bumped to `schemaVersion: 2` with `lastIncrementalAt` and `incrementalRowsProcessed`. Added `npm run snapshots:build:incremental` shorthand.
+- **Google Cloud Smart Storage context** in snapshot manifests: each `*.sqlite.manifest.json` now includes a `smartStorage` block with `objectContextVersion`, `spatialExtent` (GeoJSON Polygon bounding box), `topicTags`, and `dataLineage`. Enables Google Cloud Agent Platform / Smart Storage-aware clients to route and filter snapshots without reading the SQLite files.
+- **`examples/google-adk/`**: ADK `agent.py` with `MCPToolset` + Streamable HTTP + Workload Identity Federation token flow, `adk_agent_config.json`, and a comprehensive README covering prerequisites, `gcloud print-identity-token` dev flow, Gemini Enterprise Agent Gateway production notes, and quick-test prompts for all new features (ET₀, tasks, incremental snapshot).
+- **`snapshots-audit.ts` v2**: `isManifest()` now accepts `schemaVersion 1 | 2`; audit summary line shows `last-incremental` date when `ManifestV2.lastIncrementalAt` is present.
+
 ## [1.0.1] — Observability hardening + agri metrics
 
 ### Added

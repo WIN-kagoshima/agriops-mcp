@@ -8,8 +8,8 @@ import type { TokenStore } from "../auth/token-store.js";
 import type { ElicitationStore } from "../elicitation/store.js";
 import type { Config } from "../lib/config.js";
 import type { Logger } from "../lib/logger.js";
-import type { Metrics } from "./metrics.js";
 import type { TaskStore } from "../tasks/index.js";
+import type { Metrics } from "./metrics.js";
 
 /**
  * Dependency container injected into every tool/prompt.

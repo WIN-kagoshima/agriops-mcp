@@ -33,6 +33,36 @@ interface BuilderResult {
   attribution?: string;
 }
 
+/**
+ * Google Cloud Smart Storage object-context metadata (Cloud Next '26).
+ * Attached to snapshot manifests so Smart Storage-aware clients can apply
+ * semantic filtering, topic routing, and data-lineage tracking without
+ * reading the full SQLite file.
+ */
+interface SmartStorageContext {
+  /** Schema version for Smart Storage context format. */
+  objectContextVersion: "v1";
+  /**
+   * Approximate bounding box of the data in this snapshot as a GeoJSON
+   * Polygon [minLng, minLat, maxLng, maxLat]. Derived from the raw inputs
+   * or hardcoded per-builder for known datasets.
+   */
+  spatialExtent?: {
+    type: "Polygon";
+    coordinates: number[][][];
+  };
+  /**
+   * Semantic topic tags for content-based routing in Agent Platform workflows.
+   */
+  topicTags: string[];
+  /** Machine-readable data lineage for audit and compliance. */
+  dataLineage: {
+    source: string;
+    license: string;
+    sourceUrl?: string;
+  };
+}
+
 interface SnapshotManifest {
   schemaVersion: 2;
   generatedAt: string;
@@ -52,6 +82,8 @@ interface SnapshotManifest {
   rowCount: number;
   source: string;
   attribution: string;
+  /** Smart Storage context for Google Cloud Agent Platform integration. */
+  smartStorage?: SmartStorageContext;
 }
 
 async function ensureDir(path: string): Promise<void> {
@@ -173,6 +205,7 @@ async function writeSnapshotManifest(result: BuilderResult, incremental = false)
     rowCount: result.rowCount,
     source: result.source,
     attribution: result.attribution,
+    smartStorage: buildSmartStorageContext(result.name),
   };
   const manifestPath = `${result.outputPath}.manifest.json`;
   await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
@@ -196,6 +229,55 @@ run().catch((err: unknown) => {
   if (e.stack) console.error(e.stack);
   process.exit(1);
 });
+
+/**
+ * Returns a Smart Storage object-context block for the given builder.
+ * Values are intentionally conservative approximations — the exact spatial
+ * extent is computed from the raw inputs at full-build time; for now we use
+ * known-good bounding boxes for our Kagoshima-prefect datasets.
+ */
+function buildSmartStorageContext(builderName: string): SmartStorageContext {
+  if (builderName === "emaff") {
+    return {
+      objectContextVersion: "v1",
+      // Kagoshima prefecture approximate bounding box.
+      spatialExtent: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [129.2, 30.9],
+            [131.1, 30.9],
+            [131.1, 32.2],
+            [129.2, 32.2],
+            [129.2, 30.9],
+          ],
+        ],
+      },
+      topicTags: ["farmland", "japan", "kagoshima", "emaff", "fude-polygon", "agriculture"],
+      dataLineage: {
+        source: "eMAFF",
+        license: "CC-BY 4.0",
+        sourceUrl: "https://open.fude.maff.go.jp/",
+      },
+    };
+  }
+  if (builderName === "famic") {
+    return {
+      objectContextVersion: "v1",
+      topicTags: ["pesticide", "japan", "famic", "crop-protection", "agriculture"],
+      dataLineage: {
+        source: "FAMIC",
+        license: "Government of Japan Open Data",
+        sourceUrl: "https://www.acis.famic.go.jp/",
+      },
+    };
+  }
+  return {
+    objectContextVersion: "v1",
+    topicTags: ["agriculture", "japan"],
+    dataLineage: { source: builderName, license: "unknown" },
+  };
+}
 
 // Re-export for tests.
 export { dirname };

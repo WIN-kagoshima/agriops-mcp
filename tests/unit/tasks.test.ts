@@ -6,10 +6,10 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { describe, expect, it } from "vitest";
-import { InMemoryTaskStore } from "../../src/tasks/index.js";
 import { loadConfig } from "../../src/lib/config.js";
 import { createLogger } from "../../src/lib/logger.js";
 import { createServer } from "../../src/server/create-server.js";
+import { InMemoryTaskStore } from "../../src/tasks/index.js";
 import { buildEmaff, buildJma, buildWeather } from "../scenarios/_harness.js";
 
 async function bootTaskClient() {
@@ -48,9 +48,7 @@ describe("InMemoryTaskStore", () => {
     const store = new InMemoryTaskStore();
     const task = store.create("echo");
 
-    expect(task.id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    );
+    expect(task.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
     expect(task.status).toBe("pending");
     expect(task.kind).toBe("echo");
 
@@ -65,7 +63,9 @@ describe("InMemoryTaskStore", () => {
   it("returns undefined for unknown task id", () => {
     const store = new InMemoryTaskStore();
     expect(store.get("00000000-0000-0000-0000-000000000000")).toBeUndefined();
-    expect(store.update("00000000-0000-0000-0000-000000000000", { status: "done" })).toBeUndefined();
+    expect(
+      store.update("00000000-0000-0000-0000-000000000000", { status: "done" }),
+    ).toBeUndefined();
   });
 
   it("list() returns all created tasks", () => {
@@ -150,7 +150,8 @@ describe("echo task end-to-end", () => {
         arguments: { kind: "echo", args: { delay_ms: 50 } },
       });
 
-      const sc = (createResult as { structuredContent?: Record<string, unknown> }).structuredContent;
+      const sc = (createResult as { structuredContent?: Record<string, unknown> })
+        .structuredContent;
       const taskId = sc?.task_id as string;
       expect(taskId).toBeTruthy();
 

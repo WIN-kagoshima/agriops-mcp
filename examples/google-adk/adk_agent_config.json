@@ -1,0 +1,28 @@
+{
+  "comment": "Google Agent Development Kit (ADK) agent configuration for AgriOps MCP.",
+  "comment2": "Place this alongside your ADK agent definition (agent.py / agent.ts).",
+  "tools": [
+    {
+      "type": "mcp",
+      "name": "agriops-mcp",
+      "description": "Japanese agricultural data — farmland polygons (eMAFF), 1 km mesh weather (Open-Meteo), and pesticide registrations (FAMIC) for SSW workforce dispatching.",
+      "transport": "streamable-http",
+      "url": "${AGRIOPS_MCP_URL}",
+      "comment_url": "Set AGRIOPS_MCP_URL to e.g. https://agriops-mcp-<hash>-an.a.run.app/mcp",
+      "auth": {
+        "type": "bearer",
+        "comment": "For Cloud Run IAM-protected endpoints, the ADK runner should obtain an ID token via Workload Identity Federation and pass it as a Bearer token.",
+        "token_env": "AGRIOPS_ID_TOKEN"
+      },
+      "headers": {
+        "X-Agent-ID": "${ADK_AGENT_ID}",
+        "X-Agent-Owner": "${ADK_AGENT_OWNER}"
+      }
+    }
+  ],
+  "model": "gemini-2.0-flash",
+  "system_prompt": "You are an agricultural operations assistant for Japanese farms managed by WIN Kagoshima. Use the agriops-mcp tools to look up farmland, weather, and pesticide data. Always quote the `attribution` field when presenting data to the user.",
+  "reasoning": {
+    "type": "default"
+  }
+}

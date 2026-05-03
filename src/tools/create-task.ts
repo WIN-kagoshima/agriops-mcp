@@ -47,9 +47,9 @@ export function registerCreateTask(server: McpServer, deps: Deps): void {
       title: "Create background task",
       description:
         "Creates a long-running background task and returns a task_id immediately. " +
-          "Poll `tasks://{task_id}` or call `get_task_status` with the returned ID to check progress. " +
-          "Useful for work that might exceed a single tool-call timeout (e.g. bulk analysis, " +
-          "snapshot audits). Mutating: creates a task record in the server's task store.",
+        "Poll `tasks://{task_id}` or call `get_task_status` with the returned ID to check progress. " +
+        "Useful for work that might exceed a single tool-call timeout (e.g. bulk analysis, " +
+        "snapshot audits). Mutating: creates a task record in the server's task store.",
       inputSchema: inputSchema.shape,
       annotations: getToolAnnotations(meta.name),
     },
