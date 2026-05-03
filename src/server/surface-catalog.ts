@@ -96,7 +96,7 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
   // ----- Phase 1 -----
   get_weather_warning: {
     sideEffect: "read-only",
-    introduced: "0.6.0",
+    introduced: "0.5.1",
     visibility: "model",
     annotations: READ_ONLY_REMOTE,
   },
