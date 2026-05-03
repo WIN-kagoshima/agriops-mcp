@@ -10,6 +10,7 @@ permissions:
   id-token: write
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   MCP_BASE_URL: ${{ secrets.MCP_BASE_URL }}
   GCP_WIF_PROVIDER: ${{ secrets.GCP_WIF_PROVIDER }}
   GCP_DEPLOYER_SERVICE_ACCOUNT: ${{ secrets.GCP_DEPLOYER_SERVICE_ACCOUNT }}
