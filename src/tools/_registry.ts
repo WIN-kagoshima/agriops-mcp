@@ -20,9 +20,11 @@ import { registerGetPesticideRules } from "./get-pesticide-rules.js";
 import { registerGetTaskStatus } from "./get-task-status.js";
 import { registerGetWeather1km } from "./get-weather-1km.js";
 import { registerGetWeatherWarning } from "./get-weather-warning.js";
+import { registerMultiFieldCompare } from "./multi-field-compare.js";
 import { registerNearbyFarms } from "./nearby-farms.js";
 import { registerOpenDashboard } from "./open-dashboard.js";
 import { registerSearchFarmland } from "./search-farmland.js";
+import { registerSeasonalRiskForecast } from "./seasonal-risk-forecast.js";
 import { registerSnapshotStatus } from "./snapshot-status.js";
 import { registerSprayWindow } from "./spray-window.js";
 
@@ -116,8 +118,10 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   // ----- Phase 6 — user-facing agricultural decision tools -----
   reg("crop_calendar", () => registerCropCalendar(server, deps));
   reg("spray_window", () => registerSprayWindow(server, deps));
+  reg("seasonal_risk_forecast", () => registerSeasonalRiskForecast(server, deps));
   if (deps.emaff) {
     reg("field_weather_report", () => registerFieldWeatherReport(server, deps));
+    reg("multi_field_compare", () => registerMultiFieldCompare(server, deps));
   }
 
   // ----- Phase 5 — snapshot freshness + MCP Apps UI dashboard -----

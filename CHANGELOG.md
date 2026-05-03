@@ -10,6 +10,20 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-05-04 — Persona-driven features: daily briefing, field visits, multi-field compare
+
+### Added
+- **`docs/personas.md`**: Four detailed user personas (dispatch manager, JA extension officer, mid-scale farmer, AgriTech CTO) with pain points, current tool landscape, and feature mapping matrix.
+- **`daily_briefing` prompt**: Morning briefing for farmers and dispatch managers. Fetches 48-hour weather, JMA warnings, and generates prioritized daily work plan with Go/NoGo judgement. Designed to be read on a smartphone in under 30 seconds.
+- **`field_visit_checklist` prompt**: Pre-visit preparation sheet for JA extension officers. Given a field ID, assembles farmland info, 72-hour weather, pesticide candidates, and nearby fields into a printable A4 checklist with observation points and farmer advice draft.
+- **`multi_field_compare` tool**: Takes up to 10 field IDs and returns a side-by-side comparison table with risk levels (safe/caution/danger), recommending the best field for work today. Designed for dispatch managers deciding field priorities.
+- **`seasonal_risk_forecast` tool**: 7-day agricultural risk forecast with day-by-day breakdown. Evaluates heat stress, frost, heavy rain, drought, strong wind, and crop-specific disease risk (high-temp + humidity). Returns overall risk level (low/moderate/high).
+
+### Changed
+- **`surface-catalog.ts`**: Added tool metadata for `multi_field_compare`, `seasonal_risk_forecast` and prompt metadata for `daily_briefing`, `field_visit_checklist`.
+- **`_registry.ts` (tools)**: `seasonal_risk_forecast` is unconditional; `multi_field_compare` requires `deps.emaff`.
+- **`_registry.ts` (prompts)**: Now 10 prompts total.
+
 ## [1.4.0] — 2026-05-04 — User-facing agricultural decision tools
 
 ### Added

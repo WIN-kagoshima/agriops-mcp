@@ -235,6 +235,18 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     visibility: "model",
     annotations: READ_ONLY,
   },
+  multi_field_compare: {
+    sideEffect: "read-only",
+    introduced: "1.5.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
+  seasonal_risk_forecast: {
+    sideEffect: "read-only",
+    introduced: "1.5.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
 };
 
 /**
@@ -261,6 +273,8 @@ export const PROMPT_METADATA: Record<string, PromptMetadata> = {
   irrigation_schedule: { introduced: "1.3.0" },
   data_freshness_check: { introduced: "1.3.0" },
   harvest_readiness: { introduced: "1.4.0" },
+  daily_briefing: { introduced: "1.5.0" },
+  field_visit_checklist: { introduced: "1.5.0" },
 };
 
 export const RESOURCE_METADATA: Record<string, ResourceMetadata> = {
