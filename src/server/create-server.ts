@@ -77,6 +77,7 @@ export function createServer(options: CreateServerOptions): {
     famic,
     tokenStore: overrides?.tokenStore ?? new InMemoryTokenStore(),
     elicitationStore: overrides?.elicitationStore ?? new InMemoryElicitationStore(),
+    metrics: overrides?.metrics,
   };
 
   if (!emaff) {

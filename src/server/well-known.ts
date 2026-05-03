@@ -114,7 +114,12 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
     clients: [
       { name: "Claude Desktop", tested: true, transport: "stdio" },
       { name: "Cursor", tested: true, transport: "streamable-http" },
-      { name: "ChatGPT (Connectors)", tested: false, transport: "streamable-http", notes: "Planned" },
+      {
+        name: "ChatGPT (Connectors)",
+        tested: false,
+        transport: "streamable-http",
+        notes: "Planned",
+      },
       { name: "Google ADK", tested: false, transport: "streamable-http", notes: "Planned" },
     ],
     /** Operator-facing observability endpoints (relative to the base URL). */

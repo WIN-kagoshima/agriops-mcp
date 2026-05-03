@@ -27,11 +27,53 @@ import { registerSearchFarmland } from "./search-farmland.js";
  * Phase 0 server (no eMAFF) only exposes weather. This keeps the LLM
  * context lean and avoids "tool exists but always errors" UX.
  *
+ * When `deps.metrics` is present, every tool handler is automatically wrapped
+ * to increment `tool_calls_total{tool,outcome}` and observe
+ * `tool_duration_ms{tool}`. This is done by temporarily patching
+ * `server.registerTool` so individual tool files don't need to know about
+ * the metrics registry.
+ *
  * Returns the names of tools that were actually registered, so the
  * Server Card builder can advertise only what is live.
  */
 export function registerAllTools(server: McpServer, deps: Deps): string[] {
   const registered: string[] = [];
+
+  // Patch server.registerTool to wrap handlers with automatic metrics
+  // tracking when a metrics registry is available.
+  //
+  // McpServer.registerTool is overloaded, so we capture it through an
+  // `unknown` cast to avoid TypeScript's "never" inference on overloaded
+  // function parameters. The patch is restored after all tools are registered.
+  type AnyFn = (toolName: string, config: unknown, handler: unknown) => void;
+  const serverRecord = server as unknown as Record<string, unknown>;
+  const originalRegisterTool = (server.registerTool as unknown as AnyFn).bind(server);
+
+  if (deps.metrics) {
+    const metrics = deps.metrics;
+    serverRecord.registerTool = (
+      toolName: string,
+      config: unknown,
+      handler: (input: unknown) => Promise<{ isError?: boolean }>,
+    ) => {
+      const tracked = async (input: unknown) => {
+        const start = Date.now();
+        try {
+          const result = await handler(input);
+          const outcome = result?.isError === true ? "error" : "ok";
+          metrics.inc("tool_calls_total", { tool: toolName, outcome });
+          metrics.observe("tool_duration_ms", Date.now() - start, { tool: toolName });
+          return result;
+        } catch (err) {
+          metrics.inc("tool_calls_total", { tool: toolName, outcome: "error" });
+          metrics.observe("tool_duration_ms", Date.now() - start, { tool: toolName });
+          throw err;
+        }
+      };
+      originalRegisterTool(toolName, config, tracked);
+    };
+  }
+
   const reg = (name: string, fn: () => void) => {
     fn();
     registered.push(name);
@@ -76,6 +118,11 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   }
   reg("fetch_weather_layer", () => registerFetchWeatherLayer(server, deps));
   reg("export_plan_csv", () => registerExportPlanCsv(server, deps));
+
+  // Restore the original registerTool after all registrations are complete.
+  if (deps.metrics) {
+    serverRecord.registerTool = originalRegisterTool;
+  }
 
   return registered;
 }

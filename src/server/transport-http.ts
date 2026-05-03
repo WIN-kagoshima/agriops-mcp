@@ -171,7 +171,7 @@ export async function startHttp(
       config,
       logger: reqLogger,
       version,
-      overrides: { elicitationStore, tokenStore },
+      overrides: { elicitationStore, tokenStore, metrics },
     });
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,

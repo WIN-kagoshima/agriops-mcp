@@ -17,12 +17,12 @@ import type {
   JmaAdapter,
   WeatherAdapter,
 } from "../../src/adapters/_interface.js";
-import type { AreaSummary, Farmland, FarmlandSearchResult } from "../../src/types/farmland.js";
-import type { PesticideQueryResult } from "../../src/types/pesticide.js";
-import type { WeatherForecast } from "../../src/types/weather.js";
 import { loadConfig } from "../../src/lib/config.js";
 import { createLogger } from "../../src/lib/logger.js";
 import { createServer } from "../../src/server/create-server.js";
+import type { AreaSummary, Farmland, FarmlandSearchResult } from "../../src/types/farmland.js";
+import type { PesticideQueryResult } from "../../src/types/pesticide.js";
+import type { WeatherForecast } from "../../src/types/weather.js";
 
 // ---------------------------------------------------------------------------
 // Realistic Kagoshima fixtures
@@ -282,7 +282,10 @@ export function allText(result: unknown): string {
   if (typeof result !== "object" || result === null) return "";
   const content = (result as { content?: unknown }).content;
   const list = (Array.isArray(content) ? content : []) as unknown[];
-  return list.filter(isStringContent).map((c) => c.text).join("\n");
+  return list
+    .filter(isStringContent)
+    .map((c) => c.text)
+    .join("\n");
 }
 
 export function isErrorResult(result: unknown): boolean {

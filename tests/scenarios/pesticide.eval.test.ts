@@ -78,10 +78,7 @@ describe("Eval: pesticide rules lookup workflow", () => {
       };
       expect(rule.targetCrops).toBeDefined();
       // sweet-potato weevil fixture has maxApplicationsPerSeason = 1
-      if (
-        rule.maxApplicationsPerSeason !== undefined &&
-        rule.maxApplicationsPerSeason !== null
-      ) {
+      if (rule.maxApplicationsPerSeason !== undefined && rule.maxApplicationsPerSeason !== null) {
         expect(rule.maxApplicationsPerSeason).toBeGreaterThanOrEqual(1);
       }
     } finally {
@@ -101,9 +98,7 @@ describe("Eval: pesticide rules lookup workflow", () => {
       const content = (dashResult as { content?: unknown[] }).content ?? [];
       const hasResourceLink = content.some(
         (c) =>
-          typeof c === "object" &&
-          c !== null &&
-          (c as { type?: string }).type === "resource_link",
+          typeof c === "object" && c !== null && (c as { type?: string }).type === "resource_link",
       );
       // If the host doesn't surface resource_link it falls back to text-only
       const text = allText(dashResult);

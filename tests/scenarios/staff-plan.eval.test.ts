@@ -36,8 +36,8 @@ describe("Eval: staff planning workflow", () => {
       };
       // Our fixture seeds: 142,800 fields, 47,200 ha
       if (sc) {
-        expect((sc.totalFields ?? 0)).toBeGreaterThan(0);
-        expect((sc.totalAreaHa ?? 0)).toBeGreaterThan(0);
+        expect(sc.totalFields ?? 0).toBeGreaterThan(0);
+        expect(sc.totalAreaHa ?? 0).toBeGreaterThan(0);
         expect(Array.isArray(sc.topCrops)).toBe(true);
         expect((sc.topCrops ?? []).length).toBeGreaterThanOrEqual(1);
         expect(sc.attribution).toBeTruthy();
@@ -135,7 +135,10 @@ describe("Eval: staff planning workflow", () => {
     try {
       const result = await client.getPrompt({
         name: "staff_deploy_plan",
-        arguments: { farm_ids: "fude-eval-0001,fude-eval-0002", period: "2026-05-01 to 2026-05-31" },
+        arguments: {
+          farm_ids: "fude-eval-0001,fude-eval-0002",
+          period: "2026-05-01 to 2026-05-31",
+        },
       });
       expect(result.messages.length).toBeGreaterThanOrEqual(1);
       const firstMsg = result.messages[0];
