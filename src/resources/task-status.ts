@@ -35,7 +35,7 @@ export function registerTaskStatusResource(server: McpServer, deps: Deps): void 
       mimeType: "application/json",
     },
     async (_uri, variables) => {
-      const taskId = String(variables["task_id"] ?? "");
+      const taskId = String(variables.task_id ?? "");
       const task = deps.taskStore?.get(taskId);
 
       if (!task) {

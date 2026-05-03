@@ -10,7 +10,7 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
-## [1.1.0] — Agri metrics, Tasks Primitive, eMAFF incremental, ADK example
+## [1.1.0] — 2026-05-03 — Agri metrics, Tasks Primitive, eMAFF incremental, ADK example
 
 ### Added
 - **ET₀ evapotranspiration and soil indicators** (`HourlyWeatherSchema` extension): `get_weather_1km` now returns `et0EvapotranspirationMm` (FAO-56 Penman-Monteith, mm — key for irrigation scheduling), `soilTemperatureC` (0 cm depth, °C — germination/root decisions), and `soilMoisture` (0–1 cm volumetric water content, m³/m³ — field operation timing). Open-Meteo adapter requests the corresponding `et0_fao_evapotranspiration`, `soil_temperature_0cm`, `soil_moisture_0_to_1cm` variables. Tests: `+3` in `open-meteo.test.ts`.
@@ -20,7 +20,7 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 - **`examples/google-adk/`**: ADK `agent.py` with `MCPToolset` + Streamable HTTP + Workload Identity Federation token flow, `adk_agent_config.json`, and a comprehensive README covering prerequisites, `gcloud print-identity-token` dev flow, Gemini Enterprise Agent Gateway production notes, and quick-test prompts for all new features (ET₀, tasks, incremental snapshot).
 - **`snapshots-audit.ts` v2**: `isManifest()` now accepts `schemaVersion 1 | 2`; audit summary line shows `last-incremental` date when `ManifestV2.lastIncrementalAt` is present.
 
-## [1.0.1] — Observability hardening + agri metrics
+## [1.0.1] — 2026-04-28 — Observability hardening + agri metrics
 
 ### Added
 - **Tool metrics auto-instrumentation**: `tool_calls_total{tool,outcome}` and `tool_duration_ms{tool}` are now automatically incremented / observed for every registered MCP tool without per-tool code changes. The `_registry.ts` patches `server.registerTool` at registration time, wraps each handler, then restores the original. `deps.metrics` (optional `Metrics`) flows from `transport-http.ts` → `create-server.ts` → `deps`. The `/metrics` Prometheus endpoint now emits per-tool call counts and durations.

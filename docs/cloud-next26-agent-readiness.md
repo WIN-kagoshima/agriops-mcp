@@ -156,7 +156,7 @@ Useful eval scenarios:
 | Agent Identity | Adopt via optional trusted headers once a gateway is in place. |
 | Model Armor | Recommended at the gateway/host layer, not inside tool handlers. |
 | Cloud Storage MCP server | Operator-side companion for snapshot buckets. |
-| Smart Storage | Future snapshot provenance and unstructured document context. |
+| Smart Storage | ✅ Adopted (v1.1.0) — `smartStorage` block in snapshot manifests (`objectContextVersion`, `spatialExtent`, `topicTags`, `dataLineage`) for Agent Platform content-based routing and data-lineage tracking. |
 | Cloud Storage Rapid | Defer; not needed for current Cloud Run workload size. |
 | Fraud Defense | Future edge control for public browser surfaces. |
 | Partner Agent Marketplace | Future distribution path if packaging criteria become available. |
@@ -171,8 +171,13 @@ Useful eval scenarios:
 3. ✅ Red-team conformance test for prompt-injection / unbounded-data /
    secret-leakage probes
    (`tests/conformance/red-team.test.ts`).
-4. Add a small example ADK / Gemini Enterprise agent that calls AgriOps MCP.
+4. ✅ Google ADK example agent (`examples/google-adk/`) with `MCPToolset`
+   + Streamable HTTP + Workload Identity Federation token flow, covering
+   Gemini Enterprise Agent Gateway production integration (v1.1.0).
 5. ✅ Gateway deployment note for Agent Gateway and equivalent reverse-proxy
-   policies (`docs/agent-gateway-deployment.md`). Will be re-reviewed once
-   the Agent Gateway public docs stabilize.
+   policies (`docs/agent-gateway-deployment.md`). Expanded with ADK
+   handshake procedure in v1.1.0.
+6. ✅ Smart Storage object-context metadata added to snapshot manifests
+   (`schemaVersion: 2` with `smartStorage.objectContextVersion`, `spatialExtent`,
+   `topicTags`, `dataLineage`) — enabling Agent Platform content-based routing.
 

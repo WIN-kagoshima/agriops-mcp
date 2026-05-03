@@ -291,6 +291,67 @@ as an upstream and:
 
 ---
 
+## Google Agent Development Kit (ADK) integration
+
+ADK agents connect to AgriOps MCP over Streamable HTTP using `MCPToolset`.
+The handshake flow is identical to any other HTTP client, but two ADK-specific
+details are worth noting.
+
+### Authentication — Cloud Run ID token
+
+Cloud Run IAM requires a valid Google Cloud **ID token** (not an access token)
+in the `Authorization: Bearer` header. The expected audience is the full Cloud
+Run service URL (e.g. `https://agriops-mcp-<hash>-an.a.run.app`).
+
+**Development:**
+```bash
+export AGRIOPS_ID_TOKEN=$(gcloud auth print-identity-token \
+  --audiences="$AGRIOPS_MCP_URL")
+```
+
+**Production (Workload Identity Federation, no key files):**
+
+1. Grant the ADK runner's service account `roles/run.invoker` on the AgriOps
+   MCP Cloud Run service.
+2. In `agent.py` call `google.oauth2.id_token.fetch_id_token(auth_req, audience)`.
+   Application Default Credentials pick up the WIF token automatically.
+3. Refresh the token before its 1-hour expiry; cache with TTL < 55 minutes.
+
+Full working example: [`examples/google-adk/agent.py`](../examples/google-adk/agent.py).
+
+### Audit headers
+
+ADK passes optional agent-identity metadata through HTTP headers. AgriOps MCP
+forwards these to the structured log when the corresponding env vars are set:
+
+```bash
+# On the Cloud Run service (set at deploy time):
+AGRIOPS_AGENT_ID_HEADER=X-Agent-ID
+AGRIOPS_AGENT_OWNER_HEADER=X-Agent-Owner
+
+# In agent.py MCPToolset headers:
+"X-Agent-ID": "agriops-adk-prod",
+"X-Agent-Owner": "win-kagoshima"
+```
+
+These values are **audit-only** — they are never used as authorization
+decisions inside the server.
+
+### Gemini Enterprise Agent Gateway
+
+When the Gemini Enterprise Agent Gateway sits in front of AgriOps MCP:
+
+1. Configure the gateway route to target `$AGRIOPS_MCP_URL/mcp`.
+2. The gateway injects its own identity headers; set
+   `AGRIOPS_AGENT_ID_HEADER` / `AGRIOPS_AGENT_OWNER_HEADER` on the Cloud Run
+   service to match the header names the gateway uses.
+3. Strip any client-supplied `X-Agent-*` headers at the gateway layer so
+   callers cannot spoof the audit identity.
+4. Point the ADK agent at the gateway URL, not the Cloud Run URL directly, so
+   Model Armor and rate limiting apply at the edge.
+
+---
+
 ## Verification checklist
 
 After putting a gateway in front of AgriOps MCP, run the existing smoke
