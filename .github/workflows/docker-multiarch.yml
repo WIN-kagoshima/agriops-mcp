@@ -73,7 +73,7 @@ jobs:
       # Derive version string and decide whether this is a pre-release.
       - name: Derive image metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           # Produce:
