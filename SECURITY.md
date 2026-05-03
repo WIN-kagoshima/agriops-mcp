@@ -4,7 +4,7 @@
 
 | Version | Status |
 |---|---|
-| `1.0.x` | **Supported** (current stable) |
+| `1.x` | **Supported** (current stable: 1.5.0) |
 | `0.5.x` | Security patches only |
 | `0.4.x` and earlier | End of life |
 

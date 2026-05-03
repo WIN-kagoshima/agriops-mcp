@@ -12,7 +12,7 @@ import { registerStaffDeployPlanPrompt } from "./staff-deploy-plan.js";
 import { registerWeatherRiskAlertPrompt } from "./weather-risk-alert.js";
 
 /**
- * Phase 2: 5 user-controlled prompts (slash commands). They are exposed
+ * 10 user-controlled prompts (slash commands). They are exposed
  * unconditionally; the underlying tools they reference may not be available
  * in early phases, in which case the prompt simply tells the LLM to
  * apologise and explain what is missing.

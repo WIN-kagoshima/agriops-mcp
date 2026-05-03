@@ -89,18 +89,19 @@ examples/         Ready-to-run client examples (Claude Desktop, Cursor, ADK)
 
 ```bash
 npm run build          # compile TypeScript to dist/
-node dist/server/transport-stdio.js
+npm run dev            # or: node dist/server.js --stdio
 ```
 
-**Streamable HTTP (port 8080):**
+**Streamable HTTP (port 3001 by default):**
 
 ```bash
-MCP_BASE_URL=http://localhost:8080 \
-  node dist/server/transport-http.js
+npm run start:http     # or: node dist/server.js --http
 ```
 
 Point [MCP Inspector](https://github.com/modelcontextprotocol/inspector) at
-`http://localhost:8080/mcp` to browse and call tools interactively.
+`http://localhost:3001/mcp` to browse and call tools interactively.
+
+Override the port with `PORT=8080 npm run start:http`.
 
 For Cursor or Claude Desktop config snippets, see `examples/`.
 

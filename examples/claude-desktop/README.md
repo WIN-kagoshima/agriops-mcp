@@ -82,7 +82,7 @@ Start the server first:
 
 ```bash
 npm run start:http
-# Server listens on http://localhost:8080
+# Server listens on http://localhost:3001 (override with PORT env var)
 ```
 
 Then add to `claude_desktop_config.json`:
@@ -92,7 +92,7 @@ Then add to `claude_desktop_config.json`:
   "mcpServers": {
     "agriops-mcp": {
       "type": "http",
-      "url": "http://localhost:8080/mcp"
+      "url": "http://localhost:3001/mcp"
     }
   }
 }
@@ -124,7 +124,7 @@ Once connected, Claude Desktop has access to:
 | `open_dashboard` | Open the interactive map dashboard (MCP Apps hosts) |
 | *(+ 10 more)* | See [`docs/architecture.md`](../../docs/architecture.md) |
 
-And 5 slash-command prompts:
+And 10 slash-command prompts:
 
 | Prompt | Usage |
 |---|---|
@@ -133,6 +133,11 @@ And 5 slash-command prompts:
 | `pesticide_advice` | `/pesticide_advice crop=稲 pest=いもち病` |
 | `area_briefing` | `/area_briefing prefectureCode=JP-46` |
 | `staff_deploy_plan` | `/staff_deploy_plan farm_ids=… period=…` |
+| `irrigation_schedule` | `/irrigation_schedule lat=31.6 lng=130.5` |
+| `data_freshness_check` | `/data_freshness_check` |
+| `harvest_readiness` | `/harvest_readiness crop=稲 lat=31.6 lng=130.5 last_spray_date=2026-04-20` |
+| `daily_briefing` | `/daily_briefing lat=31.6 lng=130.5` |
+| `field_visit_checklist` | `/field_visit_checklist field_id=fude-…` |
 
 ---
 
@@ -145,7 +150,7 @@ Add to `.cursor/mcp.json` in your workspace:
   "mcpServers": {
     "agriops-mcp": {
       "type": "http",
-      "url": "http://localhost:8080/mcp"
+      "url": "http://localhost:3001/mcp"
     }
   }
 }

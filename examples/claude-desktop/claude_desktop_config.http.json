@@ -2,7 +2,7 @@
   "mcpServers": {
     "agriops-mcp": {
       "type": "http",
-      "url": "http://localhost:8080/mcp"
+      "url": "http://localhost:3001/mcp"
     }
   }
 }

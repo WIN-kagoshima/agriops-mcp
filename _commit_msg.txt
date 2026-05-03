@@ -1,0 +1,12 @@
+docs: fix release-readiness issues across README, CONTRIBUTING, CHANGELOG, SECURITY, examples
+
+- README: Node version 20+ to 22+ (matches package.json engines >=22.0.0),
+  tools table expanded from 8 to 16, prompts table from 5 to 10 with Since column
+- CONTRIBUTING: fix wrong dist paths (transport-stdio.js to server.js),
+  update HTTP port to match default 3001
+- SECURITY: supported version 1.0.x to 1.x (current stable: 1.5.0)
+- CHANGELOG: add compare links for v1.0.1-v1.5.0, add date to [1.0.0]
+- examples/claude-desktop: HTTP port 8080 to 3001 (matches config.ts default),
+  prompt count 5 to 10 with full listing
+- src/prompts/_registry.ts: comment "5 prompts" to "10 prompts"
+- tests/smoke/prompts.test.ts: assert all 10 prompts with exact length check

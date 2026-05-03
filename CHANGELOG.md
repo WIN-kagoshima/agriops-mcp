@@ -92,7 +92,7 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 - CI runs `npm run test:scenarios` as a dedicated step so eval scenario regressions are clearly surfaced in the workflow summary.
 - `deploy.yml` now runs `npm run snapshots:audit` before Cloud Build starts, surfacing stale snapshot manifests early (step is `continue-on-error` for first-time deploys that pre-date the manifest format).
 
-## [1.0.0] — Stable — public surface frozen
+## [1.0.0] — 2026-04-28 — Stable — public surface frozen
 
 This release marks the first stable API surface. Tool names, prompt names, resource URIs, and input/output schemas are now frozen under SemVer. Breaking changes will require a `2.0.0`. The `0.x` series was explicitly experimental.
 
@@ -188,7 +188,7 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - **`FileTokenStore`**: AES-256-GCM encrypted file backend for `TokenStore`, with deterministic per-key filenames, atomic writes, scrypt-derived keys from `AGRIOPS_TOKEN_ENC_PASSPHRASE`, or a raw 32-byte base64 key from `AGRIOPS_TOKEN_ENC_KEY`. Refuses to start unless one is set.
 - **X-Request-Id middleware**: Streamable HTTP now honours/echoes a stable per-request ID, plumbs it into `logger.child({ requestId })`, and surfaces it in error JSON-RPC `data.requestId`. Fulfils the contract that `safeErrorMessage` advertises ("report the request ID").
 - `examples/` folder with three runnable clients: `stdio-typescript/` (`@modelcontextprotocol/sdk`), `stdio-python/` (`mcp[cli]`), and `http-curl/` (Bash + PowerShell scripts hitting `/mcp`).
-- README badges: CI, CodeQL, OpenSSF Scorecard, npm version, Apache-2.0, Node ≥20, MCP Spec 2025-11-25, MCP Apps 2026-01-26.
+- README badges: CI, CodeQL, OpenSSF Scorecard, npm version, Apache-2.0, Node ≥22, MCP Spec 2025-11-25, MCP Apps 2026-01-26.
 - `.github/workflows/codeql.yml` (weekly + on PR) and `.github/workflows/scorecard.yml`.
 - `npm audit signatures` step in CI (continues on error so missing provenance doesn't block PRs).
 - `NOTICE` file documenting third-party data attribution (Open-Meteo, JMA, eMAFF, FAMIC).
@@ -263,7 +263,13 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.4.0...v1.5.0
+[1.4.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.3.0...v1.4.0
+[1.3.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v0.5.2...v1.0.0
 [0.5.2]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v0.5.0...v0.5.1

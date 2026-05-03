@@ -6,14 +6,14 @@ import { loadConfig } from "../../src/lib/config.js";
 import { createLogger } from "../../src/lib/logger.js";
 import { createServer } from "../../src/server/create-server.js";
 
-describe("Phase 2 prompts", () => {
-  it("exposes all 5 prompts", async () => {
+describe("Prompts", () => {
+  it("exposes all 10 prompts", async () => {
     const config = loadConfig();
     const logger = createLogger({ level: "warn" });
     const { server } = createServer({
       config,
       logger,
-      version: "0.2.0-test",
+      version: "1.5.0-test",
       overrides: {
         weather: new OpenMeteoWeatherAdapter({ fetchImpl: async () => new Response("{}") }),
       },
@@ -31,8 +31,14 @@ describe("Phase 2 prompts", () => {
         "staff_deploy_plan",
         "area_briefing",
         "weather_risk_alert",
+        "irrigation_schedule",
+        "data_freshness_check",
+        "harvest_readiness",
+        "daily_briefing",
+        "field_visit_checklist",
       ]),
     );
+    expect(names).toHaveLength(10);
 
     await client.close();
     await server.close();
