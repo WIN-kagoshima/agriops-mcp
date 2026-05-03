@@ -64,8 +64,6 @@ const outputSchema = z.object({
 });
 
 export function registerSnapshotStatus(server: McpServer, _deps: Deps): void {
-  const snapshotDir = resolve("snapshots");
-
   server.registerTool(
     meta.name,
     {
@@ -96,6 +94,8 @@ export function registerSnapshotStatus(server: McpServer, _deps: Deps): void {
         .safeParse(raw);
       const staleAfterHours = parsed.success ? parsed.data.staleAfterHours : 2160;
       const checkedAt = new Date().toISOString();
+      // Resolved at call time (not registration time) so tests can chdir first.
+      const snapshotDir = resolve("snapshots");
 
       const results = await Promise.all(
         KNOWN_SNAPSHOTS.map(async (name) => {

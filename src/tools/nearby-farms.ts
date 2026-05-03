@@ -41,6 +41,7 @@ export function registerNearbyFarms(server: McpServer, deps: Deps): void {
         "Return eMAFF farmland polygons whose centroid lies within `radiusMeters` of the given (lat, lng). " +
         "Useful for planning routes between fields and for finding nearby dispatch sites. Read-only.",
       inputSchema: inputSchema.shape,
+      outputSchema: FarmlandSearchResultSchema.shape,
       annotations: getToolAnnotations(meta.name),
     },
     async (raw: unknown) => {

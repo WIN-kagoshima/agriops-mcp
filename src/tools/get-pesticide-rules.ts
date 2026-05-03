@@ -48,6 +48,7 @@ export function registerGetPesticideRules(server: McpServer, deps: Deps): void {
         "Search Japanese pesticide registrations (FAMIC) by crop, pest/disease, or active ingredient. " +
         "Returns registration numbers, products, application limits, and pre-harvest intervals. Read-only.",
       inputSchema: baseSchema.shape,
+      outputSchema: PesticideQueryResultSchema.shape,
       annotations: getToolAnnotations(meta.name),
     },
     async (raw: unknown) => {
