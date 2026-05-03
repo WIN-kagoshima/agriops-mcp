@@ -210,8 +210,8 @@ export function registerMultiFieldCompare(server: McpServer, deps: Deps): void {
               `出典: ${output.attribution}`,
             ].join("\n"),
           },
-          { type: "text", text: JSON.stringify(output) },
         ],
+        structuredContent: output as unknown as Record<string, unknown>,
       };
     },
   );

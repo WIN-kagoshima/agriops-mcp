@@ -14,6 +14,12 @@ export const meta: ToolMeta = {
 
 export const DASHBOARD_URI = "ui://agriops/dashboard.html";
 
+const outputSchema = z.object({
+  prefectureCode: z.string(),
+  fieldId: z.string().nullable(),
+  attribution: z.string(),
+});
+
 export const inputSchema = z
   .object({
     initialPrefectureCode: z
@@ -46,6 +52,7 @@ export function registerOpenDashboard(server: McpServer, deps: Deps): void {
         "Open the interactive map + weather dashboard. On MCP Apps hosts (Claude, ChatGPT) the UI renders inline; " +
         "on hosts without MCP Apps support a structured text summary is returned instead. Read-only.",
       inputSchema: inputSchema.shape,
+      outputSchema: outputSchema.shape,
       annotations: getToolAnnotations(meta.name),
       _meta: {
         "openai/widgetAccessible": true,
@@ -72,6 +79,7 @@ export function registerOpenDashboard(server: McpServer, deps: Deps): void {
           attribution:
             "Map © OpenStreetMap contributors · Weather © Open-Meteo (CC-BY 4.0) · Farmland: 農林水産省 eMAFF 筆ポリゴン",
         };
+        const structured: z.infer<typeof outputSchema> = initialState;
         return {
           content: [
             {
@@ -89,7 +97,7 @@ export function registerOpenDashboard(server: McpServer, deps: Deps): void {
               mimeType: "text/html",
             },
           ],
-          structuredContent: initialState as unknown as Record<string, unknown>,
+          structuredContent: structured as unknown as Record<string, unknown>,
           _meta: {
             "openai/outputTemplate": DASHBOARD_URI,
           },

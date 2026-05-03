@@ -257,8 +257,8 @@ export function registerCropCalendar(server: McpServer, _deps: Deps): void {
               type: "text",
               text: `「${crop}」のカレンダーデータはまだ登録されていません。\n登録済みの作物: ${available.join("、")}\n今後のアップデートで追加予定です。`,
             },
-            { type: "text", text: JSON.stringify(result) },
           ],
+          structuredContent: result as unknown as Record<string, unknown>,
         };
       }
 
@@ -300,8 +300,8 @@ export function registerCropCalendar(server: McpServer, _deps: Deps): void {
               `出典: ${result.attribution}`,
             ].join("\n"),
           },
-          { type: "text", text: JSON.stringify(result) },
         ],
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     },
   );

@@ -204,8 +204,8 @@ export function registerSprayWindow(server: McpServer, deps: Deps): void {
               `出典: ${forecast.attribution}`,
             ].join("\n"),
           },
-          { type: "text", text: JSON.stringify(result) },
         ],
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     },
   );

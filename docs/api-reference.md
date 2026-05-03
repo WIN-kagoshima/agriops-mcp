@@ -37,15 +37,17 @@ suite is supposed to keep them in sync.
 
 ## 2. Model-visible tools
 
-The seven tools below are exposed via `tools/list` and are the LLM's primary
+The sixteen tools below are exposed via `tools/list` and are the LLM's primary
 surface. Their input schemas are JSON Schema (Draft 2020-12); see
 [`src/tools/`](../src/tools/) for the canonical Zod definitions that
-generate them.
+generate them. All Phase 6 tools require the eMAFF adapter for field-ID
+resolution unless noted.
 
 ### `get_weather_1km` — Phase 0, read-only
 
 Hourly weather forecast at the given (lat, lng). Open-Meteo upstream,
-1-hour cache, CC-BY 4.0 attribution.
+1-hour cache, CC-BY 4.0 attribution. Includes agricultural variables: ET₀
+evapotranspiration, soil temperature, and soil moisture (since v1.1.0).
 
 | Field | Type | Notes |
 |---|---|---|
@@ -61,7 +63,18 @@ Hourly weather forecast at the given (lat, lng). Open-Meteo upstream,
   "lat": 31.59,
   "lng": 130.55,
   "timezone": "Asia/Tokyo",
-  "hourly": [{ "time": "...", "temperature": 20.1, "precipitationMm": 0, "windMs": 2, "humidityPct": 55 }],
+  "hourly": [
+    {
+      "time": "2026-05-01T09:00:00Z",
+      "temperatureC": 22.0,
+      "precipitationMm": 0,
+      "windSpeedMs": 3.1,
+      "relativeHumidity": 62,
+      "et0EvapotranspirationMm": 0.12,
+      "soilTemperatureC": 18.5,
+      "soilMoisture": 0.28
+    }
+  ],
   "attribution": "Weather data by Open-Meteo.com (CC-BY 4.0)"
 }
 ```
@@ -121,6 +134,35 @@ Returns `{ status: "draft", actions: [...] }` regardless of host
 elicitation support — clients without elicitation see a fallback message
 plus default values they can override on the next call.
 
+### `create_task` — Phase 4, **mutating**
+
+Creates a background async task and returns a `task_id` immediately.
+Supported kinds: `echo` (test harness), `area_summary_async`.
+
+| Field | Type | Notes |
+|---|---|---|
+| `kind` | `enum` | Required. `"echo"` or `"area_summary_async"`. |
+| `args.prefecture_code` | `string` | Required for `area_summary_async`. |
+| `args.delay_ms` | `integer` | `echo` only: artificial delay, 0–5000 ms. |
+
+`structuredContent`: `{ task_id, kind, status: "pending", poll_resource, created_at }`
+
+### `get_task_status` — Phase 4, read-only
+
+Polls a background task by UUID. Statuses: `pending → running → done | error`.
+
+| Field | Type | Notes |
+|---|---|---|
+| `task_id` | `string (UUID)` | Required. Returned by `create_task`. |
+
+`structuredContent`: `{ id, kind, status, created_at, updated_at, result, error }`
+
+### `snapshot_status` — Phase 5, read-only
+
+Reports the freshness, size, and provenance of the eMAFF and FAMIC
+SQLite snapshots. Returns `{ snapshots: [...], attribution }` with
+`freshnessState: "fresh" | "stale" | "missing"` for each file.
+
 ### `open_dashboard` — Phase 5, read-only
 
 Returns a tool result whose `_meta.openWidget` and
@@ -128,6 +170,76 @@ Returns a tool result whose `_meta.openWidget` and
 Hosts that support MCP Apps render the React dashboard inline; others
 receive a structured-content text summary so the LLM still has something
 useful to say.
+
+`structuredContent`: `{ prefectureCode, fieldId, attribution }`
+
+### `crop_calendar` — Phase 6, read-only
+
+Month-by-month farming calendar for a given crop and climate region.
+Built-in database covers 5 crops (稲, さつまいも, キャベツ, トマト, 茶) with
+regional time-shift for 9 regions.
+
+| Field | Type | Notes |
+|---|---|---|
+| `crop` | `string` | Required. Japanese crop name or alias (e.g. `甘藷` → `さつまいも`). |
+| `region` | `enum` | Optional. One of `hokkaido` / `tohoku` / `kanto` / `chubu` / `kinki` / `chugoku` / `shikoku` / `kyushu` / `okinawa`. Default: `kyushu`. |
+
+`structuredContent`: `{ crop, region, calendar: [{ activity, startMonth, endMonth, notes }], availableCrops, attribution }`
+
+### `field_weather_report` — Phase 6, read-only
+
+Fetches the field's location from eMAFF, runs a multi-day weather
+forecast, checks for JMA warnings, and returns a unified risk-flagged
+report. Combines `get_weather_1km` + `get_weather_warning` in one call.
+
+| Field | Type | Notes |
+|---|---|---|
+| `field_id` | `string` | Required. eMAFF Fude polygon ID, e.g. `K46-0001-0001`. |
+| `hours` | `integer` | Optional. Default 72, max 168. |
+
+`structuredContent`: `{ fieldId, address, registeredCrop, areaHa, forecast, jmaWarnings, riskFlags, attribution }`
+
+### `spray_window` — Phase 6, read-only
+
+Analyses hourly weather to find safe time windows for pesticide spraying.
+Evaluates wind speed (< threshold), precipitation (must be 0), and
+humidity (40–90% optimal). Returns ranked slots ≥ 2 h.
+
+| Field | Type | Notes |
+|---|---|---|
+| `lat` | `number` | Required. WGS84. |
+| `lng` | `number` | Required. WGS84. |
+| `hours` | `integer` | Optional. Look-ahead hours, default 48, max 120. |
+| `wind_threshold_ms` | `number` | Optional. Max acceptable wind, m/s. Default 3.0. |
+
+`structuredContent`: `{ location, analysisHours, windThresholdMs, suitableSlots, totalSuitableHours, recommendation, attribution }`
+
+### `multi_field_compare` — Phase 6, read-only
+
+Side-by-side comparison of up to 10 eMAFF fields with risk levels and
+work-suitability ranking. Designed for dispatch managers and extension
+officers.
+
+| Field | Type | Notes |
+|---|---|---|
+| `field_ids` | `string` | Required. Comma-separated eMAFF field IDs (max 10). |
+| `hours` | `integer` | Optional. Forecast horizon, default 24. |
+
+`structuredContent`: `{ fields: [...], comparedAt, forecastHours, bestFieldForWork, attribution }`
+
+### `seasonal_risk_forecast` — Phase 6, read-only
+
+7-day agricultural risk forecast broken down by day. Evaluates heat
+stress, frost risk, heavy rain, drought, strong wind, and optional
+crop-specific risks.
+
+| Field | Type | Notes |
+|---|---|---|
+| `lat` | `number` | Required. WGS84. |
+| `lng` | `number` | Required. WGS84. |
+| `crop` | `string` | Optional. Enables crop-specific risk rules (e.g. `茶`). |
+
+`structuredContent`: `{ location, crop, days: [...], weekSummary: { totalPrecipMm, totalEt0Mm, daysWithRain, maxRiskDay, overallRisk }, attribution }`
 
 ---
 
@@ -156,18 +268,46 @@ are called by the dashboard bundle via `window.mcpApps.callTool`.
 All prompts are **user-controlled** (`MUST NOT auto-fire`). Surface them
 through your host's slash-command UI and let the user accept arguments.
 
-| Slash command | Required arguments | Optional |
-|---|---|---|
-| `/field_summary` | `field_id` | — |
-| `/pesticide_advice` | `crop`, `pest_or_disease` | `region` |
-| `/staff_deploy_plan` | `farm_ids[]`, `period` | `weekday_only` |
-| `/area_briefing` | `prefecture` | `season` |
-| `/weather_risk_alert` | `farm_ids[]` | `lookahead_hours` |
+| Slash command | Required arguments | Optional | Since |
+|---|---|---|---|
+| `/field_summary` | `field_id` | — | 1.0.0 |
+| `/pesticide_advice` | `crop`, `pest_or_disease` | `region` | 1.0.0 |
+| `/staff_deploy_plan` | `farm_ids[]`, `period` | `weekday_only` | 1.0.0 |
+| `/area_briefing` | `prefecture` | `season` | 1.1.0 |
+| `/weather_risk_alert` | `farm_ids[]` | `lookahead_hours` | 1.1.0 |
+| `/irrigation_schedule` | `lat`, `lng` | `stale_after_days` | 1.3.0 |
+| `/data_freshness_check` | — | `stale_after_days` | 1.3.0 |
+| `/harvest_readiness` | `crop`, `lat`, `lng`, `last_spray_date` | — | 1.4.0 |
+| `/daily_briefing` | `lat`, `lng` | — | 1.5.0 |
+| `/field_visit_checklist` | `field_id` | — | 1.5.0 |
 
 Each prompt returns a single `messages: [{ role: "user", content: ... }]`
 template that the host renders into the user's draft. None of the
 prompts call tools directly — that's the LLM's job once the prompt is
 materialised.
+
+### Prompt descriptions
+
+- **`/field_summary`** — Generates a natural-language summary for an eMAFF
+  field, ready for an LLM to flesh out with current weather and risk data.
+- **`/pesticide_advice`** — Asks the LLM to cross-reference FAMIC rules for
+  the given crop/pest and format actionable spray guidance.
+- **`/staff_deploy_plan`** — Generates a draft SSW deployment schedule for
+  the given farm IDs and period.
+- **`/area_briefing`** — Regional farming overview for a prefecture: seasonal
+  context, dominant crops, active JMA warnings.
+- **`/weather_risk_alert`** — Weather risk bulletin for up to 10 farm IDs,
+  including ET₀ aggregation and JMA warning cross-reference.
+- **`/irrigation_schedule`** — 7-day irrigation recommendation from ET₀ and
+  soil-moisture forecast. Requires `get_weather_1km` agricultural indicators.
+- **`/data_freshness_check`** — Operator diagnostic: calls `snapshot_status`
+  and formats the result as a data-quality bulletin.
+- **`/harvest_readiness`** — Cross-references 7-day weather with FAMIC
+  pre-harvest interval rules to advise on harvest readiness.
+- **`/daily_briefing`** — Morning briefing for farmers and dispatch managers:
+  today's weather summary + JMA warnings + key risks.
+- **`/field_visit_checklist`** — Field-visit preparation checklist for
+  agricultural extension officers, combining field info with current weather.
 
 ---
 

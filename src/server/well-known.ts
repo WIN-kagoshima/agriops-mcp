@@ -132,11 +132,11 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
     },
     /** Test-suite summary baked at build time; updated on each release. */
     eval: {
-      testFiles: 36,
-      testCases: 175,
+      testFiles: 41,
+      testCases: 208,
       scenarios: 23,
       conformanceChecks: 11,
-      lastRun: "2026-05-03",
+      lastRun: "2026-05-04",
       repository: "https://github.com/WIN-kagoshima/agriops-mcp/tree/main/tests",
     },
     /** Container image for self-hosted deployments. */

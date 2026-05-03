@@ -17,6 +17,16 @@ export const inputSchema = z
   })
   .strict();
 
+const outputSchema = z.object({
+  id: z.string().uuid(),
+  kind: z.string(),
+  status: z.enum(["pending", "running", "done", "error"]),
+  created_at: z.string(),
+  updated_at: z.string(),
+  result: z.unknown().nullable(),
+  error: z.string().nullable(),
+});
+
 export function registerGetTaskStatus(server: McpServer, deps: Deps): void {
   server.registerTool(
     meta.name,
@@ -29,6 +39,7 @@ export function registerGetTaskStatus(server: McpServer, deps: Deps): void {
         "When `error`, `structuredContent.error` contains the failure message. " +
         "Read-only and idempotent; safe to poll repeatedly.",
       inputSchema: inputSchema.shape,
+      outputSchema: outputSchema.shape,
       annotations: getToolAnnotations(meta.name),
     },
     async (raw: unknown) => {
@@ -68,17 +79,18 @@ export function registerGetTaskStatus(server: McpServer, deps: Deps): void {
       if (task.status === "error") lines.push(`Error: ${task.error}`);
       if (task.status === "done") lines.push("Result available in structuredContent.result");
 
+      const structured: z.infer<typeof outputSchema> = {
+        id: task.id,
+        kind: task.kind,
+        status: task.status as "pending" | "running" | "done" | "error",
+        created_at: task.createdAt,
+        updated_at: task.updatedAt,
+        result: task.result ?? null,
+        error: task.error ?? null,
+      };
       return {
         content: [{ type: "text", text: lines.join("\n") }],
-        structuredContent: {
-          id: task.id,
-          kind: task.kind,
-          status: task.status,
-          created_at: task.createdAt,
-          updated_at: task.updatedAt,
-          result: task.result,
-          error: task.error,
-        } as Record<string, unknown>,
+        structuredContent: structured as unknown as Record<string, unknown>,
       };
     },
   );

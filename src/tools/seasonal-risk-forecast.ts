@@ -213,8 +213,8 @@ export function registerSeasonalRiskForecast(server: McpServer, deps: Deps): voi
               `出典: ${forecast.attribution}`,
             ].join("\n"),
           },
-          { type: "text", text: JSON.stringify(result) },
         ],
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     },
   );

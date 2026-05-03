@@ -219,8 +219,8 @@ export function registerFieldWeatherReport(server: McpServer, deps: Deps): void 
               `出典: ${attribution}`,
             ].join("\n"),
           },
-          { type: "text", text: JSON.stringify(result) },
         ],
+        structuredContent: result as unknown as Record<string, unknown>,
       };
     },
   );

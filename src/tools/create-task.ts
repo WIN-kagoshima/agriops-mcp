@@ -62,6 +62,14 @@ export const inputSchema = z
 
 export type CreateTaskInput = z.infer<typeof inputSchema>;
 
+const outputSchema = z.object({
+  task_id: z.string().uuid(),
+  kind: z.string(),
+  status: z.enum(["pending", "running", "done", "error"]),
+  poll_resource: z.string(),
+  created_at: z.string(),
+});
+
 export function registerCreateTask(server: McpServer, deps: Deps): void {
   server.registerTool(
     meta.name,
@@ -73,6 +81,7 @@ export function registerCreateTask(server: McpServer, deps: Deps): void {
         "Useful for work that might exceed a single tool-call timeout (e.g. bulk analysis, " +
         "snapshot audits). Mutating: creates a task record in the server's task store.",
       inputSchema: inputSchema.shape,
+      outputSchema: outputSchema.shape,
       annotations: getToolAnnotations(meta.name),
     },
     async (raw: unknown) => {
@@ -100,6 +109,13 @@ export function registerCreateTask(server: McpServer, deps: Deps): void {
         deps.logger.error("Background task failed", { taskId: task.id, kind, error: String(err) });
       });
 
+      const structured: z.infer<typeof outputSchema> = {
+        task_id: task.id,
+        kind,
+        status: task.status as "pending",
+        poll_resource: `tasks://${task.id}`,
+        created_at: task.createdAt,
+      };
       return {
         content: [
           {
@@ -111,13 +127,7 @@ export function registerCreateTask(server: McpServer, deps: Deps): void {
             ].join("\n"),
           },
         ],
-        structuredContent: {
-          task_id: task.id,
-          kind,
-          status: task.status,
-          poll_resource: `tasks://${task.id}`,
-          created_at: task.createdAt,
-        } as Record<string, unknown>,
+        structuredContent: structured as unknown as Record<string, unknown>,
       };
     },
   );
