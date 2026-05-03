@@ -53,6 +53,7 @@
     "test:scenarios": "vitest run tests/scenarios",
     "test:ui": "playwright test",
     "snapshots:build": "tsx scripts/build-snapshots/index.ts",
+    "snapshots:build:incremental": "tsx scripts/build-snapshots/index.ts --incremental",
     "snapshots:audit": "tsx scripts/snapshots-audit.ts",
     "inspector": "npx @modelcontextprotocol/inspector node dist/server.js --stdio",
     "deploy:preflight": "tsx scripts/deploy-preflight.ts",

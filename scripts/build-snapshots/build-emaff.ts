@@ -9,6 +9,7 @@ interface BuilderResult {
   outputPath?: string;
   rawPaths?: string[];
   rowCount?: number;
+  incrementalRowsProcessed?: number;
   source?: string;
   attribution?: string;
 }
@@ -44,6 +45,16 @@ export interface BuildEmaffOptions {
   rawPath?: string;
   rawPaths?: string[];
   outPath: string;
+  /**
+   * When `true`, the existing SQLite file is kept and incoming records are
+   * applied with `INSERT OR REPLACE` rather than dropping and recreating the
+   * table. Useful when applying a partial refresh (e.g., a single updated
+   * municipality file) on top of an existing full snapshot.
+   *
+   * Rows that exist in the DB but are absent from the raw inputs are NOT
+   * deleted. Run a full rebuild (`--no-incremental`) periodically to compact.
+   */
+  incremental?: boolean;
 }
 
 /**
@@ -84,45 +95,80 @@ export async function buildEmaffSnapshot(options: BuildEmaffOptions): Promise<Bu
   }
 
   const features = await readFeatures(rawPaths);
+  const incremental = options.incremental === true && existsSync(options.outPath);
 
   const db = new Database(options.outPath);
   try {
     db.pragma("journal_mode = WAL");
-    db.exec(`
-      DROP TABLE IF EXISTS field_rtree;
-      DROP TABLE IF EXISTS field;
-      CREATE TABLE field (
-        rowid              INTEGER PRIMARY KEY,
-        field_id           TEXT NOT NULL UNIQUE,
-        polygon_id         TEXT NOT NULL,
-        prefecture_code    TEXT NOT NULL,
-        city_code          TEXT NOT NULL,
-        address            TEXT,
-        centroid_lat       REAL NOT NULL,
-        centroid_lng       REAL NOT NULL,
-        area_m2            REAL NOT NULL,
-        registered_crop    TEXT
-      );
-      CREATE VIRTUAL TABLE field_rtree USING rtree(
-        id, minLat, maxLat, minLng, maxLng
-      );
-      CREATE INDEX idx_field_pref ON field(prefecture_code);
-      CREATE INDEX idx_field_city ON field(city_code);
-      CREATE INDEX idx_field_crop ON field(registered_crop);
-    `);
 
-    const insertField = db.prepare(`
+    if (!incremental) {
+      // Full rebuild: drop and recreate schema.
+      db.exec(`
+        DROP TABLE IF EXISTS field_rtree;
+        DROP TABLE IF EXISTS field;
+        CREATE TABLE field (
+          rowid              INTEGER PRIMARY KEY,
+          field_id           TEXT NOT NULL UNIQUE,
+          polygon_id         TEXT NOT NULL,
+          prefecture_code    TEXT NOT NULL,
+          city_code          TEXT NOT NULL,
+          address            TEXT,
+          centroid_lat       REAL NOT NULL,
+          centroid_lng       REAL NOT NULL,
+          area_m2            REAL NOT NULL,
+          registered_crop    TEXT,
+          updated_at         TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+        );
+        CREATE VIRTUAL TABLE field_rtree USING rtree(
+          id, minLat, maxLat, minLng, maxLng
+        );
+        CREATE INDEX idx_field_pref ON field(prefecture_code);
+        CREATE INDEX idx_field_city ON field(city_code);
+        CREATE INDEX idx_field_crop ON field(registered_crop);
+      `);
+    } else {
+      // Incremental mode: ensure the updated_at column exists (schema migration).
+      const cols = (db.prepare("PRAGMA table_info(field)").all() as Array<{ name: string }>).map(
+        (c) => c.name,
+      );
+      if (!cols.includes("updated_at")) {
+        db.exec(
+          `ALTER TABLE field ADD COLUMN updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))`,
+        );
+      }
+    }
+
+    const now = new Date().toISOString();
+
+    const upsertField = db.prepare(`
       INSERT INTO field (field_id, polygon_id, prefecture_code, city_code,
-                         address, centroid_lat, centroid_lng, area_m2, registered_crop)
+                         address, centroid_lat, centroid_lng, area_m2, registered_crop, updated_at)
       VALUES (@field_id, @polygon_id, @prefecture_code, @city_code,
-              @address, @centroid_lat, @centroid_lng, @area_m2, @registered_crop)
+              @address, @centroid_lat, @centroid_lng, @area_m2, @registered_crop, @updated_at)
+      ON CONFLICT(field_id) DO UPDATE SET
+        polygon_id       = excluded.polygon_id,
+        prefecture_code  = excluded.prefecture_code,
+        city_code        = excluded.city_code,
+        address          = excluded.address,
+        centroid_lat     = excluded.centroid_lat,
+        centroid_lng     = excluded.centroid_lng,
+        area_m2          = excluded.area_m2,
+        registered_crop  = excluded.registered_crop,
+        updated_at       = excluded.updated_at
     `);
-    const insertRtree = db.prepare(`
-      INSERT INTO field_rtree (id, minLat, maxLat, minLng, maxLng)
+    // R*Tree virtual tables do not support ON CONFLICT DO UPDATE syntax.
+    // INSERT OR REPLACE deletes the existing entry and inserts the new one,
+    // which achieves the same effect for spatial index updates.
+    const upsertRtree = db.prepare(`
+      INSERT OR REPLACE INTO field_rtree (id, minLat, maxLat, minLng, maxLng)
       VALUES (?, ?, ?, ?, ?)
     `);
 
-    const insertAll = db.transaction((features: EmaffFeature[]) => {
+    const selectRowid = db.prepare<[string], { rowid: number }>(
+      "SELECT rowid FROM field WHERE field_id = ?",
+    );
+
+    const upsertAll = db.transaction((features: EmaffFeature[]) => {
       let count = 0;
       for (const f of features) {
         const props = f.properties ?? {};
@@ -132,7 +178,8 @@ export async function buildEmaffSnapshot(options: BuildEmaffOptions): Promise<Bu
         if (!fieldId || !prefectureCode) continue;
         const centroid = computeCentroid(f.geometry);
         if (!centroid) continue;
-        const info = insertField.run({
+
+        upsertField.run({
           field_id: fieldId,
           polygon_id: props.polygon_id ?? fieldId,
           prefecture_code: prefectureCode,
@@ -142,23 +189,33 @@ export async function buildEmaffSnapshot(options: BuildEmaffOptions): Promise<Bu
           centroid_lng: props.point_lng ?? centroid.lng,
           area_m2: props.area_m2 ?? 0,
           registered_crop: props.registered_crop ?? normalizeLandType(props.land_type),
+          updated_at: now,
         });
-        const rowid = Number(info.lastInsertRowid);
-        insertRtree.run(rowid, centroid.lat, centroid.lat, centroid.lng, centroid.lng);
+
+        // Query the canonical rowid so we can update the R*Tree regardless
+        // of whether this was a new insert or an in-place update.
+        const row = selectRowid.get(fieldId);
+        if (row) {
+          upsertRtree.run(row.rowid, centroid.lat, centroid.lat, centroid.lng, centroid.lng);
+        }
         count += 1;
       }
       return count;
     });
 
-    const inserted = insertAll(features);
+    const processed = upsertAll(features);
     db.exec("ANALYZE");
+
+    const totalRows = (db.prepare("SELECT COUNT(*) AS n FROM field").get() as { n: number }).n;
+    const mode = incremental ? "incremental" : "full";
     return {
       name: "emaff",
       status: "ok",
-      message: `Wrote ${inserted} field(s) from ${rawPaths.length} GeoJSON file(s) to ${options.outPath}`,
+      message: `[${mode}] Processed ${processed} feature(s) from ${rawPaths.length} GeoJSON file(s); total rows in DB: ${totalRows}. Output: ${options.outPath}`,
       outputPath: options.outPath,
       rawPaths,
-      rowCount: inserted,
+      rowCount: totalRows,
+      incrementalRowsProcessed: incremental ? processed : undefined,
       source: "eMAFF Fude Polygon",
       attribution: "Source: Ministry of Agriculture, Forestry and Fisheries eMAFF Fude Polygon",
     };

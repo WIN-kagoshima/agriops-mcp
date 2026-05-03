@@ -46,6 +46,15 @@ interface ManifestV1 {
   attribution: string;
 }
 
+interface ManifestV2 extends Omit<ManifestV1, "schemaVersion"> {
+  schemaVersion: 2;
+  /** Set when the last build used --incremental mode. */
+  lastIncrementalAt?: string;
+  incrementalRowsProcessed?: number;
+}
+
+type Manifest = ManifestV1 | ManifestV2;
+
 // ---------------------------------------------------------------------------
 // Argument parsing
 // ---------------------------------------------------------------------------
@@ -82,11 +91,11 @@ async function sha256File(filePath: string): Promise<string> {
   return hash.digest("hex");
 }
 
-function isManifestV1(obj: unknown): obj is ManifestV1 {
+function isManifest(obj: unknown): obj is Manifest {
   if (typeof obj !== "object" || obj === null) return false;
   const m = obj as Record<string, unknown>;
   return (
-    m.schemaVersion === 1 &&
+    (m.schemaVersion === 1 || m.schemaVersion === 2) &&
     typeof m.generatedAt === "string" &&
     typeof m.outputSha256 === "string" &&
     typeof m.rowCount === "number" &&
@@ -131,17 +140,17 @@ async function auditSnapshot(
     };
   }
 
-  // 3. Parse and validate manifest
-  let manifest: ManifestV1;
+  // 3. Parse and validate manifest (v1 and v2 supported)
+  let manifest: Manifest;
   try {
     const raw = await readFile(manifestPath, "utf8");
     const parsed: unknown = JSON.parse(raw);
-    if (!isManifestV1(parsed)) {
+    if (!isManifest(parsed)) {
       return {
         name: label,
         status: "fail",
         message:
-          "Manifest schema invalid: expected schemaVersion=1, generatedAt, outputSha256, rowCount, attribution.",
+          "Manifest schema invalid: expected schemaVersion=1|2, generatedAt, outputSha256, rowCount, attribution.",
       };
     }
     manifest = parsed;
@@ -203,12 +212,17 @@ async function auditSnapshot(
   }
 
   const ageDaysStr = ageDays.toFixed(1);
+  const incrementalNote =
+    manifest.schemaVersion === 2 && manifest.lastIncrementalAt
+      ? ` · last-incremental: ${manifest.lastIncrementalAt.slice(0, 10)}`
+      : "";
+
   return {
     name: label,
     status: "pass",
     message:
       `${manifest.rowCount.toLocaleString()} rows · ${ageDaysStr}d old · ` +
-      `sha256 ok · ${(fileStat.size / 1024 / 1024).toFixed(1)} MiB`,
+      `sha256 ok · ${(fileStat.size / 1024 / 1024).toFixed(1)} MiB${incrementalNote}`,
   };
 }
 

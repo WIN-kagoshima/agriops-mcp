@@ -28,13 +28,18 @@ interface BuilderResult {
   outputPath?: string;
   rawPaths?: string[];
   rowCount?: number;
+  incrementalRowsProcessed?: number;
   source?: string;
   attribution?: string;
 }
 
 interface SnapshotManifest {
-  schemaVersion: 1;
+  schemaVersion: 2;
   generatedAt: string;
+  /** Set when --incremental mode was used for this build. */
+  lastIncrementalAt?: string;
+  /** Number of rows processed in the incremental pass. */
+  incrementalRowsProcessed?: number;
   builder: string;
   outputPath: string;
   outputBytes: number;
@@ -55,7 +60,21 @@ async function ensureDir(path: string): Promise<void> {
   }
 }
 
+function parseArgs(argv: string[]): { incremental: boolean } {
+  return {
+    incremental: argv.includes("--incremental"),
+  };
+}
+
 async function run(): Promise<void> {
+  const { incremental } = parseArgs(process.argv.slice(2));
+
+  if (incremental) {
+    console.log("Mode: incremental (existing snapshots will be updated in-place)");
+  } else {
+    console.log("Mode: full rebuild (existing snapshots will be recreated)");
+  }
+
   await ensureDir("./snapshots");
   await ensureDir("./snapshots/raw");
 
@@ -66,6 +85,7 @@ async function run(): Promise<void> {
       buildEmaffSnapshot({
         rawPaths: await resolveEmaffRawPaths(),
         outPath: "./snapshots/emaff-fude-kagoshima.sqlite",
+        incremental,
       }),
     ),
   );
@@ -83,7 +103,7 @@ async function run(): Promise<void> {
     const icon = r.status === "ok" ? "OK" : r.status === "skipped" ? "--" : "FAIL";
     console.log(`[${icon}] ${r.name}: ${r.message}`);
     if (r.status === "ok") {
-      const manifestPath = await writeSnapshotManifest(r);
+      const manifestPath = await writeSnapshotManifest(r, incremental);
       console.log(`     manifest: ${manifestPath}`);
     }
   }
@@ -120,7 +140,7 @@ async function tryRun(name: string, fn: () => Promise<BuilderResult>): Promise<B
   }
 }
 
-async function writeSnapshotManifest(result: BuilderResult): Promise<string> {
+async function writeSnapshotManifest(result: BuilderResult, incremental = false): Promise<string> {
   if (
     !result.outputPath ||
     result.rowCount === undefined ||
@@ -129,9 +149,16 @@ async function writeSnapshotManifest(result: BuilderResult): Promise<string> {
   ) {
     throw new Error(`builder ${result.name} returned incomplete manifest metadata`);
   }
+  const now = new Date().toISOString();
   const manifest: SnapshotManifest = {
-    schemaVersion: 1,
-    generatedAt: new Date().toISOString(),
+    schemaVersion: 2,
+    generatedAt: now,
+    ...(incremental
+      ? {
+          lastIncrementalAt: now,
+          incrementalRowsProcessed: result.incrementalRowsProcessed,
+        }
+      : {}),
     builder: result.name,
     outputPath: result.outputPath,
     outputBytes: (await stat(result.outputPath)).size,
