@@ -8,12 +8,13 @@
  */
 
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
-const serverEntry = resolve(
-  process.argv[2] ?? new URL("../../dist/server.js", import.meta.url).pathname,
-);
+const serverEntry = process.argv[2]
+  ? resolve(process.argv[2])
+  : fileURLToPath(new URL("../../dist/server.js", import.meta.url));
 
 const transport = new StdioClientTransport({
   command: process.execPath,

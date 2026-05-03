@@ -175,6 +175,8 @@ This server only ships data sources that are open or whose licenses permit redis
 Cloud Next '26 agent-readiness notes for Agent Platform, Smart Storage,
 Fraud Defense, and multi-AI security are tracked in
 [`docs/cloud-next26-agent-readiness.md`](docs/cloud-next26-agent-readiness.md).
+Reverse-proxy / Agent Gateway deployment guidance lives in
+[`docs/agent-gateway-deployment.md`](docs/agent-gateway-deployment.md).
 
 ## Security
 

@@ -9,6 +9,7 @@ Field (鹿児島県, ~31.5N 130.5E).
 | [`stdio-typescript/`](stdio-typescript) | stdio | Official `@modelcontextprotocol/sdk` client driving the server as a child process. |
 | [`stdio-python/`](stdio-python) | stdio | Official `mcp[cli]` Python client (`mcp.client.stdio`). |
 | [`http-curl/`](http-curl) | Streamable HTTP | Plain `curl` calls against the `/mcp` endpoint. Useful when integrating from any language. |
+| [`agent-workflow/`](agent-workflow) | stdio | Multi-tool workflow (`search_farmland → get_weather_1km → get_pesticide_rules → open_dashboard`) — the canonical reference plan for an LLM tool-use loop (Claude / Gemini / OpenAI / ADK). |
 
 All three target the same surface so you can compare them side by side.
 None of them require any keys, snapshots, or external accounts: they

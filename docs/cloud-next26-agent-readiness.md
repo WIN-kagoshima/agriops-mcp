@@ -163,10 +163,16 @@ Useful eval scenarios:
 
 ## Next Implementation Candidates
 
-1. Add snapshot manifest generation for `snapshots/*.sqlite`.
-2. Add optional trusted agent identity log fields.
-3. Add a red-team conformance test for prompt-injection style requests.
-4. Add a small example ADK/Gemini Enterprise agent that calls AgriOps MCP.
-5. Add a gateway deployment note for Agent Gateway or equivalent reverse proxy
-   policies once public docs stabilize.
+1. ✅ Snapshot manifest generation for `snapshots/*.sqlite`
+   (see `scripts/build-snapshots/index.ts` and `*.sqlite.manifest.json`).
+2. ✅ Optional trusted agent identity log fields
+   (`AGRIOPS_AGENT_ID_HEADER`, `AGRIOPS_AGENT_OWNER_HEADER`, plus
+   `getTrustedAgentIdentity` in `src/server/request-id.ts`).
+3. ✅ Red-team conformance test for prompt-injection / unbounded-data /
+   secret-leakage probes
+   (`tests/conformance/red-team.test.ts`).
+4. Add a small example ADK / Gemini Enterprise agent that calls AgriOps MCP.
+5. ✅ Gateway deployment note for Agent Gateway and equivalent reverse-proxy
+   policies (`docs/agent-gateway-deployment.md`). Will be re-reviewed once
+   the Agent Gateway public docs stabilize.
 

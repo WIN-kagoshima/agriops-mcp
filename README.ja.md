@@ -118,6 +118,12 @@ npm run deploy:smoke -- \
 | 気象庁防災 XML | 気象業務法に基づく利用 | Phase 1+ で短期キャッシュのみ |
 | WAGRI | 会員規約 | **本 OSS リリースでは対象外**（Phase 7+ の別パッケージ） |
 
+## エンタープライズ運用
+
+- Cloud Run 本番デプロイ手順は [docs/runbook.md](docs/runbook.md)。
+- Google Cloud Next '26（Agent Platform / Smart Storage / Fraud Defense / multi-AI security）への対応方針は [docs/cloud-next26-agent-readiness.md](docs/cloud-next26-agent-readiness.md)。
+- Agent Gateway / Apigee / NGINX / Cloud Armor などのリバースプロキシ導入時の前提とポリシーは [docs/agent-gateway-deployment.md](docs/agent-gateway-deployment.md)。
+
 ## ライセンス
 
 Apache-2.0. © 2026 WIN Kagoshima

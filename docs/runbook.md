@@ -10,6 +10,9 @@ later phases.
 For Google Cloud Next '26 Agent Platform, Smart Storage, Fraud Defense, and
 multi-AI security adoption decisions, see
 [`docs/cloud-next26-agent-readiness.md`](cloud-next26-agent-readiness.md).
+For reverse-proxy / Agent Gateway placement (NGINX, Apigee, Cloud Armor,
+Gemini Enterprise Agent Gateway, etc.), see
+[`docs/agent-gateway-deployment.md`](agent-gateway-deployment.md).
 
 ---
 
