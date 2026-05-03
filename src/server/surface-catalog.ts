@@ -239,6 +239,8 @@ export const PROMPT_METADATA: Record<string, PromptMetadata> = {
   staff_deploy_plan: { introduced: "0.2.0" },
   area_briefing: { introduced: "0.2.0" },
   weather_risk_alert: { introduced: "0.2.0" },
+  irrigation_schedule: { introduced: "1.3.0" },
+  data_freshness_check: { introduced: "1.3.0" },
 };
 
 export const RESOURCE_METADATA: Record<string, ResourceMetadata> = {

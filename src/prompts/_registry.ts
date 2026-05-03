@@ -1,7 +1,9 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Deps } from "../server/deps.js";
 import { registerAreaBriefingPrompt } from "./area-briefing.js";
+import { registerDataFreshnessCheckPrompt } from "./data-freshness-check.js";
 import { registerFieldSummaryPrompt } from "./field-summary.js";
+import { registerIrrigationSchedulePrompt } from "./irrigation-schedule.js";
 import { registerPesticideAdvicePrompt } from "./pesticide-advice.js";
 import { registerStaffDeployPlanPrompt } from "./staff-deploy-plan.js";
 import { registerWeatherRiskAlertPrompt } from "./weather-risk-alert.js";
@@ -20,11 +22,15 @@ export function registerAllPrompts(server: McpServer, deps: Deps): string[] {
   registerStaffDeployPlanPrompt(server, deps);
   registerAreaBriefingPrompt(server, deps);
   registerWeatherRiskAlertPrompt(server, deps);
+  registerIrrigationSchedulePrompt(server, deps);
+  registerDataFreshnessCheckPrompt(server, deps);
   return [
     "field_summary",
     "pesticide_advice",
     "staff_deploy_plan",
     "area_briefing",
     "weather_risk_alert",
+    "irrigation_schedule",
+    "data_freshness_check",
   ];
 }

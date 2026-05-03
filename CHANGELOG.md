@@ -10,6 +10,18 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-05-03 — Prompt improvements, CONTRIBUTING guide, prefecture map fix
+
+### Added
+- **`irrigation_schedule` prompt**: Uses the 7-day ET₀ evapotranspiration and volumetric soil-moisture forecast from `get_weather_1km` to recommend a daily irrigation schedule. Accepts `lat`, `lng`, optional `crop` name, and `field_area_ha` for water-volume estimates. Generates a table with recommended irrigation volume and flags high-stress days (ET₀ > 5 mm, soil moisture < 0.15 m³/m³).
+- **`data_freshness_check` prompt**: Operator slash command that instructs the agent to call `snapshot_status` and format the result as a plain-language data-quality bulletin. Accepts optional `stale_after_days` (default: 90).
+- **`CONTRIBUTING.md`**: Full contribution guide covering prerequisites, project structure, local server setup, testing, tool/prompt authoring contract, code style, commit message convention, PR checklist, and security reporting.
+
+### Changed
+- **`weather_risk_alert` prompt enhanced**: Now aggregates ET₀ and minimum soil moisture per field alongside rain/wind. Cross-references active JMA warnings for the fields' prefectures when `deps.jma` is available. Evaluation criteria updated to flag ET₀ > 40 mm, soil moisture < 0.15 m³/m³, and active JMA advisories.
+- **`area_briefing` prompt**: `normalisePrefectureCode` helper expanded from 3 hard-coded entries to all 47 Japanese prefectures (both `県名` and short names accepted).
+- **`surface-catalog.ts`**: Added `PROMPT_METADATA` entries for `irrigation_schedule` and `data_freshness_check` (`introduced: "1.3.0"`). Server Card conformance restored to green.
+
 ## [1.2.0] — 2026-05-03 — snapshot_status tool, outputSchema on 6 tools, JMA fix, typed task args
 
 ### Added

@@ -51,8 +51,42 @@ export function registerWeatherRiskAlertPrompt(server: McpServer, deps: Deps): v
         if (!forecast) return `- ${field.fieldId}: 予報取得失敗`;
         const totalRain = forecast.hourly.reduce((acc, h) => acc + (h.precipitationMm || 0), 0);
         const peakWind = Math.max(0, ...forecast.hourly.map((h) => h.windSpeedMs || 0));
-        return `- ${field.fieldId}: 7日合計降水量 ${totalRain.toFixed(1)} mm, 最大風速 ${peakWind.toFixed(1)} m/s`;
+        const totalEt0 = forecast.hourly.reduce(
+          (acc, h) => acc + (h.et0EvapotranspirationMm ?? 0),
+          0,
+        );
+        const minSoilMoisture = Math.min(
+          1,
+          ...forecast.hourly.map((h) => h.soilMoisture ?? 1).filter((v) => v > 0),
+        );
+        return (
+          `- ${field.fieldId}: 7日降水量 ${totalRain.toFixed(1)} mm, ` +
+          `最大風速 ${peakWind.toFixed(1)} m/s, ` +
+          `ET₀合計 ${totalEt0.toFixed(1)} mm, ` +
+          `最低土壌水分 ${minSoilMoisture.toFixed(3)} m³/m³`
+        );
       });
+
+      // Fetch active JMA warnings for the unique prefectures of the fields.
+      const prefCodes = [...new Set(present.map((f) => f.prefectureCode).filter(Boolean))];
+      const warningLines: string[] = [];
+      if (deps.jma && prefCodes.length > 0) {
+        try {
+          const { warnings, attribution: wAttr } = await deps.jma.getActiveWarnings({});
+          const relevant = warnings.filter(
+            (w) => prefCodes.includes(w.prefectureCode) && w.severity !== "info",
+          );
+          if (relevant.length > 0) {
+            warningLines.push("## JMA 現在の警報・注意報");
+            warningLines.push(
+              ...relevant.map((w) => `- [${w.severity}] ${w.kind} — ${w.areaName}`),
+            );
+            warningLines.push(`出典: ${wAttr}`);
+          }
+        } catch {
+          // JMA fetch failure is non-fatal for this prompt
+        }
+      }
 
       return {
         description: `Weather risk alert for ${present.length} field(s).`,
@@ -69,7 +103,16 @@ export function registerWeatherRiskAlertPrompt(server: McpServer, deps: Deps): v
                 "",
                 `出典: ${forecasts[0]?.forecast?.attribution ?? "(weather n/a)"}`,
                 "",
-                "降水量 50 mm 超、最大風速 10 m/s 超のいずれかを満たす農地を ⚠️ で強調し、現場で取るべき具体策（作業順序の入れ替え、待機判断）を 3 行以内で示してください。",
+                ...(warningLines.length > 0 ? [...warningLines, ""] : []),
+                "## 評価基準と回答形式",
+                "次のいずれかを満たす農地を ⚠️ で強調してください：",
+                "  - 7日合計降水量 > 50 mm",
+                "  - 最大風速 > 10 m/s",
+                "  - ET₀合計 > 40 mm（灌水要検討）",
+                "  - 最低土壌水分 < 0.15 m³/m³（乾燥ストレスリスク）",
+                "  - JMA 警報・注意報が発令中",
+                "",
+                "各農地について現場で取るべき具体策（作業順序の入れ替え、灌水追加、待機判断）を 3 行以内で示し、全体サマリを最後に 2 行で書いてください。",
               ].join("\n"),
             },
           },
