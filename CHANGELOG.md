@@ -10,6 +10,19 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.5.1] — 2026-05-04 — crop_calendar expansion, README.ja.md refresh, data-freshness workflow
+
+### Added
+- **`crop_calendar` expanded to 13 crops**: Added ナス, きゅうり, たまねぎ, 大豆, じゃがいも, さとうきび, かんきつ, とうもろこし with authentic Kyushu cultivation windows including spring/autumn double-cropping entries.
+- **`.github/workflows/data-freshness.yml`**: Weekly scheduled workflow (Mondays 02:00 JST) that audits eMAFF and FAMIC snapshot manifests. Opens a GitHub issue when snapshots exceed 30 days; auto-closes the issue when freshness is restored.
+- **Tests (A, B, C phases)**: 5 Phase 6 unit test files, getPrompt coverage for all 10 prompts, `outputSchema` on `create_task` / `get_task_status` / `open_dashboard`, `structuredContent` returns on all Phase 6 tools (fixes SDK -32602 validation). 41 files / 208 cases.
+
+### Changed
+- **`docs/api-reference.md`**: Full rewrite covering all 16 model-visible tools and 10 prompts with `Since` column and per-tool `structuredContent` shapes.
+- **`README.ja.md`**: Updated to Node.js 22+, v1.5.1, 16 tools / 10 prompts, test coverage badge.
+- **`src/server/well-known.ts`**: Bump eval counts to `testFiles: 41`, `testCases: 208`.
+- **`crop_calendar` tool description**: Updated to reflect 13 crops.
+
 ## [1.5.0] — 2026-05-04 — Persona-driven features: daily briefing, field visits, multi-field compare
 
 ### Added
@@ -263,7 +276,8 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.5.1...HEAD
+[1.5.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.5.0...v1.5.1
 [1.5.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.2.0...v1.3.0

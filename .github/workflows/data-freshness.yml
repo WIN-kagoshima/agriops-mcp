@@ -1,0 +1,198 @@
+name: Data freshness check
+
+# Runs every Monday at 02:00 JST (17:00 UTC Sunday).
+# Checks whether eMAFF and FAMIC snapshot manifests are within the
+# acceptable staleness window and opens/updates a GitHub issue when stale.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 17 * * 0"
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  check-freshness:
+    name: Snapshot freshness audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Check snapshot manifests
+        id: freshness
+        run: |
+          node - <<'EOF'
+          import { readFileSync, existsSync } from "fs";
+          import { join } from "path";
+
+          const STALE_DAYS = 30;
+          const SNAPSHOT_DIR = process.env.EMAFF_SNAPSHOT_DIR ?? "snapshots";
+          const manifests = ["emaff-manifest.json", "famic-manifest.json"];
+          const now = new Date();
+          const issues = [];
+
+          for (const name of manifests) {
+            const p = join(SNAPSHOT_DIR, name);
+            if (!existsSync(p)) {
+              issues.push(\`MISSING: \${name} — file not found at \${p}\`);
+              continue;
+            }
+            let manifest;
+            try {
+              manifest = JSON.parse(readFileSync(p, "utf8"));
+            } catch {
+              issues.push(\`CORRUPT: \${name} — not valid JSON\`);
+              continue;
+            }
+            const built = new Date(manifest.builtAt ?? manifest.built_at ?? "");
+            if (isNaN(built.getTime())) {
+              issues.push(\`INVALID_DATE: \${name} — builtAt field missing or unparseable\`);
+              continue;
+            }
+            const ageMs = now - built;
+            const ageDays = ageMs / (1000 * 60 * 60 * 24);
+            if (ageDays > STALE_DAYS) {
+              issues.push(
+                \`STALE: \${name} — built \${built.toISOString()} (\${ageDays.toFixed(1)} days ago, limit \${STALE_DAYS} days)\`
+              );
+            } else {
+              console.log(\`OK: \${name} — \${ageDays.toFixed(1)} days old\`);
+            }
+          }
+
+          if (issues.length > 0) {
+            console.error("Freshness issues found:");
+            issues.forEach(i => console.error("  " + i));
+            // Write to GITHUB_OUTPUT for later steps
+            const fs = await import("fs");
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, \`stale=true\n\`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, \`issues<<BODY\n\${issues.join("\\n")}\nBODY\n\`);
+            process.exit(0); // Don't fail the step; let the issue-creation step handle it
+          } else {
+            console.log("All snapshots are fresh.");
+            const fs = await import("fs");
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, \`stale=false\n\`);
+          }
+          EOF
+
+      - name: Open or update stale-data issue
+        if: steps.freshness.outputs.stale == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "🗄️ Snapshot data is stale — rebuild required";
+            const label = "data-freshness";
+            const issues_text = `${{ steps.freshness.outputs.issues }}`;
+
+            // Ensure label exists
+            try {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: label,
+                color: "e4e669",
+                description: "Raised by the data-freshness workflow",
+              });
+            } catch {}
+
+            // Check for an existing open issue with the same title
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              labels: label,
+              per_page: 10,
+            });
+            const open = existing.data.find(i => i.title === title);
+
+            const body = [
+              "## Snapshot freshness check failed",
+              "",
+              "The weekly data-freshness audit detected the following issues:",
+              "",
+              "```",
+              issues_text,
+              "```",
+              "",
+              "### Remediation",
+              "",
+              "Run the snapshot builders locally and commit updated manifests:",
+              "",
+              "```bash",
+              "npm run build:emaff   # Rebuild eMAFF SQLite snapshot",
+              "npm run build:famic   # Rebuild FAMIC SQLite snapshot",
+              "git add snapshots/",
+              "git commit -m 'chore: refresh eMAFF/FAMIC snapshots'",
+              "git push",
+              "```",
+              "",
+              `> Raised automatically by the \`data-freshness\` workflow on ${new Date().toISOString().slice(0, 10)}.`,
+            ].join("\n");
+
+            if (open) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: open.number,
+                body: `📅 **Weekly re-check** — still stale as of ${new Date().toISOString().slice(0, 10)}.\n\n${issues_text}`,
+              });
+              console.log(`Updated existing issue #${open.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: [label],
+              });
+              console.log(`Created issue #${created.data.number}`);
+            }
+
+      - name: Close resolved issue
+        if: steps.freshness.outputs.stale != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "🗄️ Snapshot data is stale — rebuild required";
+            const label = "data-freshness";
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              labels: label,
+              per_page: 10,
+            });
+            const open = existing.data.find(i => i.title === title);
+            if (open) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: open.number,
+                body: `✅ Snapshots are fresh as of ${new Date().toISOString().slice(0, 10)}. Closing.`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: open.number,
+                state: "closed",
+                state_reason: "completed",
+              });
+              console.log(`Closed issue #${open.number}`);
+            }
