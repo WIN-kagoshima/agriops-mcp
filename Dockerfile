@@ -3,7 +3,7 @@
 # Multi-stage build for Cloud Run.
 #
 # Final image:
-#   - gcr.io/distroless/nodejs20-debian12:nonroot
+#   - gcr.io/distroless/nodejs22-debian12:nonroot   (Node.js 22 LTS)
 #   - runs as non-root user (uid 65532)
 #   - read-only filesystem friendly (snapshots are baked in at build time)
 #
@@ -15,11 +15,14 @@
 # Build:
 #   docker build -t agriops-mcp:local .
 #   docker run --rm -p 8080:8080 -e PORT=8080 -e MCP_BASE_URL=http://localhost:8080 agriops-mcp:local
+#
+# Multi-arch (linux/amd64 + linux/arm64 for Apple Silicon / Graviton):
+#   docker buildx build --platform linux/amd64,linux/arm64 -t agriops-mcp:local .
 
 ############################
 # 1. deps stage — install full toolchain for build/test assets
 ############################
-FROM node:20-bookworm-slim AS deps
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
 # Tools needed to compile better-sqlite3 native bindings.
@@ -34,7 +37,7 @@ RUN npm ci --no-audit --no-fund --ignore-scripts \
 ############################
 # 2. production dependencies — runtime-only node_modules
 ############################
-FROM node:20-bookworm-slim AS prod-deps
+FROM node:22-bookworm-slim AS prod-deps
 WORKDIR /app
 
 # Compile better-sqlite3 for Linux, then keep only production dependencies.
@@ -50,7 +53,7 @@ RUN npm ci --omit=dev --no-audit --no-fund --ignore-scripts \
 ############################
 # 3. build stage — server + MCP Apps UI bundle
 ############################
-FROM node:20-bookworm-slim AS build
+FROM node:22-bookworm-slim AS build
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -73,7 +76,7 @@ ARG BAKE_SNAPSHOTS=0
 ############################
 # 5. final stage — distroless
 ############################
-FROM gcr.io/distroless/nodejs20-debian12:nonroot AS runtime
+FROM gcr.io/distroless/nodejs22-debian12:nonroot AS runtime
 WORKDIR /app
 
 ENV NODE_ENV=production \

@@ -11,8 +11,15 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 ## [Unreleased]
 
 ### Added
-- Added `tests/scenarios/` eval suite (4 files, 23 scenarios): `weather-risk`, `pesticide`, `staff-plan`, and `adversarial` multi-turn tests that exercise the complete Phase 0–5 tool surface with deterministic Kagoshima fixtures. Scenarios cover the canonical `search_farmland → get_weather_1km → get_pesticide_rules → open_dashboard` agent workflow and a 7-step adversarial escalation.
+- Added `tests/scenarios/` eval suite (4 files, 23 scenarios): `weather-risk`, `pesticide`, `staff-plan`, and `adversarial` multi-turn tests that exercise the complete Phase 0–5 tool surface with deterministic Kagoshima fixtures. Scenarios cover the canonical `search_farmland → get_weather_1km → get_pesticide_rules → open_dashboard` agent workflow and a 7-step adversarial escalation. Run with `npm run test:scenarios`.
 - Added `scripts/snapshots-audit.ts` and `npm run snapshots:audit` — freshness and integrity gate for SQLite snapshot files. Checks manifest `generatedAt` age (default 90 days, configurable via `--max-age-days`), re-computes SHA-256, and verifies file-size consistency. Exits 1 on any failure so CI can gate on stale or corrupted snapshots.
+- Added `docs/observability.md` covering `/livez`, `/readyz`, `/metrics` (Prometheus text format), log NDJSON fields, Cloud Logging / Google Managed Prometheus / Cloud Trace integration, rate-limiting parameters, snapshot freshness monitoring, and alerting recommendations.
+
+### Changed
+- Upgraded runtime from **Node.js 20 LTS** to **Node.js 22 LTS** across Dockerfile (all stages), CI workflows, and `package.json` `engines`. Distroless final image is now `gcr.io/distroless/nodejs22-debian12:nonroot`.
+- Added `npm run test:scenarios` as an explicit script target (CI now runs it as a separate step after the main test run).
+- CI runs `npm run test:scenarios` as a dedicated step so eval scenario regressions are clearly surfaced in the workflow summary.
+- `deploy.yml` now runs `npm run snapshots:audit` before Cloud Build starts, surfacing stale snapshot manifests early (step is `continue-on-error` for first-time deploys that pre-date the manifest format).
 
 ## [1.0.0] — Stable — public surface frozen
 

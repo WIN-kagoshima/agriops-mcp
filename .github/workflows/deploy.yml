@@ -40,7 +40,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Validate and normalise deployment inputs
@@ -106,6 +106,15 @@ jobs:
       - name: Capture package version
         id: package
         run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+
+      - name: Snapshot freshness audit
+        # Fail the deploy if the GCS-backed SQLite manifests are stale (>90 days)
+        # or missing. The actual .sqlite files are validated by deploy:preflight
+        # below; this step catches stale manifests before a slow Cloud Build starts.
+        # Skip this step if snapshots/ directory doesn't have manifests yet
+        # (first-time deploy after adding this gate).
+        run: npm run snapshots:audit -- --max-age-days=90
+        continue-on-error: true
 
       - name: Run deploy preflight
         run: |

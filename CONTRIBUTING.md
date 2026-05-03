@@ -11,7 +11,7 @@ Thanks for considering a contribution. This project is a public reference implem
 ## Workflow
 
 1. Fork and create a topic branch off `main`.
-2. Add tests under `tests/unit`, `tests/smoke`, or `tests/conformance` first.
+2. Add tests under `tests/unit`, `tests/smoke`, `tests/conformance`, or `tests/scenarios` (eval) first.
 3. Run locally:
    ```bash
    npm install
@@ -28,7 +28,7 @@ Thanks for considering a contribution. This project is a public reference implem
 
 ## Coding standards
 
-- TypeScript ESM, Node 20+, NodeNext module resolution.
+- TypeScript ESM, Node 22+ (LTS), NodeNext module resolution.
 - Lint and format with Biome (`npm run lint`).
 - No `any` without a justifying comment.
 - All tool inputs validated with Zod at the boundary.

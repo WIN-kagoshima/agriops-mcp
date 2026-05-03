@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -44,6 +44,9 @@ jobs:
 
       - name: Unit + smoke + conformance tests
         run: npm test
+
+      - name: Eval scenario suite
+        run: npm run test:scenarios
 
       - name: Secret leakage guard (grep for committed secrets)
         run: |
@@ -82,7 +85,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies

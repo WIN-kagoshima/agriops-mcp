@@ -36,8 +36,8 @@ updates:
       # Pin to the latest stable v1.x line; v2 is pre-alpha as of 2026-04.
       - dependency-name: "@modelcontextprotocol/sdk"
         update-types: ["version-update:semver-major"]
-      # This server is intentionally Node.js 20+ and its Docker runtime is
-      # distroless nodejs20. Keep Node typings aligned with the runtime.
+      # This server is intentionally Node.js 22+ and its Docker runtime is
+      # distroless nodejs22. Keep Node typings aligned with the runtime.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
       # Express 5 changes router/middleware behavior. Take that as a deliberate
@@ -68,6 +68,6 @@ updates:
       include: "scope"
     ignore:
       # Build stages and the final distroless image are intentionally on the
-      # Node.js 20 LTS line. Avoid Dependabot PRs to node:25+ images.
+      # Node.js 22 LTS line. Avoid Dependabot PRs to node:25+ images.
       - dependency-name: "node"
         update-types: ["version-update:semver-major"]

@@ -14,7 +14,7 @@
     "url": "https://github.com/WIN-kagoshima/agriops-mcp/issues"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "main": "./dist/server.js",
   "bin": {
@@ -50,6 +50,7 @@
     "test:watch": "vitest",
     "test:smoke": "vitest run tests/smoke",
     "test:conformance": "vitest run tests/conformance",
+    "test:scenarios": "vitest run tests/scenarios",
     "test:ui": "playwright test",
     "snapshots:build": "tsx scripts/build-snapshots/index.ts",
     "snapshots:audit": "tsx scripts/snapshots-audit.ts",
