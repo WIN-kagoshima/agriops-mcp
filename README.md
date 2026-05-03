@@ -1,5 +1,9 @@
 # AgriOps MCP
 
+<p align="center">
+  <img src="./assets/logo.png" alt="AgriOps MCP" width="220" />
+</p>
+
 [![CI](https://github.com/WIN-kagoshima/agriops-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/WIN-kagoshima/agriops-mcp/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/WIN-kagoshima/agriops-mcp/actions/workflows/codeql.yml/badge.svg)](https://github.com/WIN-kagoshima/agriops-mcp/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/WIN-kagoshima/agriops-mcp/badge)](https://securityscorecards.dev/viewer/?uri=github.com/WIN-kagoshima/agriops-mcp)

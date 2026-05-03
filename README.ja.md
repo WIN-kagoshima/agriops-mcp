@@ -1,5 +1,9 @@
 # AgriOps MCP（日本語）
 
+<p align="center">
+  <img src="./assets/logo.png" alt="AgriOps MCP" width="220" />
+</p>
+
 > 公式 MCP Spec 2025-11-25 / MCP Apps Extension 2026-01-26 / MCP TypeScript SDK v1.x に準拠した **参照実装** MCP サーバ。
 > Apache-2.0 · TypeScript ESM · Node.js 22+ · stdio + Streamable HTTP。
 >
