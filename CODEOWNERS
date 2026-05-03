@@ -1,0 +1,10 @@
+# Code Owners — reviewed automatically on every pull request.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+* @WIN-kagoshima/agriops-maintainers
+
+# Security-sensitive files require an explicit maintainer review
+SECURITY.md @WIN-kagoshima/agriops-maintainers
+.github/workflows/ @WIN-kagoshima/agriops-maintainers
+src/auth/ @WIN-kagoshima/agriops-maintainers

@@ -2,12 +2,11 @@
 
 ## Supported versions
 
-Until `1.0.0`, only the latest minor version receives security patches. After `1.0.0` we will publish an explicit table.
-
 | Version | Status |
 |---|---|
-| `0.5.x` | Supported (latest) |
-| `0.4.x` and earlier | Best effort only |
+| `1.0.x` | **Supported** (current stable) |
+| `0.5.x` | Security patches only |
+| `0.4.x` and earlier | End of life |
 
 ## Reporting a vulnerability
 

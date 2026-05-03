@@ -10,7 +10,12 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.0.1] — Observability hardening + agri metrics
+
 ### Added
+- **Tool metrics auto-instrumentation**: `tool_calls_total{tool,outcome}` and `tool_duration_ms{tool}` are now automatically incremented / observed for every registered MCP tool without per-tool code changes. The `_registry.ts` patches `server.registerTool` at registration time, wraps each handler, then restores the original. `deps.metrics` (optional `Metrics`) flows from `transport-http.ts` → `create-server.ts` → `deps`. The `/metrics` Prometheus endpoint now emits per-tool call counts and durations.
+- Added `tests/unit/tool-metrics.test.ts` (4 scenarios) verifying end-to-end auto-instrumentation via `InMemoryTransport`.
+- Added `CODEOWNERS` — all files owned by `@WIN-kagoshima/agriops-maintainers` (improves OSSF Scorecard Branch-Protection check).
 - Added `.github/workflows/docker-multiarch.yml` — builds and pushes `linux/amd64 + linux/arm64` images to `ghcr.io/win-kagoshima/agriops-mcp` on SemVer tags (Docker layer cache via registry manifest; SBOM + provenance attestation via `docker/build-push-action`).
 - Added `docs/architecture.md` — system diagram, request lifecycle, directory structure, adapter pattern, tool registration lifecycle, `search_farmland` data-flow trace, phase model, DI/testability pattern, security boundaries, and checklists for adding new tools and data sources.
 - Added `examples/claude-desktop/` — `claude_desktop_config.json` snippets for stdio and Streamable HTTP modes, Cursor `.cursor/mcp.json` config, troubleshooting guide, and quick-test prompts.
@@ -20,6 +25,7 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 - Added `docs/observability.md` covering `/livez`, `/readyz`, `/metrics` (Prometheus text format), log NDJSON fields, Cloud Logging / Google Managed Prometheus / Cloud Trace integration, rate-limiting parameters, snapshot freshness monitoring, and alerting recommendations.
 
 ### Changed
+- `SECURITY.md`: updated supported-versions table to reflect `1.0.x` as current stable; `0.5.x` moved to security-patches-only; `0.4.x` marked end-of-life.
 - Upgraded runtime from **Node.js 20 LTS** to **Node.js 22 LTS** across Dockerfile (all stages), CI workflows, and `package.json` `engines`. Distroless final image is now `gcr.io/distroless/nodejs22-debian12:nonroot`.
 - Added `npm run test:scenarios` as an explicit script target (CI now runs it as a separate step after the main test run).
 - CI runs `npm run test:scenarios` as a dedicated step so eval scenario regressions are clearly surfaced in the workflow summary.

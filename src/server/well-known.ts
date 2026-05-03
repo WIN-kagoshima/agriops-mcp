@@ -132,8 +132,8 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
     },
     /** Test-suite summary baked at build time; updated on each release. */
     eval: {
-      testFiles: 33,
-      testCases: 156,
+      testFiles: 34,
+      testCases: 160,
       scenarios: 23,
       conformanceChecks: 11,
       lastRun: "2026-05-03",
