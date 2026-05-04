@@ -1,8 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Deps } from "../server/deps.js";
 import { registerAnnualDispatchPlanPrompt } from "./annual-dispatch-plan.js";
-import { registerSswStrategyBriefingPrompt } from "./ssw-strategy-briefing.js";
-import { registerStrategyRoomDashboardPrompt } from "./strategy-room-dashboard.js";
 import { registerAreaBriefingPrompt } from "./area-briefing.js";
 import { registerDailyBriefingPrompt } from "./daily-briefing.js";
 import { registerDataFreshnessCheckPrompt } from "./data-freshness-check.js";
@@ -13,7 +11,9 @@ import { registerIrrigationSchedulePrompt } from "./irrigation-schedule.js";
 import { registerMarketTrendBriefingPrompt } from "./market-trend-briefing.js";
 import { registerPesticideAdvicePrompt } from "./pesticide-advice.js";
 import { registerRegionDispatchDemandPrompt } from "./region-dispatch-demand.js";
+import { registerSswStrategyBriefingPrompt } from "./ssw-strategy-briefing.js";
 import { registerStaffDeployPlanPrompt } from "./staff-deploy-plan.js";
+import { registerStrategyRoomDashboardPrompt } from "./strategy-room-dashboard.js";
 import { registerWeatherRiskAlertPrompt } from "./weather-risk-alert.js";
 
 /**

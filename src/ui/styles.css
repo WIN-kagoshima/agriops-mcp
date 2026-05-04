@@ -219,15 +219,15 @@ body,
   font-size: 0.7rem;
   padding: 2px 7px;
   border-radius: 99px;
-  background: rgba(52,211,153,0.12);
+  background: rgba(52, 211, 153, 0.12);
   color: var(--accent);
-  border: 1px solid rgba(52,211,153,0.25);
+  border: 1px solid rgba(52, 211, 153, 0.25);
 }
 
 .header-badge.preview {
-  background: rgba(245,158,11,0.12);
+  background: rgba(245, 158, 11, 0.12);
   color: var(--warning);
-  border-color: rgba(245,158,11,0.25);
+  border-color: rgba(245, 158, 11, 0.25);
 }
 
 .header-controls {
@@ -311,7 +311,7 @@ body,
 }
 
 .quick-action-btn:hover {
-  background: rgba(52,211,153,0.1);
+  background: rgba(52, 211, 153, 0.1);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -334,7 +334,7 @@ body,
 .loading-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(13,17,23,0.7);
+  background: rgba(13, 17, 23, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -355,13 +355,15 @@ body,
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error */
 .error-banner {
   padding: 0.6rem 0.75rem;
-  background: rgba(248,113,113,0.1);
+  background: rgba(248, 113, 113, 0.1);
   border: 1px solid var(--danger);
   border-radius: 6px;
   font-size: 0.85rem;
@@ -457,7 +459,7 @@ body,
 
 .data-table td {
   padding: 0.35rem 0.6rem;
-  border-bottom: 1px solid rgba(30,41,59,0.5);
+  border-bottom: 1px solid rgba(30, 41, 59, 0.5);
   color: var(--fg);
   white-space: nowrap;
   max-width: 200px;
@@ -466,7 +468,7 @@ body,
 }
 
 .data-table tr:hover td {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 /* MapLibre override */
@@ -475,7 +477,7 @@ body,
 }
 
 .maplibregl-ctrl-attrib {
-  background: rgba(13,17,23,0.8) !important;
+  background: rgba(13, 17, 23, 0.8) !important;
   color: var(--muted) !important;
   font-size: 10px !important;
 }

@@ -2,13 +2,13 @@
  * Unit tests for get_municipality_stats (Phase 10)
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
+  COVERED_PREF_CODES,
   getAllMunicipalities,
   getMunicipalitiesByPref,
   getMunicipalityByCode,
   searchMunicipalities,
-  COVERED_PREF_CODES,
 } from "../../src/data/municipality-db.js";
 import { extractVizHint } from "../../src/lib/viz-hint.js";
 import { withVizHint } from "../../src/lib/viz-hint.js";
@@ -80,22 +80,28 @@ describe("viz-hint helpers", () => {
   });
 
   it("extractVizHint extracts radar hint", () => {
-    const sc = withVizHint({ data: 1 }, {
-      preferredView: "radar",
-      axes: ["A", "B", "C", "D", "E"],
-      title: "Test",
-    });
+    const sc = withVizHint(
+      { data: 1 },
+      {
+        preferredView: "radar",
+        axes: ["A", "B", "C", "D", "E"],
+        title: "Test",
+      },
+    );
     const hint = extractVizHint(sc);
     expect(hint).not.toBeNull();
     expect(hint?.preferredView).toBe("radar");
   });
 
   it("extractVizHint handles choropleth hint", () => {
-    const sc = withVizHint({}, {
-      preferredView: "choropleth",
-      metric: "changeRate5yr",
-      geoLevel: "prefecture",
-    });
+    const sc = withVizHint(
+      {},
+      {
+        preferredView: "choropleth",
+        metric: "changeRate5yr",
+        geoLevel: "prefecture",
+      },
+    );
     const hint = extractVizHint(sc);
     expect(hint?.preferredView).toBe("choropleth");
   });

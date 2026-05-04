@@ -22,7 +22,7 @@ test.describe("MCP Apps UI bundle (dashboard.html)", () => {
     await expect(page.locator("#root")).toBeVisible({ timeout: 10_000 });
 
     // Top-level dashboard heading is always rendered (offline-friendly).
-    await expect(page.getByText(/AgriOps MCP/i)).toBeVisible();
+    await expect(page.getByText(/AgriOps\s*戦略室/i)).toBeVisible();
 
     // No uncaught JS errors at boot.
     expect(errors, errors.join("\n")).toEqual([]);
@@ -31,9 +31,8 @@ test.describe("MCP Apps UI bundle (dashboard.html)", () => {
   test("falls back gracefully when no MCP Apps host bridge is present", async ({ page }) => {
     await page.goto(pathToFileURL(DASHBOARD_PATH).toString());
 
-    // useAppBridge should detect missing window.app and surface a fallback
-    // banner so users understand they're seeing the standalone preview.
-    const fallback = page.getByText(/standalone preview|no host detected|fallback/i);
+    // useAppBridge should detect missing window.app and surface a preview badge.
+    const fallback = page.getByText(/^Preview$/i);
     await expect(fallback).toBeVisible({ timeout: 5_000 });
   });
 });

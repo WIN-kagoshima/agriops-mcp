@@ -10,6 +10,9 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+### Changed
+
+- **npm package name** from `@win-kagoshima/agriops-mcp` to `@sugukuru/agriops-mcp` (publisher: [sugukuru](https://www.npmjs.com/~sugukuru)). GitHub repo URL and Docker image references (`ghcr.io/...`) are unchanged.
 ## [1.10.0] — 2026-05-04 — 戦略室 UI 2.0: 市町村ドリルダウン + 8種アダプティブビジュアライゼーション
 
 ### Added

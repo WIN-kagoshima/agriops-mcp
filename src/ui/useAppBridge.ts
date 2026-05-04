@@ -92,15 +92,18 @@ export function useAppBridge<T>(initial: T): AppBridge<T> {
    * For resource:// URIs we use the app-only tool `fetch_topojson_resource`
    * as an indirection because the host bridge does not expose readResource.
    */
-  const fetchResource = useCallback(async (uri: string): Promise<string | null> => {
-    const result = await callTool("fetch_topojson_resource", { uri });
-    if (!result || result.isError) return null;
-    // Prefer text content
-    for (const item of result.content ?? []) {
-      if (item.type === "text" && item.text) return item.text;
-    }
-    return null;
-  }, [callTool]);
+  const fetchResource = useCallback(
+    async (uri: string): Promise<string | null> => {
+      const result = await callTool("fetch_topojson_resource", { uri });
+      if (!result || result.isError) return null;
+      // Prefer text content
+      for (const item of result.content ?? []) {
+        if (item.type === "text" && item.text) return item.text;
+      }
+      return null;
+    },
+    [callTool],
+  );
 
   // Sync host-pushed state back into React.
   useEffect(() => {

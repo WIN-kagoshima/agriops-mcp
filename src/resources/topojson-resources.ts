@@ -37,9 +37,7 @@ function readTopoFile(key: TopoKey): string {
   } catch {
     return JSON.stringify({
       status: "not_built",
-      message:
-        `TopoJSON ファイルが見つかりません: ${TOPO_FILES[key]}\n` +
-        "以下のコマンドで生成してください:\n  node scripts/build-topojson.mjs",
+      message: `TopoJSON ファイルが見つかりません: ${TOPO_FILES[key]}\n以下のコマンドで生成してください:\n  node scripts/build-topojson.mjs`,
       uri: `resource://agriops/topojson/${key}`,
     });
   }

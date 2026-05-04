@@ -19,7 +19,7 @@ interface MapChoroplethProps {
 }
 
 // Prefecture centroids for initial fit
-const PREF_CENTROIDS: Record<string, [number, number]> = {
+const _PREF_CENTROIDS: Record<string, [number, number]> = {
   nation: [36.5, 136.0],
   kyushu: [32.5, 131.0],
   shikoku: [33.5, 133.5],
@@ -28,10 +28,7 @@ const PREF_CENTROIDS: Record<string, [number, number]> = {
   chugoku: [34.5, 133.0],
 };
 
-function buildGeoJsonFromData(
-  data: unknown,
-  metric: string,
-): GeoJSON.FeatureCollection {
+function buildGeoJsonFromData(data: unknown, metric: string): GeoJSON.FeatureCollection {
   const items = Array.isArray(data) ? data : [data];
   const features: GeoJSON.Feature[] = (items as Record<string, unknown>[]).map((item, i) => ({
     type: "Feature",
@@ -104,9 +101,12 @@ export function MapChoropleth({ hint, data, onFeatureClick }: MapChoroplethProps
             "interpolate",
             ["linear"],
             ["get", "_metric"],
-            minVal, "#1e3a5f",
-            (minVal + maxVal) / 2, "#3b82f6",
-            maxVal, "#34d399",
+            minVal,
+            "#1e3a5f",
+            (minVal + maxVal) / 2,
+            "#3b82f6",
+            maxVal,
+            "#34d399",
           ],
           "circle-opacity": 0.85,
           "circle-stroke-color": "#fff",

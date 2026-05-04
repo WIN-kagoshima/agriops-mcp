@@ -2,10 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Deps } from "../server/deps.js";
 import { registerDashboardUiResource } from "./dashboard-ui.js";
 import { registerTaskStatusResource } from "./task-status.js";
-import {
-  TOPOJSON_RESOURCE_URIS,
-  registerTopoJsonResources,
-} from "./topojson-resources.js";
+import { TOPOJSON_RESOURCE_URIS, registerTopoJsonResources } from "./topojson-resources.js";
 
 /**
  * MCP resources exposed by this server.

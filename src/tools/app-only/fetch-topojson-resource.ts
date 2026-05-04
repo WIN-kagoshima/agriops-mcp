@@ -20,7 +20,8 @@ const URI_TO_FILE: Record<string, string> = {
   "resource://agriops/topojson/japan-prefectures": "japan-prefectures.topo.json",
   "resource://agriops/topojson/kyushu-municipalities": "kyushu-municipalities.topo.json",
   "resource://agriops/topojson/shikoku-municipalities": "shikoku-municipalities.topo.json",
-  "resource://agriops/topojson/tokai-kinki-chugoku-municipalities": "tokai-kinki-chugoku-municipalities.topo.json",
+  "resource://agriops/topojson/tokai-kinki-chugoku-municipalities":
+    "tokai-kinki-chugoku-municipalities.topo.json",
 };
 
 const inputSchema = z.object({ uri: z.string() }).strict();
@@ -31,7 +32,8 @@ export function registerFetchTopoJsonResource(server: McpServer, deps: Deps): vo
     "fetch_topojson_resource",
     {
       title: "Fetch TopoJSON boundary resource for dashboard map rendering",
-      description: "Returns TopoJSON boundary data as text for use by the dashboard map. App-only (LLM-invisible).",
+      description:
+        "Returns TopoJSON boundary data as text for use by the dashboard map. App-only (LLM-invisible).",
       inputSchema,
       deps,
     },

@@ -213,3 +213,10 @@ In your PR description:
 
 Please follow the process described in [SECURITY.md](SECURITY.md) and contact the
 maintainers privately.
+
+---
+
+## 12. Cutting a release & npm (maintainers)
+
+- Full gate: `npm run build:all` then `npm run release:check -- --tag vX.Y.Z` (must match `package.json`).
+- Tag-driven GitHub Release + optional **npm publish**: see [docs/npm-first-publish.md](docs/npm-first-publish.md).

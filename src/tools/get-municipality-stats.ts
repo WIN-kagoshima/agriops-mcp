@@ -56,10 +56,7 @@ export function registerGetMunicipalityStats(server: McpServer, _deps: Deps): vo
     meta.name,
     {
       title: "市町村別農業統計・SSW適性情報",
-      description:
-        "農林業センサス2020ベースの市町村レベル農業統計（農業就業人口・経営体数・主要作物）と " +
-        "SSW派遣適性トップ作物を返す。cityCode・prefectureCode・cityName で絞り込み可能。 " +
-        `データカバレッジ: ${COVERED_PREF_CODES.length}都道府県内の主要市町村。読み取り専用。`,
+      description: `農林業センサス2020ベースの市町村レベル農業統計（農業就業人口・経営体数・主要作物）と SSW派遣適性トップ作物を返す。cityCode・prefectureCode・cityName で絞り込み可能。 データカバレッジ: ${COVERED_PREF_CODES.length}都道府県内の主要市町村。読み取り専用。`,
       inputSchema: inputSchemaBase.shape,
       annotations: getToolAnnotations(meta.name),
     },
@@ -99,7 +96,10 @@ export function registerGetMunicipalityStats(server: McpServer, _deps: Deps): vo
         }
 
         const change = record.agriWorkers2015
-          ? (((record.agriWorkers2020 - record.agriWorkers2015) / record.agriWorkers2015) * 100).toFixed(1)
+          ? (
+              ((record.agriWorkers2020 - record.agriWorkers2015) / record.agriWorkers2015) *
+              100
+            ).toFixed(1)
           : "N/A";
 
         const structured = {
@@ -134,20 +134,17 @@ export function registerGetMunicipalityStats(server: McpServer, _deps: Deps): vo
               ].join("\n"),
             },
           ],
-          structuredContent: withVizHint(
-            structured as unknown as Record<string, unknown>,
-            {
-              preferredView: "radar",
-              axes: [
-                "農業就業人口(千人)",
-                "経営体数(百)",
-                "SSWスコア",
-                "5年減少率逆数",
-                "主要作物数",
-              ],
-              title: `${record.cityName} 農業プロフィール`,
-            },
-          ),
+          structuredContent: withVizHint(structured as unknown as Record<string, unknown>, {
+            preferredView: "radar",
+            axes: [
+              "農業就業人口(千人)",
+              "経営体数(百)",
+              "SSWスコア",
+              "5年減少率逆数",
+              "主要作物数",
+            ],
+            title: `${record.cityName} 農業プロフィール`,
+          }),
         };
       }
 
@@ -203,16 +200,13 @@ export function registerGetMunicipalityStats(server: McpServer, _deps: Deps): vo
               ].join("\n"),
             },
           ],
-          structuredContent: withVizHint(
-            structured as unknown as Record<string, unknown>,
-            {
-              preferredView: "choropleth",
-              metric: "topSswScore",
-              geoLevel: "city",
-              title: `${records[0]?.prefectureName} 市町村別 SSW適性スコア`,
-              legend: { unit: "点", min: 60, max: 100, tone: "success" },
-            },
-          ),
+          structuredContent: withVizHint(structured as unknown as Record<string, unknown>, {
+            preferredView: "choropleth",
+            metric: "topSswScore",
+            geoLevel: "city",
+            title: `${records[0]?.prefectureName} 市町村別 SSW適性スコア`,
+            legend: { unit: "点", min: 60, max: 100, tone: "success" },
+          }),
         };
       }
 
@@ -249,24 +243,24 @@ export function registerGetMunicipalityStats(server: McpServer, _deps: Deps): vo
             text: [
               `## 検索結果: 「${cityName}」(${results.length}件)`,
               "",
-              ...results.map((r) => `- **${r.prefectureName}/${r.cityName}** — ${r.topSswCrop} (${r.topSswScore}点)`),
+              ...results.map(
+                (r) =>
+                  `- **${r.prefectureName}/${r.cityName}** — ${r.topSswCrop} (${r.topSswScore}点)`,
+              ),
               "",
               `出典: ${ATTRIBUTION}`,
             ].join("\n"),
           },
         ],
-        structuredContent: withVizHint(
-          structured as unknown as Record<string, unknown>,
-          {
-            preferredView: "bar_compare",
-            labelKey: "cityName",
-            valueKeys: ["topSswScore"],
-            dataPath: "municipalities",
-            threshold: 75,
-            title: `「${cityName}」検索結果 SSWスコア`,
-            legend: { unit: "点", tone: "success" },
-          },
-        ),
+        structuredContent: withVizHint(structured as unknown as Record<string, unknown>, {
+          preferredView: "bar_compare",
+          labelKey: "cityName",
+          valueKeys: ["topSswScore"],
+          dataPath: "municipalities",
+          threshold: 75,
+          title: `「${cityName}」検索結果 SSWスコア`,
+          legend: { unit: "点", tone: "success" },
+        }),
       };
     },
   );

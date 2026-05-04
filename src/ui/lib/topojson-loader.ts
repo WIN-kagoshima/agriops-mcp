@@ -30,10 +30,7 @@ interface FetchBridge {
  * @param uri  A `resource://agriops/topojson/*` URI
  * @param bridge  The app bridge (window.mcpApps or equivalent)
  */
-export async function loadTopoJson(
-  uri: string,
-  bridge: FetchBridge,
-): Promise<TopoJson | null> {
+export async function loadTopoJson(uri: string, bridge: FetchBridge): Promise<TopoJson | null> {
   if (CACHE.has(uri)) return CACHE.get(uri) ?? null;
 
   try {
@@ -55,7 +52,9 @@ export async function loadTopoJson(
             const parsed = JSON.parse(text) as TopoJson;
             CACHE.set(uri, parsed);
             return parsed;
-          } catch { /* continue */ }
+          } catch {
+            /* continue */
+          }
         }
       }
     }
@@ -71,9 +70,11 @@ export async function loadTopoJson(
  */
 export function regionForPrefCode(prefCode: string): TopoRegion | null {
   const n = Number.parseInt(prefCode.replace("JP-", ""), 10);
-  if (n === 40 || n === 41 || n === 42 || n === 43 || n === 44 || n === 45 || n === 46 || n === 47) return "kyushu";
+  if (n === 40 || n === 41 || n === 42 || n === 43 || n === 44 || n === 45 || n === 46 || n === 47)
+    return "kyushu";
   if (n === 36 || n === 37 || n === 38 || n === 39) return "shikoku";
-  if (n === 21 || n === 23 || n === 24 || n === 29 || n === 30 || n === 33 || n === 34 || n === 35) return "tokai";
+  if (n === 21 || n === 23 || n === 24 || n === 29 || n === 30 || n === 33 || n === 34 || n === 35)
+    return "tokai";
   return null;
 }
 

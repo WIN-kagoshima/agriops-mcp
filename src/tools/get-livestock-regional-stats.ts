@@ -290,12 +290,7 @@ const DB: PrefectureLivestockProfile[] = [
         avgFarmScale: "約41万羽/農場",
         laborShortageLevel: "深刻",
         sswCompatibilityScore: 87,
-        keyOperations: [
-          "捕鳥・出荷（深夜）",
-          "鶏舎清掃・消毒",
-          "衛生管理",
-          "給餌・飲水管理",
-        ],
+        keyOperations: ["捕鳥・出荷（深夜）", "鶏舎清掃・消毒", "衛生管理", "給餌・飲水管理"],
         sswNote:
           "宮崎市・都城市・小林市に大規模農場が集中。法人農家の割合が高くSSW受入のペーパーワーク対応が比較的スムーズ。" +
           "鹿児島と合わせた「九州ブロイラーベルト」を形成しており、鹿児島⇔宮崎の合同チームが最も効率的。",
@@ -662,7 +657,12 @@ const DB: PrefectureLivestockProfile[] = [
         avgFarmScale: "約149頭/農場",
         laborShortageLevel: "深刻",
         sswCompatibilityScore: 82,
-        keyOperations: ["搾乳（1日2〜3回・自動搾乳機補助含む）", "飼料給与", "哺育管理", "糞尿処理"],
+        keyOperations: [
+          "搾乳（1日2〜3回・自動搾乳機補助含む）",
+          "飼料給与",
+          "哺育管理",
+          "糞尿処理",
+        ],
         sswNote:
           "北海道の酪農は深刻な人手不足。1日も休めない搾乳作業は「農業界の工場勤務」として通年雇用に最適。" +
           "外国人労働者（特定技能）の受入実績が最も多い農業分野。",
@@ -776,7 +776,12 @@ export function registerGetLivestockRegionalStats(server: McpServer, _deps: Deps
 
       if (!profile) {
         return {
-          content: [{ type: "text", text: `${prefectureCode} のデータはありません。対応: ${available.join("、")}` }],
+          content: [
+            {
+              type: "text",
+              text: `${prefectureCode} のデータはありません。対応: ${available.join("、")}`,
+            },
+          ],
           structuredContent: {
             prefectureCode,
             prefectureName: "未登録",

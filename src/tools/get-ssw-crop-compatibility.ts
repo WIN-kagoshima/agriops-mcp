@@ -98,7 +98,8 @@ const CROP_COMPATIBILITY_DB: CropCompatibility[] = [
       "最高ランク。機械収穫が物理的に不可能な段々畑での手摘みが主体。" +
       "10〜12月の3ヶ月に労働需要が集中し派遣モデルに最適。" +
       "和歌山有田・愛媛宇和島・熊本天草など高齢化が深刻な産地が多く、SSWの受入機運が高い。",
-    caveat: "急斜面での作業が多く転倒リスクあり。安全教育必須。段々畑未経験者は慣れに時間がかかる。",
+    caveat:
+      "急斜面での作業が多く転倒リスクあり。安全教育必須。段々畑未経験者は慣れに時間がかかる。",
     bestPrefectures: [
       "JP-38(愛媛)",
       "JP-30(和歌山)",
@@ -379,12 +380,7 @@ const CROP_COMPATIBILITY_DB: CropCompatibility[] = [
     },
     totalScore: 60,
     harvestMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    keyActivities: [
-      "搾乳（1日2〜3回・時間固定）",
-      "飼料給与",
-      "哺育管理（子牛）",
-      "糞尿処理",
-    ],
+    keyActivities: ["搾乳（1日2〜3回・時間固定）", "飼料給与", "哺育管理（子牛）", "糞尿処理"],
     sswNote:
       "1日も休めない搾乳作業は「農業界の工場勤務」。完全通年雇用が可能で定住化モデルに最適。" +
       "北海道が全国64%を占めるが、愛知・熊本・鹿児島にも安定した需要がある。" +
@@ -630,7 +626,8 @@ export function registerGetSswCropCompatibility(server: McpServer, _deps: Deps):
       }
 
       const rank = rankLabel(entry.totalScore);
-      const scoreBar = (v: number) => "█".repeat(Math.round(v / 2)) + "░".repeat(10 - Math.round(v / 2));
+      const scoreBar = (v: number) =>
+        "█".repeat(Math.round(v / 2)) + "░".repeat(10 - Math.round(v / 2));
 
       const structured = {
         crop,

@@ -145,10 +145,7 @@ export type VizHintView = VizHint["preferredView"];
  * };
  * ```
  */
-export function withVizHint(
-  data: Record<string, unknown>,
-  hint: VizHint,
-): Record<string, unknown> {
+export function withVizHint(data: Record<string, unknown>, hint: VizHint): Record<string, unknown> {
   return { ...data, viz_hint: hint };
 }
 

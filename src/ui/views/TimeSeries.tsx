@@ -73,7 +73,14 @@ export function TimeSeries({ hint, data }: TimeSeriesProps) {
           return (
             <g key={t}>
               <line x1={PAD_L} y1={y} x2={W - PAD_R} y2={y} stroke="rgba(255,255,255,0.1)" />
-              <text x={PAD_L - 4} y={y} textAnchor="end" dominantBaseline="middle" fontSize={9} fill="#64748b">
+              <text
+                x={PAD_L - 4}
+                y={y}
+                textAnchor="end"
+                dominantBaseline="middle"
+                fontSize={9}
+                fill="#64748b"
+              >
                 {val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val.toFixed(0)}
               </text>
             </g>
@@ -122,8 +129,22 @@ export function TimeSeries({ hint, data }: TimeSeriesProps) {
         })}
 
         {/* Axes */}
-        <line x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={PAD_T + CHART_H} stroke="#475569" strokeWidth={1} />
-        <line x1={PAD_L} y1={PAD_T + CHART_H} x2={W - PAD_R} y2={PAD_T + CHART_H} stroke="#475569" strokeWidth={1} />
+        <line
+          x1={PAD_L}
+          y1={PAD_T}
+          x2={PAD_L}
+          y2={PAD_T + CHART_H}
+          stroke="#475569"
+          strokeWidth={1}
+        />
+        <line
+          x1={PAD_L}
+          y1={PAD_T + CHART_H}
+          x2={W - PAD_R}
+          y2={PAD_T + CHART_H}
+          stroke="#475569"
+          strokeWidth={1}
+        />
 
         {/* Unit label */}
         {legend?.unit && (

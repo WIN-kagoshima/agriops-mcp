@@ -20,6 +20,7 @@ interface PackageJson {
 const REQUIRED_PACK_FILES = [
   "dist/server.js",
   "dist/ui/dashboard.html",
+  "assets/topojson/japan-prefectures.topo.json",
   "docs/api-reference.md",
   "docs/data-license.md",
   "examples/http-curl/run.sh",
@@ -149,7 +150,7 @@ function main(): void {
   results.push(
     result(
       "package name",
-      packageName === "@win-kagoshima/agriops-mcp",
+      packageName === "@sugukuru/agriops-mcp",
       packageName || "missing package.json name",
     ),
   );

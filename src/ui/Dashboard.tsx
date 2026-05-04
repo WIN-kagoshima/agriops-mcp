@@ -7,12 +7,12 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { type VizHint, extractVizHint } from "../lib/viz-hint.js";
 import type { BreadcrumbItem } from "./breadcrumb/Breadcrumb.js";
 import { Breadcrumb } from "./breadcrumb/Breadcrumb.js";
 import type { ToolResult } from "./useAppBridge.js";
 import { useAppBridge } from "./useAppBridge.js";
 import { ViewDispatcher } from "./views/_dispatch.js";
-import { extractVizHint, type VizHint } from "../lib/viz-hint.js";
 
 // ── State shape ────────────────────────────────────────────────────────────
 
@@ -41,25 +41,48 @@ const INITIAL: DashboardState = {
 
 // Prefecture name lookup
 const PREF_NAMES: Record<string, string> = {
-  "JP-40": "福岡", "JP-41": "佐賀", "JP-42": "長崎", "JP-43": "熊本",
-  "JP-44": "大分", "JP-45": "宮崎", "JP-46": "鹿児島", "JP-47": "沖縄",
-  "JP-36": "徳島", "JP-37": "香川", "JP-38": "愛媛", "JP-39": "高知",
-  "JP-21": "岐阜", "JP-23": "愛知", "JP-24": "三重",
-  "JP-29": "奈良", "JP-30": "和歌山",
-  "JP-33": "岡山", "JP-34": "広島", "JP-35": "山口",
+  "JP-40": "福岡",
+  "JP-41": "佐賀",
+  "JP-42": "長崎",
+  "JP-43": "熊本",
+  "JP-44": "大分",
+  "JP-45": "宮崎",
+  "JP-46": "鹿児島",
+  "JP-47": "沖縄",
+  "JP-36": "徳島",
+  "JP-37": "香川",
+  "JP-38": "愛媛",
+  "JP-39": "高知",
+  "JP-21": "岐阜",
+  "JP-23": "愛知",
+  "JP-24": "三重",
+  "JP-29": "奈良",
+  "JP-30": "和歌山",
+  "JP-33": "岡山",
+  "JP-34": "広島",
+  "JP-35": "山口",
 };
 
 // Prefecture selector options (Sugu-kuru zones)
 const PREF_OPTIONS = [
-  { code: "JP-46", name: "鹿児島" }, { code: "JP-45", name: "宮崎" },
-  { code: "JP-43", name: "熊本" }, { code: "JP-44", name: "大分" },
-  { code: "JP-40", name: "福岡" }, { code: "JP-41", name: "佐賀" },
-  { code: "JP-42", name: "長崎" }, { code: "JP-38", name: "愛媛" },
-  { code: "JP-36", name: "徳島" }, { code: "JP-39", name: "高知" },
-  { code: "JP-37", name: "香川" }, { code: "JP-23", name: "愛知" },
-  { code: "JP-21", name: "岐阜" }, { code: "JP-24", name: "三重" },
-  { code: "JP-30", name: "和歌山" }, { code: "JP-29", name: "奈良" },
-  { code: "JP-33", name: "岡山" }, { code: "JP-34", name: "広島" },
+  { code: "JP-46", name: "鹿児島" },
+  { code: "JP-45", name: "宮崎" },
+  { code: "JP-43", name: "熊本" },
+  { code: "JP-44", name: "大分" },
+  { code: "JP-40", name: "福岡" },
+  { code: "JP-41", name: "佐賀" },
+  { code: "JP-42", name: "長崎" },
+  { code: "JP-38", name: "愛媛" },
+  { code: "JP-36", name: "徳島" },
+  { code: "JP-39", name: "高知" },
+  { code: "JP-37", name: "香川" },
+  { code: "JP-23", name: "愛知" },
+  { code: "JP-21", name: "岐阜" },
+  { code: "JP-24", name: "三重" },
+  { code: "JP-30", name: "和歌山" },
+  { code: "JP-29", name: "奈良" },
+  { code: "JP-33", name: "岡山" },
+  { code: "JP-34", name: "広島" },
   { code: "JP-35", name: "山口" },
 ];
 
@@ -192,7 +215,9 @@ export function Dashboard() {
             onChange={(e) => handlePrefChange(e.target.value)}
           >
             {PREF_OPTIONS.map((p) => (
-              <option key={p.code} value={p.code}>{p.name}</option>
+              <option key={p.code} value={p.code}>
+                {p.name}
+              </option>
             ))}
           </select>
         </div>
@@ -210,7 +235,12 @@ export function Dashboard() {
             key={qa.label}
             type="button"
             className="quick-action-btn"
-            onClick={() => void runTool(qa.tool, { ...qa.args, prefectureCode: qa.args.prefectureCode ?? state.prefectureCode })}
+            onClick={() =>
+              void runTool(qa.tool, {
+                ...qa.args,
+                prefectureCode: qa.args.prefectureCode ?? state.prefectureCode,
+              })
+            }
           >
             {qa.label}
           </button>
@@ -234,11 +264,7 @@ export function Dashboard() {
 
         {/* View dispatcher — renders the best visualisation for the current data */}
         <div className="viz-container">
-          <ViewDispatcher
-            hint={state.vizHint}
-            data={state.vizData}
-            onDrillDown={handleDrillDown}
-          />
+          <ViewDispatcher hint={state.vizHint} data={state.vizData} onDrillDown={handleDrillDown} />
         </div>
 
         {/* Summary text panel */}

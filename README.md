@@ -7,7 +7,7 @@
 [![CI](https://github.com/WIN-kagoshima/agriops-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/WIN-kagoshima/agriops-mcp/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/WIN-kagoshima/agriops-mcp/actions/workflows/codeql.yml/badge.svg)](https://github.com/WIN-kagoshima/agriops-mcp/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/WIN-kagoshima/agriops-mcp/badge)](https://securityscorecards.dev/viewer/?uri=github.com/WIN-kagoshima/agriops-mcp)
-[![npm](https://img.shields.io/npm/v/@win-kagoshima/agriops-mcp.svg)](https://www.npmjs.com/package/@win-kagoshima/agriops-mcp)
+[![npm](https://img.shields.io/npm/v/@sugukuru/agriops-mcp.svg)](https://www.npmjs.com/package/@sugukuru/agriops-mcp)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%E2%89%A522-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MCP Spec](https://img.shields.io/badge/MCP-2025--11--25-7c3aed)](https://modelcontextprotocol.io/specification/2025-11-25/)
@@ -196,6 +196,8 @@ Fraud Defense, and multi-AI security are tracked in
 [`docs/cloud-next26-agent-readiness.md`](docs/cloud-next26-agent-readiness.md).
 Reverse-proxy / Agent Gateway deployment guidance lives in
 [`docs/agent-gateway-deployment.md`](docs/agent-gateway-deployment.md).
+
+**Maintainers — publishing `@sugukuru/agriops-mcp` to npm:** first-time and CI setup is documented in [`docs/npm-first-publish.md`](docs/npm-first-publish.md).
 
 ## Security
 

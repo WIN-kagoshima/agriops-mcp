@@ -10,7 +10,7 @@ Runs the server as a child process of Claude Desktop.
 
 ```bash
 # 1. Install globally (or clone and build locally)
-npm install -g @win-kagoshima/agriops-mcp   # when published to npm
+npm install -g @sugukuru/agriops-mcp   # when published to npm
 # or
 git clone https://github.com/WIN-kagoshima/agriops-mcp.git
 cd agriops-mcp

@@ -39,9 +39,7 @@ export function registerSswStrategyBriefingPrompt(server: McpServer, _deps: Deps
         analysis_month: z
           .string()
           .optional()
-          .describe(
-            "分析基準月（1〜12。例: '5'で5月時点の分析）。省略時は現在の季節に基づく。",
-          ),
+          .describe("分析基準月（1〜12。例: '5'で5月時点の分析）。省略時は現在の季節に基づく。"),
         priority: z
           .enum(["urgent_shortage", "high_value", "year_round", "quick_onboarding"])
           .optional()
@@ -101,16 +99,14 @@ export function registerSswStrategyBriefingPrompt(server: McpServer, _deps: Deps
         "まず `get_ssw_crop_compatibility` を引数なしで呼び出し、S・Aランク作物の一覧を取得する。",
         "",
         "### Step 2: 対象地域の労働力不足状況",
-        `${focus_region} に含まれる都道府県ごとに \`get_labor_shortage_stats\` を呼び出し、` +
-          "労働力不足の深刻度・減少率・高齢化率を確認する。",
+        `${focus_region} に含まれる都道府県ごとに \`get_labor_shortage_stats\` を呼び出し、労働力不足の深刻度・減少率・高齢化率を確認する。`,
         "",
         "### Step 3: 地域×作物の詳細プロフィール",
-        `対象地域の都道府県について \`get_prefecture_crop_profile\` を呼び出し、` +
+        "対象地域の都道府県について `get_prefecture_crop_profile` を呼び出し、" +
           "主要作物・収穫月・労働ピーク月・SSW派遣メモを取得する。",
         "",
         "### Step 4: 市場価格・収益性の確認",
-        "Step 3 で特定した主要作物について `get_market_price` を呼び出し、" +
-          `${month}月〜${Math.min(month + 5, 12)}月の価格水準・季節要因を確認する。`,
+        `Step 3 で特定した主要作物について \`get_market_price\` を呼び出し、${month}月〜${Math.min(month + 5, 12)}月の価格水準・季節要因を確認する。`,
         "",
         "### Step 5: 作型カレンダーとのクロス分析",
         "最優先作物について `crop_calendar` を呼び出し、対象地域での具体的な作業時期を確認する。",

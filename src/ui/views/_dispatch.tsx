@@ -23,12 +23,7 @@ interface ViewDispatcherProps {
 
 export function ViewDispatcher({ hint, data, onDrillDown }: ViewDispatcherProps) {
   if (!hint) {
-    return (
-      <DataTable
-        hint={{ preferredView: "table" }}
-        data={data}
-      />
-    );
+    return <DataTable hint={{ preferredView: "table" }} data={data} />;
   }
 
   switch (hint.preferredView) {
@@ -71,12 +66,7 @@ export function ViewDispatcher({ hint, data, onDrillDown }: ViewDispatcherProps)
     default: {
       // TypeScript exhaustive safety — unknown views fall back to table
       const _exhaustive: never = hint;
-      return (
-        <DataTable
-          hint={{ preferredView: "table" }}
-          data={_exhaustive as unknown}
-        />
-      );
+      return <DataTable hint={{ preferredView: "table" }} data={_exhaustive as unknown} />;
     }
   }
 }

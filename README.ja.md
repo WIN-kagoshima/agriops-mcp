@@ -7,7 +7,8 @@
 > 公式 MCP Spec 2025-11-25 / MCP Apps Extension 2026-01-26 / MCP TypeScript SDK v1.x に準拠した **参照実装** MCP サーバ。
 > Apache-2.0 · TypeScript ESM · Node.js 22+ · stdio + Streamable HTTP。
 >
-> English: [README.md](./README.md)
+> English: [README.md](./README.md)  
+> npm パッケージ: [`@sugukuru/agriops-mcp`](https://www.npmjs.com/package/@sugukuru/agriops-mcp)（公開後・[メンテナ手順](docs/npm-first-publish.md)）
 
 AgriOps MCP は、日本の農業データ（eMAFF 筆ポリゴン、Open-Meteo / 気象庁の 1km メッシュ気象、FAMIC 農薬登録情報）を MCP 経由で AI エージェントに公開します。農業に特定技能外国人を派遣する派遣会社や、農業改良普及員のデジタルツール活用を想定しています。
 
@@ -152,6 +153,8 @@ npm run deploy:smoke -- \
 - Cloud Run 本番デプロイ手順は [docs/runbook.md](docs/runbook.md)。
 - Google Cloud Agent Platform / Smart Storage への対応方針は [docs/cloud-next26-agent-readiness.md](docs/cloud-next26-agent-readiness.md)。
 - Agent Gateway / Apigee / Cloud Armor などのリバースプロキシ導入時の前提とポリシーは [docs/agent-gateway-deployment.md](docs/agent-gateway-deployment.md)。
+
+**npm への初回公開（メンテナ）:** [docs/npm-first-publish.md](docs/npm-first-publish.md) を参照してください。
 
 ## ライセンス
 

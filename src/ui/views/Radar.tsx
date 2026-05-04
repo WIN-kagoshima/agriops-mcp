@@ -45,16 +45,16 @@ export function Radar({ hint, data }: RadarProps) {
 
   // Map Japanese axis names to score keys (best-effort heuristic)
   const axisKeyMap: Record<string, string[]> = {
-    "自動化困難度": ["automationResistance"],
-    "価値密度": ["valueDensity"],
-    "季節集中度": ["seasonalConcentration"],
-    "技能習得速度": ["skillAcquisitionSpeed"],
-    "労働力不足度": ["laborShortageLevel"],
+    自動化困難度: ["automationResistance"],
+    価値密度: ["valueDensity"],
+    季節集中度: ["seasonalConcentration"],
+    技能習得速度: ["skillAcquisitionSpeed"],
+    労働力不足度: ["laborShortageLevel"],
     "農業就業人口(千人)": ["agriWorkers2020"],
     "経営体数(百)": ["farmBodies2020"],
-    "SSWスコア": ["topSswScore"],
+    SSWスコア: ["topSswScore"],
     "5年減少率逆数": ["changeRate5yr"],
-    "主要作物数": ["mainCrops"],
+    主要作物数: ["mainCrops"],
   };
 
   const values: number[] = axes.map((axisName) => {
@@ -88,7 +88,12 @@ export function Radar({ hint, data }: RadarProps) {
   return (
     <div className="viz-panel">
       {title && <div className="viz-title">{title}</div>}
-      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block", margin: "0 auto" }}>
+      <svg
+        width={W}
+        height={H}
+        viewBox={`0 0 ${W} ${H}`}
+        style={{ display: "block", margin: "0 auto" }}
+      >
         {/* Background ticks */}
         {ticks.map((tickPts, ti) => (
           <polygon

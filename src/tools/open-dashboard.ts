@@ -39,8 +39,8 @@ export const inputSchema = z
       .optional()
       .describe(
         "Optional view specification to pre-select a visualization. " +
-        "Examples: 'national_labor_choropleth', 'ssw_radar:みかん', 'municipality_drill:JP-46'. " +
-        "The dashboard will attempt to load the matching tool and render the appropriate view.",
+          "Examples: 'national_labor_choropleth', 'ssw_radar:みかん', 'municipality_drill:JP-46'. " +
+          "The dashboard will attempt to load the matching tool and render the appropriate view.",
       ),
   })
   .strict();

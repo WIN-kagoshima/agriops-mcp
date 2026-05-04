@@ -26,9 +26,9 @@ export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: De
           .max(200)
           .describe(
             "分析目的の説明。例: '全国農業労働力不足を地図で見たい' / " +
-            "'みかんのSSW適性を5軸レーダーで確認' / " +
-            "'鹿児島の市町村別ブロイラー農場数を比較' / " +
-            "'愛媛から和歌山へのSSW通年ローテーションを可視化'",
+              "'みかんのSSW適性を5軸レーダーで確認' / " +
+              "'鹿児島の市町村別ブロイラー農場数を比較' / " +
+              "'愛媛から和歌山へのSSW通年ローテーションを可視化'",
           ),
         prefecture_code: z
           .string()
@@ -51,29 +51,56 @@ export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: De
       let toolHint = `get_municipality_stats({ prefectureCode: "${pref}" })`;
       let vizDesc = "市町村別 SSW 適性スコア（コロプレスマップ）";
 
-      if (goalLower.includes("全国") || goalLower.includes("労働力不足") || goalLower.includes("choropleth")) {
+      if (
+        goalLower.includes("全国") ||
+        goalLower.includes("労働力不足") ||
+        goalLower.includes("choropleth")
+      ) {
         viewSpec = "national_labor_choropleth";
-        toolHint = "get_labor_shortage_stats({ prefectureCode: \"JP-00\" })";
+        toolHint = 'get_labor_shortage_stats({ prefectureCode: "JP-00" })';
         vizDesc = "全国農業就業人口 5年変化率（コロプレスマップ）";
-      } else if (goalLower.includes("レーダー") || goalLower.includes("radar") || goalLower.includes("適性") || goalLower.includes("ssw")) {
+      } else if (
+        goalLower.includes("レーダー") ||
+        goalLower.includes("radar") ||
+        goalLower.includes("適性") ||
+        goalLower.includes("ssw")
+      ) {
         const crop = crop_or_sector ?? "みかん";
         viewSpec = `ssw_radar:${crop}`;
         toolHint = `get_ssw_crop_compatibility({ crop: "${crop}" })`;
         vizDesc = `${crop} SSW 適性レーダー（5軸ペンタゴン）`;
-      } else if (goalLower.includes("畜産") || goalLower.includes("ブロイラー") || goalLower.includes("捕鳥") || goalLower.includes("livestock")) {
+      } else if (
+        goalLower.includes("畜産") ||
+        goalLower.includes("ブロイラー") ||
+        goalLower.includes("捕鳥") ||
+        goalLower.includes("livestock")
+      ) {
         viewSpec = `livestock_bar:${pref}`;
         toolHint = `get_livestock_regional_stats({ prefectureCode: "${pref}" })`;
         vizDesc = `${pref} 畜産 SSW 適性スコア比較（棒グラフ）`;
-      } else if (goalLower.includes("市場価格") || goalLower.includes("timeseries") || goalLower.includes("価格")) {
+      } else if (
+        goalLower.includes("市場価格") ||
+        goalLower.includes("timeseries") ||
+        goalLower.includes("価格")
+      ) {
         const crop = crop_or_sector ?? "みかん";
         viewSpec = `market_price:${crop}`;
         toolHint = `get_market_price({ crop: "${crop}" })`;
         vizDesc = `${crop} 市場価格推移（時系列グラフ）`;
-      } else if (goalLower.includes("サンキー") || goalLower.includes("ローテーション") || goalLower.includes("sankey")) {
+      } else if (
+        goalLower.includes("サンキー") ||
+        goalLower.includes("ローテーション") ||
+        goalLower.includes("sankey")
+      ) {
         viewSpec = "ssw_rotation_sankey";
-        toolHint = "ssw_strategy_briefing({ focus_region: \"愛媛+和歌山+徳島\", priority: \"year_round\" })";
+        toolHint =
+          'ssw_strategy_briefing({ focus_region: "愛媛+和歌山+徳島", priority: "year_round" })';
         vizDesc = "SSW 通年ローテーション フロー図（サンキー）";
-      } else if (goalLower.includes("カレンダー") || goalLower.includes("作物カレンダー") || goalLower.includes("heatmap")) {
+      } else if (
+        goalLower.includes("カレンダー") ||
+        goalLower.includes("作物カレンダー") ||
+        goalLower.includes("heatmap")
+      ) {
         viewSpec = `crop_calendar:${pref}`;
         toolHint = `get_prefecture_crop_profile({ prefectureCode: "${pref}" })`;
         vizDesc = `${pref} 作物カレンダー（年間ヒートマップ）`;
@@ -86,35 +113,37 @@ export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: De
             content: {
               type: "text" as const,
               text: [
-                `# 戦略室ダッシュボード起動リクエスト`,
+                "# 戦略室ダッシュボード起動リクエスト",
                 "",
                 `**分析目的:** ${analysis_goal}`,
                 prefecture_code ? `**対象都道府県:** ${prefecture_code}` : "",
                 crop_or_sector ? `**対象作物/部門:** ${crop_or_sector}` : "",
                 "",
-                `## 推奨アクション`,
+                "## 推奨アクション",
                 "",
                 `最適ビュー: **${vizDesc}**`,
                 "",
-                `以下のツール呼び出しを実行してからダッシュボードを起動してください:`,
+                "以下のツール呼び出しを実行してからダッシュボードを起動してください:",
                 "",
-                `\`\`\``,
-                `// Step 1: データ取得`,
+                "```",
+                "// Step 1: データ取得",
                 toolHint,
-                ``,
-                `// Step 2: ダッシュボード起動`,
-                `open_dashboard({`,
+                "",
+                "// Step 2: ダッシュボード起動",
+                "open_dashboard({",
                 `  initialPrefectureCode: "${pref}",`,
                 `  viewSpec: "${viewSpec}",`,
-                `})`,
-                `\`\`\``,
+                "})",
+                "```",
                 "",
-                `ダッシュボードが開いたら:`,
-                `- 都道府県セレクターで対象地域を切り替えられます`,
-                `- 地図上のマーカーをクリックすると市町村レベルにドリルダウンします`,
-                `- ブレッドクラムで上位階層に戻れます`,
-                `- クイックアクションボタンで他のビューに素早く切り替えられます`,
-              ].filter(Boolean).join("\n"),
+                "ダッシュボードが開いたら:",
+                "- 都道府県セレクターで対象地域を切り替えられます",
+                "- 地図上のマーカーをクリックすると市町村レベルにドリルダウンします",
+                "- ブレッドクラムで上位階層に戻れます",
+                "- クイックアクションボタンで他のビューに素早く切り替えられます",
+              ]
+                .filter(Boolean)
+                .join("\n"),
             },
           },
         ],

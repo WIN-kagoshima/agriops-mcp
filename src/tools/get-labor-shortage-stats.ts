@@ -174,8 +174,7 @@ const LABOR_STATS_DB: LaborStats[] = [
     shortageNote:
       "八代地区の大規模ハウストマト農家は年間を通じて人手不足が続く。農業法人化が進み組織的なSSW受入体制が整っている。" +
       "すいか・トマトの両作型で需要が高い。",
-    trendNote:
-      "九州最多の農業就業人口だが5年で約10,000人減。大規模法人の占める割合が上昇中。",
+    trendNote: "九州最多の農業就業人口だが5年で約10,000人減。大規模法人の占める割合が上昇中。",
   },
   {
     prefectureCode: "JP-44",
@@ -563,7 +562,8 @@ export function registerGetLaborShortageStats(server: McpServer, _deps: Deps): v
             ].join("\n"),
           },
         ],
-        structuredContent: withVizHint(structured as unknown as Record<string, unknown>,
+        structuredContent: withVizHint(
+          structured as unknown as Record<string, unknown>,
           prefectureCode === "JP-00"
             ? {
                 preferredView: "choropleth",

@@ -19,8 +19,8 @@ interface MapZoomDrillProps {
 
 // Default centers by geo level
 const DEFAULT_CENTER: Record<string, [number, number]> = {
-  prefecture: [32.8, 130.7],  // Kyushu centre
-  city: [31.6, 130.6],        // Kagoshima centre
+  prefecture: [32.8, 130.7], // Kyushu centre
+  city: [31.6, 130.6], // Kagoshima centre
   field: [31.6, 130.6],
 };
 const DEFAULT_ZOOM: Record<string, number> = {
@@ -38,7 +38,7 @@ export function MapZoomDrill({ hint, data, onDrillDown }: MapZoomDrillProps) {
 
   const initCenter = center
     ? ([center.lng, center.lat] as [number, number])
-    : (DEFAULT_CENTER[geoLevel] ?? [131.0, 32.5] as [number, number]);
+    : (DEFAULT_CENTER[geoLevel] ?? ([131.0, 32.5] as [number, number]));
   const initZoom = zoom ?? DEFAULT_ZOOM[geoLevel] ?? 6;
 
   // Extract point features from data (municipalities array)
@@ -117,9 +117,12 @@ export function MapZoomDrill({ hint, data, onDrillDown }: MapZoomDrillProps) {
             "interpolate",
             ["linear"],
             ["get", "score"],
-            60, "#3b82f6",
-            75, "#f59e0b",
-            90, "#34d399",
+            60,
+            "#3b82f6",
+            75,
+            "#f59e0b",
+            90,
+            "#34d399",
           ],
           "circle-opacity": 0.85,
           "circle-stroke-color": "#0f172a",

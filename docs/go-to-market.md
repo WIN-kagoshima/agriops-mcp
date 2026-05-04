@@ -1,6 +1,6 @@
 # AgriOps MCP — Go-to-Market 戦略
 
-> 対象: `@win-kagoshima/agriops-mcp` v1.5.0
+> 対象: `@sugukuru/agriops-mcp` v1.10.0
 > 作成日: 2026-05-04
 > ゴール: **MCP エコシステム内で「日本の農業 AI といえば AgriOps」のポジションを確立する**
 
@@ -28,18 +28,18 @@
 | 要素 | 状態 |
 |------|------|
 | MCP Spec 準拠 | 2025-11-25 + MCP Apps 2026-01-26 完全準拠 |
-| テスト品質 | 36 ファイル / 175 テストケース, 100% パス |
+| テスト品質 | 42 ファイル / 220 テスト前後（`npm test`）、CI 準拠 |
 | セキュリティ | CodeQL + OpenSSF Scorecard + red-team テスト |
 | ライセンス | Apache-2.0 (企業採用に最適) |
 | クライアント例 | Claude Desktop / Cursor / ADK / Python / curl 全カバー |
-| ツール数 | 16 model-visible ツール + 10 プロンプト |
+| ツール数 | 16 model-visible ツール + 複数プロンプト（詳細は README / api-reference） |
 | 差別化 | **日本農業に特化した唯一の MCP サーバー** |
 
 ### 弱み (Weaknesses)
 
 | 要素 | 対策 |
 |------|------|
-| npm 未公開 | Phase 2 で即時公開 |
+| npm 未公開 | **初回手順: [docs/npm-first-publish.md](npm-first-publish.md)** → タグで CI 公開 |
 | MCP レジストリ未登録 | Phase 1 で全主要マーケットプレイスに登録 |
 | 英語コンテンツ不足 | README.md は英語だが、ブログ・デモ動画が未作成 |
 | ユーザーコミュニティ未形成 | GitHub Discussions + Discord で立ち上げ |
@@ -80,7 +80,7 @@
 # 1. Cloud Run エンドポイントを公開 (既にデプロイ済み)
 # 2. Smithery CLI で登録
 npx smithery mcp publish "https://agriops-mcp-n5vdix22hq-an.a.run.app/mcp" \
-  -n @win-kagoshima/agriops-mcp
+  -n @sugukuru/agriops-mcp
 
 # 3. /.well-known/mcp-server.json が自動スキャンされる
 # 4. Verified badge 申請 (GitHub org オーナー確認)
@@ -109,16 +109,16 @@ npx smithery mcp publish "https://agriops-mcp-n5vdix22hq-an.a.run.app/mcp" \
 ### 4.1 npm 公開
 
 ```bash
-# 1. PUBLISH_TO_NPM=true をリポジトリ変数に設定
-# 2. NPM_TOKEN を GitHub Secrets に設定
-# 3. タグプッシュで自動公開
-git tag v1.5.0
-git push origin v1.5.0
-# → release.yml が npm publish --provenance を実行
+# 1. リポジトリ Variables: PUBLISH_TO_NPM=true
+# 2. リポジトリ Secrets: NPM_TOKEN（npm の granular token 等）
+# 3. タグプッシュで自動公開（package.json / CHANGELOG と一致させる）
+git tag v1.10.0
+git push origin v1.10.0
+# → release.yml が npm publish --access public --provenance を実行
 ```
 
 npm 公開後のメリット:
-- `npx @win-kagoshima/agriops-mcp --stdio` でワンコマンド起動
+- `npx @sugukuru/agriops-mcp --stdio` でワンコマンド起動
 - MCP.Bar / Official Registry が npm パッケージを自動検出
 - OpenSSF Scorecard の npm provenance スコアが向上
 
@@ -132,7 +132,7 @@ npm 公開後のメリット:
 | Website | homepage のみ | GitHub Pages or ランディングページ |
 | Discussions | 未有効 | 有効化 → Q&A / Show & Tell / Feature Request カテゴリ |
 | Sponsor button | FUNDING.yml がコメントアウト | 有効化 (任意) |
-| Releases | v1.5.0 | GitHub Release にデモ GIF を添付 |
+| Releases | GitHub Release 資産添付 | 初回 npm は [npm-first-publish.md](npm-first-publish.md) |
 
 ### 4.3 GitHub Stars 獲得戦略
 
@@ -316,8 +316,7 @@ AgriOps の構造を「MCP サーバー開発のベストプラクティス」�
 
 ## 即時アクションリスト (今週中)
 
-- [ ] npm publish を有効化 (`PUBLISH_TO_NPM=true` + `NPM_TOKEN`)
-- [ ] `v1.5.0` タグを push → GitHub Release + npm 公開
+- [ ] npm publish を有効化（[npm-first-publish.md](npm-first-publish.md): `PUBLISH_TO_NPM=true` + `NPM_TOKEN` → タグプッシュ）
 - [ ] GitHub Topics / Description / Social Preview を設定
 - [ ] GitHub Discussions を有効化
 - [ ] Smithery に Cloud Run URL を登録

@@ -21,8 +21,14 @@ const PAD = 24;
 type FlowEdge = { from: string; to: string; weight: number; label?: string };
 
 const PALETTE = [
-  "#34d399", "#60a5fa", "#f59e0b", "#f87171",
-  "#a78bfa", "#fb923c", "#38bdf8", "#4ade80",
+  "#34d399",
+  "#60a5fa",
+  "#f59e0b",
+  "#f87171",
+  "#a78bfa",
+  "#fb923c",
+  "#38bdf8",
+  "#4ade80",
 ];
 
 export function Sankey({ hint, data }: SankeyProps) {
@@ -40,7 +46,10 @@ export function Sankey({ hint, data }: SankeyProps) {
   // Collect unique nodes
   const nodeSet = useMemo(() => {
     const s = new Set<string>();
-    for (const e of edges) { s.add(e.from); s.add(e.to); }
+    for (const e of edges) {
+      s.add(e.from);
+      s.add(e.to);
+    }
     return [...s];
   }, [edges]);
 
@@ -109,23 +118,11 @@ export function Sankey({ hint, data }: SankeyProps) {
                 opacity={0.5}
               />
               {edge.label && (
-                <text
-                  x={mx}
-                  y={(y1 + y2) / 2 - 6}
-                  textAnchor="middle"
-                  fontSize={9}
-                  fill="#94a3b8"
-                >
+                <text x={mx} y={(y1 + y2) / 2 - 6} textAnchor="middle" fontSize={9} fill="#94a3b8">
                   {edge.label}
                 </text>
               )}
-              <text
-                x={mx}
-                y={(y1 + y2) / 2 + 8}
-                textAnchor="middle"
-                fontSize={9}
-                fill="#94a3b8"
-              >
+              <text x={mx} y={(y1 + y2) / 2 + 8} textAnchor="middle" fontSize={9} fill="#94a3b8">
                 {edge.weight}名
               </text>
             </g>

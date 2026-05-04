@@ -61,7 +61,10 @@ export function DataTable({ hint, data }: DataTableProps) {
 
   const handleSort = (k: string) => {
     if (sortKey === k) setSortAsc((p) => !p);
-    else { setSortKey(k); setSortAsc(true); }
+    else {
+      setSortKey(k);
+      setSortAsc(true);
+    }
   };
 
   const fmt = (v: unknown): string => {
