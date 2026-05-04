@@ -10,9 +10,13 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.10.1] — 2026-05-04
+
 ### Changed
 
 - **npm package name** from `@win-kagoshima/agriops-mcp` to `@sugukuru/agriops-mcp` (publisher: [sugukuru](https://www.npmjs.com/~sugukuru)). GitHub repo URL and Docker image references (`ghcr.io/...`) are unchanged.
+- Maintainer docs (`docs/npm-first-publish.md`), expert-review materials, `release:check` TopoJSON pack assertion, and CI/npm release alignment.
+
 ## [1.10.0] — 2026-05-04 — 戦略室 UI 2.0: 市町村ドリルダウン + 8種アダプティブビジュアライゼーション
 
 ### Added
@@ -380,7 +384,11 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.1...HEAD
+[1.10.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.0...v1.10.1
+[1.10.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.9.0...v1.10.0
+[1.9.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.8.0...v1.9.0
+[1.8.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.5.1...v1.6.0
 [1.5.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.5.0...v1.5.1
