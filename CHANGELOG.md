@@ -10,6 +10,15 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.10.2] — 2026-05-07
+
+### Changed
+
+- `.nvmrc` updated from `20` to `22` (align with `package.json engines >=22` and CI).
+- `README.md`, `README.ja.md`, `CONTRIBUTING.md`: added Windows/OneDrive setup notes for `better-sqlite3` prebuilds (Node 22 LTS; pause OneDrive sync before `npm ci`).
+- Docs version references updated to v1.10.2 in `go-to-market.md` and `expert-review/` materials.
+- Removed accidental empty root files (`npm`, `tsc`, `tsx`, `vite`, `v1.10.1`).
+
 ## [1.10.1] — 2026-05-04
 
 ### Changed
@@ -386,7 +395,8 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.1...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.2...HEAD
+[1.10.2]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.1...v1.10.2
 [1.10.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.0...v1.10.1
 [1.10.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.8.0...v1.9.0

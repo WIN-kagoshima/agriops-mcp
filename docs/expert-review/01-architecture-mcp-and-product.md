@@ -2,7 +2,7 @@
 
 **対象読者**: MCP 実装者、TypeScript/Node バックエンド、API 設計、OSS メンテナンス、セキュリティレビューに慣れた技術者
 
-**プロジェクト**: AgriOps MCP（npm: `@sugukuru/agriops-mcp`）Version **1.10.1**  
+**プロジェクト**: AgriOps MCP（npm: `@sugukuru/agriops-mcp`）Version **1.10.2**  
 **リポジトリ**: https://github.com/WIN-kagoshima/agriops-mcp
 
 ---
