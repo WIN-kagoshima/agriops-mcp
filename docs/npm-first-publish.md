@@ -42,7 +42,13 @@
 
 - **`npm error code EOTP` / `This operation requires a one-time password`**（GitHub Actions の Publish ステップ）  
   → アカウントが **2FA（認証＋書き込み）**のとき、**Automation** 以外の細粒度トークンだと CI から OTP を要求されます。  
-  **対処:** npm で **Granular Access Token（type: Automation）** を再発行し、GitHub の **`NPM_TOKEN` を差し替え**たうえで、失敗した **Release ワークフローを再実行**するか、`1.10.2` などパッチを上げて **新しいタグ**を押してください。
+  **対処手順:**
+  1. [npmjs.com](https://www.npmjs.com/) → `sugukuru` でログイン → **Access Tokens** → **Generate New Token** → **Granular Access Token**
+  2. **Token type**: **Automation**（← ここが重要。Publish ではなく Automation を選ぶ）
+  3. **Packages and scopes**: `@sugukuru/agriops-mcp` に **Read and write**
+  4. トークンをコピー
+  5. [GitHub リポジトリ](https://github.com/WIN-kagoshima/agriops-mcp) → **Settings** → **Secrets and variables** → **Actions** → **Repository secrets** → `NPM_TOKEN` を更新
+  6. [失敗した Release ワークフロー](https://github.com/WIN-kagoshima/agriops-mcp/actions/workflows/release.yml) を **Re-run failed jobs** で再実行（または次のパッチタグをプッシュ）
 - **プレリリースタグ**（例: `v1.10.0-beta.1` のようにタグ名に `-` が含まれる）は、ワークフロー仕様により **npm には上がりません**。安定版のみ公開されます。
 - **既に同じタグをプッシュ済み**で npm だけ失敗した場合は、`package.json` と CHANGELOG を **パッチバージョン**で上げ、`release:check` 後に **新しいタグ**を押し直すか、メンテナ判断でローカルから一度だけ `npm publish` します（下記 B）。
 
