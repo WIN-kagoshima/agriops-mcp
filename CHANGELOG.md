@@ -10,6 +10,15 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 
 ## [Unreleased]
 
+## [1.10.3] — 2026-05-07
+
+### Changed
+
+- Security: upgraded `express-rate-limit` to resolve the moderate `ip-address` advisory reported by `npm audit`.
+- Dependencies: upgraded `better-sqlite3` to v12.9.0 (SQLite 3.53.0) and TypeScript to v6.0.3; added a CSS module declaration for TS6 side-effect CSS imports.
+- CI: upgraded GitHub Actions runtime dependencies (`actions/checkout`, `actions/setup-node`, Docker actions) to Node 24-compatible versions and removed deprecation warning noise.
+- Docs: expanded `docs/npm-first-publish.md` with explicit Automation token steps for CI provenance publishing.
+
 ## [1.10.2] — 2026-05-07
 
 ### Changed
@@ -395,7 +404,8 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.2...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.3...HEAD
+[1.10.3]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.2...v1.10.3
 [1.10.2]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.1...v1.10.2
 [1.10.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.0...v1.10.1
 [1.10.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.9.0...v1.10.0
