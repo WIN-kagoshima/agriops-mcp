@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -75,12 +75,12 @@ jobs:
         continue-on-error: true
 
   ui-tests:
-    name: UI (Playwright) — Phase 5+
+    name: UI (Playwright)  EPhase 5+
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: lint-typecheck-test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

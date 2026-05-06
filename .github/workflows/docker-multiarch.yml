@@ -44,13 +44,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
 
       # OCI registry names must be lowercase; github.repository_owner may
-      # contain uppercase letters (e.g. WIN-kagoshima → win-kagoshima).
+      # contain uppercase letters (e.g. WIN-kagoshima ↁEwin-kagoshima).
       - name: Set lowercase image name
         run: echo "IMAGE_NAME=$(echo '${{ github.repository_owner }}/agriops-mcp' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
@@ -77,8 +77,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           # Produce:
-          #   v1.2.3       → tags: 1.2.3, 1, latest
-          #   v1.2.3-rc.1  → tags: 1.2.3-rc.1  (no "latest")
+          #   v1.2.3       ↁEtags: 1.2.3, 1, latest
+          #   v1.2.3-rc.1  ↁEtags: 1.2.3-rc.1  (no "latest")
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}
