@@ -106,8 +106,8 @@ jobs:
             release-assets/agriops-mcp-server-${{ github.ref_name }}.tar.gz
             release-assets/SHA256SUMS
 
-      # Set the repository variable PUBLISH_TO_NPM=true and the secret
-      # NPM_TOKEN to opt in to automatic npm publishing on release tags.
+      # NPM_TOKEN must be an npm *Automation* granular token when 2FA is enabled;
+      # otherwise npm publish fails with EOTP (one-time password) in CI.
       - name: Publish to npm (optional)
         if: ${{ vars.PUBLISH_TO_NPM == 'true' && !contains(github.ref_name, '-') }}
         run: npm publish --access public --provenance

@@ -11,7 +11,9 @@
 
 リポジトリの [`.github/workflows/release.yml`](../.github/workflows/release.yml) が、**リリースタグのプッシュ**で `npm publish --access public --provenance` を実行します（オプトイン）。
 
-1. **[npmjs.com](https://www.npmjs.com/)** に **sugukuru** でログインし、**Granular Access Token** などで **`NPM_TOKEN`** を発行する（権限は少なくとも対象パッケージ **`@sugukuru/agriops-mcp`** への **read/write**）。
+1. **[npmjs.com](https://www.npmjs.com/)** に **sugukuru** でログインし、**Granular Access Token** で **`NPM_TOKEN`** を発行する。
+   - **Packages and scopes**: `@sugukuru/agriops-mcp` に **Read and write**（または該当スコープ全体）。
+   - **2FA をオンにしている場合は必須:** トークン種別で **Automation** を選ぶ（CI から `npm publish` するときに OTP を求められない）。**Publish** だけのトークンだと Actions 上で **`npm error code EOTP`** になり失敗します。
 2. GitHub リポジトリ → **Settings** → **Secrets and variables** → **Actions**
    - **Repository secrets**: 名前 `NPM_TOKEN`、値にトークンを保存。
 3. 同じ画面の **Variables** タブ
@@ -38,6 +40,9 @@
 
 ### よくあるハマり
 
+- **`npm error code EOTP` / `This operation requires a one-time password`**（GitHub Actions の Publish ステップ）  
+  → アカウントが **2FA（認証＋書き込み）**のとき、**Automation** 以外の細粒度トークンだと CI から OTP を要求されます。  
+  **対処:** npm で **Granular Access Token（type: Automation）** を再発行し、GitHub の **`NPM_TOKEN` を差し替え**たうえで、失敗した **Release ワークフローを再実行**するか、`1.10.2` などパッチを上げて **新しいタグ**を押してください。
 - **プレリリースタグ**（例: `v1.10.0-beta.1` のようにタグ名に `-` が含まれる）は、ワークフロー仕様により **npm には上がりません**。安定版のみ公開されます。
 - **既に同じタグをプッシュ済み**で npm だけ失敗した場合は、`package.json` と CHANGELOG を **パッチバージョン**で上げ、`release:check` 後に **新しいタグ**を押し直すか、メンテナ判断でローカルから一度だけ `npm publish` します（下記 B）。
 

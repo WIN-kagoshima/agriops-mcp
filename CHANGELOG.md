@@ -15,7 +15,9 @@ Pre-`1.0.0` releases were explicitly **experimental**.
 ### Changed
 
 - **npm package name** from `@win-kagoshima/agriops-mcp` to `@sugukuru/agriops-mcp` (publisher: [sugukuru](https://www.npmjs.com/~sugukuru)). GitHub repo URL and Docker image references (`ghcr.io/...`) are unchanged.
+- **`.nvmrc`** updated from `20` to `22` to align with `package.json engines` (`>=22.0.0`) and CI (`node-version: 22`).
 - Maintainer docs (`docs/npm-first-publish.md`), expert-review materials, `release:check` TopoJSON pack assertion, and CI/npm release alignment.
+- `README.md` / `README.ja.md` / `CONTRIBUTING.md`: added Windows/OneDrive setup notes for `better-sqlite3` prebuilds (Node 22 LTS required; pause OneDrive sync before `npm ci`).
 
 ## [1.10.0] — 2026-05-04 — 戦略室 UI 2.0: 市町村ドリルダウン + 8種アダプティブビジュアライゼーション
 

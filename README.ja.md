@@ -29,12 +29,14 @@ AgriOps MCP は、日本の農業データ（eMAFF 筆ポリゴン、Open-Meteo 
 
 ## クイックスタート（stdio）
 
-Node.js 22+ と npm（pnpm/yarn でも可）が必要です。
+**Node.js 22 LTS** と npm（pnpm/yarn でも可）が必要です。リポジトリの `.nvmrc` に Node 22 が指定されています。
+
+> **Windows / OneDrive ユーザーへ:** `better-sqlite3` は Node 22 LTS 向けにプリビルドバイナリを提供しており、C++ ツールチェーン不要です。Node 22 を使い、`npm ci` 実行前に OneDrive 同期を一時停止するか、OneDrive 外にクローンしてください（EPERM 防止）。詳細は [CONTRIBUTING.md](./CONTRIBUTING.md) を参照。
 
 ```bash
 git clone https://github.com/WIN-kagoshima/agriops-mcp.git
 cd agriops-mcp
-npm install
+npm ci
 npm run build
 npm run dev
 ```

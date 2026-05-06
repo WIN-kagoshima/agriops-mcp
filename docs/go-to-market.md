@@ -1,6 +1,6 @@
 # AgriOps MCP — Go-to-Market 戦略
 
-> 対象: `@sugukuru/agriops-mcp` v1.10.0
+> 対象: `@sugukuru/agriops-mcp` v1.10.1
 > 作成日: 2026-05-04
 > ゴール: **MCP エコシステム内で「日本の農業 AI といえば AgriOps」のポジションを確立する**
 
@@ -112,8 +112,8 @@ npx smithery mcp publish "https://agriops-mcp-n5vdix22hq-an.a.run.app/mcp" \
 # 1. リポジトリ Variables: PUBLISH_TO_NPM=true
 # 2. リポジトリ Secrets: NPM_TOKEN（npm の granular token 等）
 # 3. タグプッシュで自動公開（package.json / CHANGELOG と一致させる）
-git tag v1.10.0
-git push origin v1.10.0
+git tag v1.10.1   # or current version
+git push origin v1.10.1
 # → release.yml が npm publish --access public --provenance を実行
 ```
 

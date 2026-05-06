@@ -51,12 +51,14 @@ flowchart LR
 
 ## Quickstart (stdio)
 
-Requires Node.js 22+ and npm (pnpm/yarn also work).
+Requires **Node.js 22 LTS** and npm (pnpm/yarn also work). The repo includes a `.nvmrc` for nvm/fnm users.
+
+> **Windows / OneDrive users:** `better-sqlite3` ships prebuilt binaries for Node 22 LTS — no C++ compiler needed. Use Node 22 and pause OneDrive sync (or clone outside OneDrive) before running `npm ci` to avoid EPERM errors. See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
 
 ```bash
 git clone https://github.com/WIN-kagoshima/agriops-mcp.git
 cd agriops-mcp
-npm install
+npm ci
 npm run build
 npm run dev   # starts stdio transport
 ```

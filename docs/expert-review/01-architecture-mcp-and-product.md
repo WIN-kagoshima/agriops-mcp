@@ -2,7 +2,7 @@
 
 **対象読者**: MCP 実装者、TypeScript/Node バックエンド、API 設計、OSS メンテナンス、セキュリティレビューに慣れた技術者
 
-**プロジェクト**: AgriOps MCP（npm: `@sugukuru/agriops-mcp`）Version **1.10.0**  
+**プロジェクト**: AgriOps MCP（npm: `@sugukuru/agriops-mcp`）Version **1.10.1**  
 **リポジトリ**: https://github.com/WIN-kagoshima/agriops-mcp
 
 ---
@@ -22,7 +22,7 @@
 
 ---
 
-## 3. v1.10.0 で追加した中核概念
+## 3. v1.10.x で追加した中核概念
 
 ### 3.1 `viz_hint` プロトコル（独自拡張）
 

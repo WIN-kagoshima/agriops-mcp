@@ -48,6 +48,15 @@ npm ci
 `npm ci` performs a clean install from `package-lock.json`. Never use `npm install`
 in CI or when preparing a PR — it can update the lock file unexpectedly.
 
+### Windows / OneDrive notes
+
+`better-sqlite3` is a native addon. Prebuilt binaries are provided for **Node 22 LTS**; no C++ toolchain is required on that version. If you use a different Node version, `node-gyp rebuild` will be attempted and will fail unless Visual Studio "Desktop development with C++" is installed.
+
+- **Use Node 22 LTS** (`nvm install 22 && nvm use 22`, or fnm/Volta equivalent). The `.nvmrc` at repo root pins this version.
+- **Kill all `node.exe` processes** before running `rm -rf node_modules` or `npm ci`. OneDrive or antivirus can hold file locks (`EPERM`) on `.node` binaries while a process has them open.
+- **Pause OneDrive sync** (or clone the repository outside the OneDrive folder) to avoid intermittent EPERM errors during `npm ci`.
+- After switching Node version, run `rm -rf node_modules && npm ci` to get the correct prebuilt binaries.
+
 ---
 
 ## 3. Project structure
