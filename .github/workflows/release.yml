@@ -4,7 +4,7 @@ name: Release
 # Builds the package, runs the full test suite, builds the UI bundle,
 # and publishes a GitHub Release with the dashboard.html attached.
 #
-# Publishing to npm is disabled by default — flip the `publish-npm`
+# Publishing to npm is disabled by default  Eflip the `publish-npm`
 # input or wire the `NPM_TOKEN` secret if/when you want it.
 
 on:
@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
