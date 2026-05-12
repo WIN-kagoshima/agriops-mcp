@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { EmaffSqliteAdapter } from "../adapters/emaff-fude.js";
+import { EstatApiAdapter } from "../adapters/estat.js";
 import { FamicSqliteAdapter } from "../adapters/famic-pesticide.js";
 import { JmaWarningAdapter } from "../adapters/weather/jma-warning.js";
 import { OpenMeteoWeatherAdapter } from "../adapters/weather/open-meteo.js";
@@ -57,6 +58,16 @@ export function createServer(options: CreateServerOptions): {
           })
         : null;
 
+  const estat =
+    overrides?.estat !== undefined
+      ? overrides.estat
+      : config.estatAppId
+        ? new EstatApiAdapter({
+            appId: config.estatAppId,
+            logger: logger.child({ component: "estat" }),
+          })
+        : null;
+
   const deps: Deps = {
     config,
     logger,
@@ -77,6 +88,7 @@ export function createServer(options: CreateServerOptions): {
           }),
     emaff,
     famic,
+    estat,
     tokenStore: overrides?.tokenStore ?? new InMemoryTokenStore(),
     elicitationStore: overrides?.elicitationStore ?? new InMemoryElicitationStore(),
     metrics: overrides?.metrics,
@@ -92,6 +104,9 @@ export function createServer(options: CreateServerOptions): {
     logger.info("FAMIC snapshot not found — pesticide tool disabled", {
       path: config.famicSnapshotPath,
     });
+  }
+  if (!estat) {
+    logger.info("ESTAT_APP_ID not set — get_estat_stats tool disabled");
   }
 
   const server = new McpServer(
@@ -111,8 +126,9 @@ export function createServer(options: CreateServerOptions): {
         logging: {},
       },
       instructions: [
-        "This server exposes Japanese agricultural data — farmland polygons (eMAFF), 1 km mesh weather (Open-Meteo), and pesticide registrations (FAMIC).",
+        "This server exposes Japanese agricultural data — farmland polygons (eMAFF), 1 km mesh weather (Open-Meteo), pesticide registrations (FAMIC), and government statistics (e-Stat).",
         "Cross-tool patterns: use `search_farmland` to get a `field_id`, then `get_weather_1km` with the field's centroid for site-specific weather, then `get_pesticide_rules` for the registered crop.",
+        "For government statistics (census, crop output, livestock): use `get_estat_stats` with mode='search' first to find a statsDataId, then mode='data' to retrieve values. Presets: census_workers, crop_output, livestock.",
         "All data sources include a license attribution string in `structuredContent.attribution`. Surface it when summarising the data to end users.",
         "Stable since 1.0.0: tool names, resource URIs, prompt names, and input/output schemas are frozen under SemVer.",
       ].join(" "),

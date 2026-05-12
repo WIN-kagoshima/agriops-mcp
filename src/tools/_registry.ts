@@ -17,6 +17,7 @@ import { registerCreateStaffDeployPlan } from "./create-staff-deploy-plan.js";
 import { registerCreateTask } from "./create-task.js";
 import { registerCropCalendar } from "./crop-calendar.js";
 import { registerFieldWeatherReport } from "./field-weather-report.js";
+import { registerGetEstatStats } from "./get-estat-stats.js";
 import { registerGetLaborShortageStats } from "./get-labor-shortage-stats.js";
 import { registerGetLivestockRegionalStats } from "./get-livestock-regional-stats.js";
 import { registerGetMarketPrice } from "./get-market-price.js";
@@ -162,6 +163,11 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   reg("fetch_weather_layer", () => registerFetchWeatherLayer(server, deps));
   reg("fetch_topojson_resource", () => registerFetchTopoJsonResource(server, deps));
   reg("export_plan_csv", () => registerExportPlanCsv(server, deps));
+
+  // ----- Phase 11 — e-Stat live government statistics -----
+  if (deps.estat) {
+    reg("get_estat_stats", () => registerGetEstatStats(server, deps));
+  }
 
   // Restore the original registerTool after all registrations are complete.
   if (deps.metrics) {

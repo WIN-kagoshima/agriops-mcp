@@ -12,6 +12,7 @@ This document is the canonical reference; `.well-known/mcp-server.json` and
 | **eMAFF Fude Polygon** | Public open data (政府統計の総合窓口 e-Stat / open.fude.maff.go.jp) | Allowed | OK | Yes — "Source: 農林水産省 eMAFF 筆ポリゴン" | Built locally into `snapshots/emaff-fude-kagoshima.sqlite` by `scripts/build-snapshots/build-emaff.ts`. The SQLite file is **not** redistributed via the npm package; users build it themselves from the official portal. |
 | **FAMIC pesticide registrations** | Public open data (FAMIC 農薬登録情報) | Allowed | OK | Yes — "Source: FAMIC 農薬登録情報" | Built locally into `snapshots/famic-pesticide-2026.sqlite` by `scripts/build-snapshots/build-famic.ts`. Same redistribution stance as eMAFF. |
 | **JMA disaster XML feed** | Japan Meteorological Business Act | Conditional | Short cache only (≤10 min) | Yes — "気象庁 + 発表時刻 + 改変有無" | **Phase 1+ optional.** Live API; never bundled in the package. If you build a JMA adapter, ensure the cache TTL is bounded as required by the Act. |
+| **e-Stat API** | 政府統計API利用規約 | API経由のみ (再配布不可) | 24h cache OK | Yes — "このサービスは、政府統計総合窓口(e-Stat)のAPI機能を使用していますが、サービスの内容は国によって保証されたものではありません。" | **Phase 11+ optional.** Live API via `src/adapters/estat.ts`. Requires free appId registration. Data is not bundled; all queries go through the e-Stat REST API v3.0. |
 
 ## Out-of-scope sources (NOT in this OSS release)
 
@@ -43,3 +44,4 @@ date. Do not silently update the cell.
 | 2026-04-15 | Open-Meteo | Initial entry: CC-BY 4.0. |
 | 2026-04-15 | eMAFF | Initial entry: open data. |
 | 2026-04-15 | FAMIC | Initial entry: open data. |
+| 2026-05-11 | e-Stat API | Initial entry: 政府統計API利用規約. |

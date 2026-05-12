@@ -62,7 +62,7 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
     name: "AgriOps MCP",
     version: options.version,
     description:
-      "Japanese agricultural land + 1 km mesh weather + pesticide registration MCP server " +
+      "Japanese agricultural land + 1 km mesh weather + pesticide registration + government statistics (e-Stat) MCP server " +
       "for Specified Skilled Worker (SSW) workforce dispatching. Reference implementation of " +
       "MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.",
     homepage: "https://github.com/WIN-kagoshima/agriops-mcp",
@@ -113,6 +113,11 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
         name: "Forestry Agency timber market reference",
         license: "open-data",
         attribution: "林野庁 木材需給報告書",
+      },
+      {
+        name: "e-Stat (政府統計の総合窓口) API",
+        license: "政府統計API利用規約",
+        attribution: "政府統計総合窓口(e-Stat)",
       },
     ],
     spec: {

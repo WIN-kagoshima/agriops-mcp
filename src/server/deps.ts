@@ -1,5 +1,6 @@
 import type {
   EmaffAdapter,
+  EstatAdapter,
   FamicAdapter,
   JmaAdapter,
   WeatherAdapter,
@@ -25,6 +26,7 @@ export interface Deps {
   jma: JmaAdapter | null;
   emaff: EmaffAdapter | null;
   famic: FamicAdapter | null;
+  estat: EstatAdapter | null;
   tokenStore: TokenStore | null;
   elicitationStore: ElicitationStore | null;
   /**

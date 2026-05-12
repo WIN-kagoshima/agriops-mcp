@@ -8,7 +8,25 @@ From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt
 
 Pre-`1.0.0` releases were explicitly **experimental**.
 
-## [Unreleased]
+## [1.11.0] — 2026-05-12
+
+### Added
+- **`get_estat_stats` tool** (Phase 11): Live query interface to the e-Stat (政府統計の総合窓口) API v3.0. Provides access to 農林水産省 statistical data — 農林業センサス (census_workers), 作物統計 (crop_output), 畜産統計 (livestock). Two-step workflow: `mode='search'` to discover statistics tables → `mode='data'` to fetch values. Supports prefecture-level area filtering via ISO 3166-2:JP codes, category/time filters, and preset shortcuts. 24-hour response cache. Requires free `ESTAT_APP_ID` registration.
+- **`EstatApiAdapter`** (`src/adapters/estat.ts`): e-Stat API v3.0 adapter wrapping `getStatsList` and `getStatsData` endpoints. JSON format, `TtlCache` for 24h caching, `UpstreamError` for API failures, attribution in every result per 利用規約.
+- **`EstatAdapter` interface** added to `src/adapters/_interface.ts`.
+- **`src/types/estat.ts`**: Type definitions for e-Stat API response shapes.
+
+### Changed
+- `config.ts`: Added optional `estatAppId` (from `ESTAT_APP_ID` env var).
+- `deps.ts`: Added `estat: EstatAdapter | null` to `Deps`.
+- `create-server.ts`: Wires `EstatApiAdapter` when `ESTAT_APP_ID` is set; updated `instructions` to document e-Stat cross-tool pattern.
+- `surface-catalog.ts`: Phase 11 entry for `get_estat_stats` (read-only, model-visible, `READ_ONLY_REMOTE`).
+- `well-known.ts`: Added e-Stat to `data_sources` array and updated server description.
+- `_registry.ts`: Conditional registration gated on `deps.estat`.
+- `docs/data-license.md`: Added e-Stat API entry with 政府統計API利用規約 terms.
+- `.env.example`: Added `ESTAT_APP_ID` documentation.
+- `tool-annotations.test.ts`: Added `get_estat_stats` to `expectedRemote` set (openWorldHint conformance).
+- Security: appId is now masked (replaced with `***`) in all error messages, debug logs, and upstream error propagation.
 
 ## [1.10.3] — 2026-05-07
 

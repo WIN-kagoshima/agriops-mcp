@@ -6,6 +6,7 @@
  */
 
 import type { LatLng } from "../lib/geo.js";
+import type { EstatDataResult, EstatStatsListResult } from "../types/estat.js";
 import type { AreaSummary, Farmland, FarmlandSearchResult } from "../types/farmland.js";
 import type { PesticideQueryResult, PesticideRule } from "../types/pesticide.js";
 import type { WeatherForecast } from "../types/weather.js";
@@ -90,4 +91,34 @@ export interface FamicAdapter {
   }): Promise<PesticideQueryResult>;
 
   get(registrationId: string): Promise<PesticideRule | null>;
+}
+
+// ----- e-Stat (政府統計の総合窓口) -----
+
+export interface EstatAdapter {
+  /**
+   * Search for statistics tables by keyword, statsCode, etc.
+   * Wraps the e-Stat `getStatsList` API.
+   */
+  searchStats(input: {
+    searchWord?: string;
+    statsCode?: string;
+    surveyYears?: string;
+    statsField?: string;
+    limit?: number;
+  }): Promise<EstatStatsListResult>;
+
+  /**
+   * Fetch statistical data for a given statsDataId with optional filters.
+   * Wraps the e-Stat `getStatsData` API.
+   */
+  getStatsData(input: {
+    statsDataId: string;
+    cdArea?: string;
+    cdCat01?: string;
+    cdCat02?: string;
+    cdTime?: string;
+    limit?: number;
+    startPosition?: number;
+  }): Promise<EstatDataResult>;
 }

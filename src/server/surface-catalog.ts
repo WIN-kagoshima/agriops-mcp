@@ -298,6 +298,13 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     visibility: "app",
     annotations: READ_ONLY,
   },
+  // ----- Phase 11 — e-Stat live government statistics -----
+  get_estat_stats: {
+    sideEffect: "read-only",
+    introduced: "1.11.0",
+    visibility: "model",
+    annotations: READ_ONLY_REMOTE,
+  },
 };
 
 /**
