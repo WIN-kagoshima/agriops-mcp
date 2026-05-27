@@ -52,6 +52,7 @@ describe("Phase 4 OAuth URL elicitation flow", () => {
       openMeteoBaseUrl: "https://api.open-meteo.com/v1",
       emaffSnapshotPath: "./snapshots/none.sqlite",
       famicSnapshotPath: "./snapshots/none.sqlite",
+      iotSnapshotPath: "./snapshots/none.sqlite",
       sessionCookieSecret: "test-cookie-secret-very-long-not-real",
       demoOAuth: {
         clientId: "demo-client",

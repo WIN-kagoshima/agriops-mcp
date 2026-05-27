@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Deps } from "../server/deps.js";
+import { TOOL_METADATA } from "../server/surface-catalog.js";
 import {
   registerComputeNdviStub,
   registerExportPlanCsv,
@@ -17,21 +18,27 @@ import { registerCreateStaffDeployPlan } from "./create-staff-deploy-plan.js";
 import { registerCreateTask } from "./create-task.js";
 import { registerCropCalendar } from "./crop-calendar.js";
 import { registerFieldWeatherReport } from "./field-weather-report.js";
+import { registerGenerateSubsidyApplication } from "./generate-subsidy-application.js";
 import { registerGetEstatStats } from "./get-estat-stats.js";
 import { registerGetLaborShortageStats } from "./get-labor-shortage-stats.js";
 import { registerGetLivestockRegionalStats } from "./get-livestock-regional-stats.js";
+import { registerGetMachineIoTStatus } from "./get-machine-iot-status.js";
 import { registerGetMarketPrice } from "./get-market-price.js";
 import { registerGetMunicipalityStats } from "./get-municipality-stats.js";
 import { registerGetPesticideRules } from "./get-pesticide-rules.js";
 import { registerGetPrefectureCropProfile } from "./get-prefecture-crop-profile.js";
+import { registerGetRealTimeSensorData } from "./get-realtime-sensor-data.js";
 import { registerGetSswCropCompatibility } from "./get-ssw-crop-compatibility.js";
 import { registerGetTaskStatus } from "./get-task-status.js";
+import { registerGetTraceabilityReport } from "./get-traceability-report.js";
 import { registerGetWeather1km } from "./get-weather-1km.js";
 import { registerGetWeatherWarning } from "./get-weather-warning.js";
 import { registerMultiFieldCompare } from "./multi-field-compare.js";
 import { registerNearbyFarms } from "./nearby-farms.js";
 import { registerOpenDashboard } from "./open-dashboard.js";
 import { registerOptimizeHarvestTiming } from "./optimize-harvest-timing.js";
+import { registerPlanIrrigation } from "./plan-irrigation.js";
+import { registerPredictLaborDemand } from "./predict-labor-demand.js";
 import { registerSearchFarmland } from "./search-farmland.js";
 import { registerSeasonalRiskForecast } from "./seasonal-risk-forecast.js";
 import { registerSnapshotStatus } from "./snapshot-status.js";
@@ -66,14 +73,20 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   const serverRecord = server as unknown as Record<string, unknown>;
   const originalRegisterTool = (server.registerTool as unknown as AnyFn).bind(server);
 
-  if (deps.metrics) {
-    const metrics = deps.metrics;
-    serverRecord.registerTool = (
-      toolName: string,
-      config: unknown,
-      handler: (input: unknown) => Promise<{ isError?: boolean }>,
-    ) => {
-      const tracked = async (input: unknown) => {
+  serverRecord.registerTool = (
+    toolName: string,
+    config: unknown,
+    handler: (input: unknown) => Promise<{ isError?: boolean }>,
+  ) => {
+    const meta = TOOL_METADATA[toolName];
+    const finalConfig = meta?.deprecated
+      ? { ...(config as Record<string, unknown>), deprecated: true }
+      : config;
+
+    let finalHandler = handler;
+    if (deps.metrics) {
+      const metrics = deps.metrics;
+      finalHandler = async (input: unknown) => {
         const start = Date.now();
         try {
           const result = await handler(input);
@@ -87,9 +100,9 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
           throw err;
         }
       };
-      originalRegisterTool(toolName, config, tracked);
-    };
-  }
+    }
+    originalRegisterTool(toolName, finalConfig, finalHandler);
+  };
 
   const reg = (name: string, fn: () => void) => {
     fn();
@@ -169,10 +182,16 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
     reg("get_estat_stats", () => registerGetEstatStats(server, deps));
   }
 
+  // ----- Phase 12 — Precision Agriculture & IoT Unified Layer -----
+  reg("get_realtime_sensor_data", () => registerGetRealTimeSensorData(server, deps));
+  reg("get_machine_iot_status", () => registerGetMachineIoTStatus(server, deps));
+  reg("predict_labor_demand", () => registerPredictLaborDemand(server, deps));
+  reg("plan_irrigation", () => registerPlanIrrigation(server, deps));
+  reg("generate_subsidy_application", () => registerGenerateSubsidyApplication(server, deps));
+  reg("get_traceability_report", () => registerGetTraceabilityReport(server, deps));
+
   // Restore the original registerTool after all registrations are complete.
-  if (deps.metrics) {
-    serverRecord.registerTool = originalRegisterTool;
-  }
+  serverRecord.registerTool = originalRegisterTool;
 
   return registered;
 }

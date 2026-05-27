@@ -29,6 +29,11 @@ export interface Deps {
   estat: EstatAdapter | null;
   tokenStore: TokenStore | null;
   elicitationStore: ElicitationStore | null;
+  iotDb: import("better-sqlite3").Database | null;
+  sensorService: import("../services/iot/sensor-service.js").SensorService | null;
+  machineService: import("../services/iot/machine-service.js").MachineService | null;
+  laborService: import("../services/iot/labor-service.js").LaborService | null;
+  traceabilityService: import("../services/iot/traceability-service.js").TraceabilityService | null;
   /**
    * Prometheus metrics registry. When present, tool registrations are
    * automatically wrapped to increment `tool_calls_total` and observe

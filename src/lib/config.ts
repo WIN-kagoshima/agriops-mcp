@@ -7,6 +7,7 @@ const ConfigSchema = z.object({
   openMeteoBaseUrl: z.string().url().default("https://api.open-meteo.com/v1"),
   emaffSnapshotPath: z.string().default("./snapshots/emaff-fude-kagoshima.sqlite"),
   famicSnapshotPath: z.string().default("./snapshots/famic-pesticide-2026.sqlite"),
+  iotSnapshotPath: z.string().default("./snapshots/iot-unified.sqlite"),
   estatAppId: z.string().min(1).optional(),
   sessionCookieSecret: z.string().min(16).default("dev-only-secret-do-not-use-in-prod"),
   demoOAuth: z
@@ -35,6 +36,7 @@ export function loadConfig(): Config {
     openMeteoBaseUrl: readEnv("OPEN_METEO_BASE_URL"),
     emaffSnapshotPath: readEnv("EMAFF_SNAPSHOT_PATH"),
     famicSnapshotPath: readEnv("FAMIC_SNAPSHOT_PATH"),
+    iotSnapshotPath: readEnv("IOT_SNAPSHOT_PATH"),
     estatAppId: readEnv("ESTAT_APP_ID"),
     sessionCookieSecret: readEnv("SESSION_COOKIE_SECRET"),
     demoOAuth:

@@ -1,0 +1,44 @@
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag=$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/agriops-market-mcp:$BUILD_ID
+      - --tag=$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/agriops-market-mcp:latest
+      - --cache-from=$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/agriops-market-mcp:latest
+      - .
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - $_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/agriops-market-mcp
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - agriops-market-mcp
+      - --image=$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/agriops-market-mcp:$BUILD_ID
+      - --region=$_REGION
+      - --platform=managed
+      - --service-account=$_SERVICE_ACCOUNT
+      - --min-instances=0
+      - --max-instances=5
+      - --memory=256Mi
+      - --cpu=1
+      - --concurrency=80
+      - --timeout=60s
+      - --set-env-vars=LOG_LEVEL=info
+      - --allow-unauthenticated
+options:
+  logging: CLOUD_LOGGING_ONLY
+  dynamic_substitutions: true
+substitutions:
+  _REGION: asia-northeast1
+  _REPO: agriops-mcp
+  _SERVICE_ACCOUNT: agriops-runtime@${PROJECT_ID}.iam.gserviceaccount.com
+images:
+  - $_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/agriops-market-mcp:$BUILD_ID
+  - $_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO/agriops-market-mcp:latest

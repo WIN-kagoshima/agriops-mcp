@@ -52,6 +52,7 @@ export interface ToolMetadata {
    * agree on the same values.
    */
   annotations: ToolAnnotations;
+  deprecated?: boolean;
 }
 
 const READ_ONLY: ToolAnnotations = {
@@ -253,12 +254,14 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     introduced: "1.6.0",
     visibility: "model",
     annotations: READ_ONLY,
+    deprecated: true,
   },
   get_prefecture_crop_profile: {
     sideEffect: "read-only",
     introduced: "1.6.0",
     visibility: "model",
     annotations: READ_ONLY,
+    deprecated: true,
   },
   optimize_harvest_timing: {
     sideEffect: "read-only",
@@ -272,18 +275,21 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     introduced: "1.8.0",
     visibility: "model",
     annotations: READ_ONLY,
+    deprecated: true,
   },
   get_labor_shortage_stats: {
     sideEffect: "read-only",
     introduced: "1.8.0",
     visibility: "model",
     annotations: READ_ONLY,
+    deprecated: true,
   },
   get_livestock_regional_stats: {
     sideEffect: "read-only",
     introduced: "1.9.0",
     visibility: "model",
     annotations: READ_ONLY,
+    deprecated: true,
   },
   // ----- Phase 10 — municipality drill-down + strategic dashboard -----
   get_municipality_stats: {
@@ -291,6 +297,7 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     introduced: "1.10.0",
     visibility: "model",
     annotations: READ_ONLY,
+    deprecated: true,
   },
   fetch_topojson_resource: {
     sideEffect: "read-only",
@@ -304,6 +311,44 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     introduced: "1.11.0",
     visibility: "model",
     annotations: READ_ONLY_REMOTE,
+    deprecated: true,
+  },
+  // ----- Phase 12 — Precision Agriculture & IoT Unified Layer -----
+  get_realtime_sensor_data: {
+    sideEffect: "read-only",
+    introduced: "1.12.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
+  get_machine_iot_status: {
+    sideEffect: "read-only",
+    introduced: "1.12.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
+  predict_labor_demand: {
+    sideEffect: "read-only",
+    introduced: "1.12.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
+  plan_irrigation: {
+    sideEffect: "read-only",
+    introduced: "1.12.0",
+    visibility: "model",
+    annotations: READ_ONLY,
+  },
+  generate_subsidy_application: {
+    sideEffect: "draft",
+    introduced: "1.12.0",
+    visibility: "model",
+    annotations: DRAFT_NON_IDEMPOTENT,
+  },
+  get_traceability_report: {
+    sideEffect: "read-only",
+    introduced: "1.12.0",
+    visibility: "model",
+    annotations: READ_ONLY,
   },
 };
 

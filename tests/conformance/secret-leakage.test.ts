@@ -30,6 +30,7 @@ function pollutedConfig(): Config {
     openMeteoBaseUrl: "https://api.open-meteo.com/v1",
     emaffSnapshotPath: "./snapshots/this-file-does-not-exist.sqlite",
     famicSnapshotPath: "./snapshots/this-file-does-not-exist.sqlite",
+    iotSnapshotPath: "./snapshots/this-file-does-not-exist.sqlite",
     sessionCookieSecret: "BEGIN-PRIVATE-KEY-this-is-fake-but-looks-real",
     demoOAuth: {
       clientId: "client-id-public-ok",

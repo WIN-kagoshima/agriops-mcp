@@ -1,0 +1,35 @@
+{
+  "name": "@sugukuru/agriops-market-mcp",
+  "version": "1.0.0",
+  "description": "AgriOps Market & Statistics MCP server — wholesale market prices, regional crop profiles, and labor stats for Japanese agriculture.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "WIN Kagoshima",
+  "main": "./dist/server.js",
+  "bin": {
+    "agriops-market-mcp": "./dist/server.js"
+  },
+  "files": ["dist/**/*.js", "dist/**/*.d.ts", "LICENSE", "README.md"],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch server.ts --stdio",
+    "dev:http": "tsx watch server.ts --http",
+    "start": "node dist/server.js",
+    "start:http": "node dist/server.js --http",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "express": "^4.21.2",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.17.0",
+    "tsx": "^4.19.0",
+    "typescript": "^6.0.3"
+  }
+}
