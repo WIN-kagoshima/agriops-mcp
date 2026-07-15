@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriOps Market MCP サーバー — 設定ガイド</title>
+<meta name="description" content="AgriOps Market & Stats MCP サーバーの設定ガイド。初めての方向け。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e1a;
+  --bg-card: #111827;
+  --bg-card-hover: #1a2236;
+  --bg-code: #0d1117;
+  --border: #1e293b;
+  --border-accent: #2563eb33;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --accent: #3b82f6;
+  --accent-light: #60a5fa;
+  --accent-glow: #3b82f620;
+  --green: #22c55e;
+  --green-bg: #22c55e15;
+  --orange: #f59e0b;
+  --orange-bg: #f59e0b15;
+  --pink: #ec4899;
+  --pink-bg: #ec489915;
+  --purple: #a855f7;
+  --purple-bg: #a855f715;
+  --red: #ef4444;
+  --cyan: #06b6d4;
+  --cyan-bg: #06b6d415;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', 'Noto Sans JP', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* Hero */
+.hero {
+  position: relative;
+  padding: 80px 24px 60px;
+  text-align: center;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0f172a 0%, var(--bg) 100%);
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: var(--green-bg);
+  border: 1px solid #22c55e44;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+.hero-badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.hero h1 {
+  font-size: clamp(28px, 5vw, 48px);
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 0%, var(--accent-light) 50%, var(--cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.hero p {
+  font-size: 17px;
+  color: var(--text-muted);
+  max-width: 640px;
+  margin: 0 auto 32px;
+}
+.hero-url {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--accent-light);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: all;
+}
+.hero-url:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+.hero-url .copy-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+}
+
+/* Container */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* Section */
+.section {
+  margin-bottom: 56px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.section-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.section-num.blue { background: var(--accent-glow); color: var(--accent-light); border: 1px solid #3b82f633; }
+.section-num.green { background: var(--green-bg); color: var(--green); border: 1px solid #22c55e33; }
+.section-num.orange { background: var(--orange-bg); color: var(--orange); border: 1px solid #f59e0b33; }
+.section-num.pink { background: var(--pink-bg); color: var(--pink); border: 1px solid #ec489933; }
+.section-num.purple { background: var(--purple-bg); color: var(--purple); border: 1px solid #a855f733; }
+.section-num.cyan { background: var(--cyan-bg); color: var(--cyan); border: 1px solid #06b6d433; }
+
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Card */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  margin-bottom: 16px;
+  transition: all 0.2s;
+}
+.card:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-card-hover);
+}
+.card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card p, .card li {
+  color: var(--text-muted);
+  font-size: 14.5px;
+}
+.card ul {
+  padding-left: 20px;
+  margin-top: 8px;
+}
+.card li {
+  margin-bottom: 6px;
+}
+
+/* Code block */
+.code-block {
+  position: relative;
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  margin: 16px 0;
+  overflow-x: auto;
+}
+.code-block pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text);
+  white-space: pre;
+}
+.code-block .label {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-code);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.code-block .comment { color: #6b7280; }
+.code-block .key { color: var(--cyan); }
+.code-block .string { color: var(--green); }
+.code-block .bracket { color: var(--text-dim); }
+
+/* Client tabs */
+.client-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.client-tab {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', 'Noto Sans JP', sans-serif;
+}
+.client-tab:hover { border-color: var(--accent); color: var(--text); }
+.client-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.client-content { display: none; }
+.client-content.active { display: block; }
+
+/* Tool cards */
+.tool-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.tool-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px 24px;
+  transition: all 0.2s;
+  cursor: default;
+}
+.tool-card:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-1px);
+}
+.tool-card .tool-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-light);
+  margin-bottom: 6px;
+}
+.tool-card .tool-desc {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.tool-card .tool-tag {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.tag-new { background: var(--pink-bg); color: var(--pink); border: 1px solid #ec489933; }
+.tag-price { background: var(--green-bg); color: var(--green); border: 1px solid #22c55e33; }
+.tag-stats { background: var(--cyan-bg); color: var(--cyan); border: 1px solid #06b6d433; }
+.tag-ai { background: var(--purple-bg); color: var(--purple); border: 1px solid #a855f733; }
+
+/* Example prompts */
+.prompt-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px 24px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  transition: all 0.2s;
+}
+.prompt-card:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
+}
+.prompt-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.prompt-text {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.6;
+}
+.prompt-text em {
+  color: var(--text-dim);
+  font-style: normal;
+  font-size: 12.5px;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Alert */
+.alert {
+  display: flex;
+  gap: 14px;
+  padding: 18px 22px;
+  border-radius: var(--radius-sm);
+  margin: 20px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.alert-info {
+  background: #3b82f610;
+  border: 1px solid #3b82f630;
+  color: var(--accent-light);
+}
+.alert-warn {
+  background: #f59e0b10;
+  border: 1px solid #f59e0b30;
+  color: var(--orange);
+}
+.alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* Steps */
+.step {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.step-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-glow);
+  border: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-light);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.step-content h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.step-content p {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 40px 24px;
+  color: var(--text-dim);
+  font-size: 13px;
+  border-top: 1px solid var(--border);
+}
+.footer a { color: var(--accent-light); text-decoration: none; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .hero { padding: 60px 16px 40px; }
+  .container { padding: 0 16px 60px; }
+  .card { padding: 20px; }
+  .hero-url { font-size: 11px; padding: 10px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-badge">稼働中 — Cloud Run (Tokyo)</div>
+  <h1>🌾 AgriOps Market MCP<br>設定ガイド</h1>
+  <p>農産物市場価格・地域統計・派遣営業先 AI 選抜を提供する MCP サーバー。<br>AI アシスタントから直接使えます。</p>
+  <div class="hero-url" onclick="navigator.clipboard.writeText('https://agriops-market-mcp-731026511067.asia-northeast1.run.app/mcp')">
+    https://agriops-market-mcp-...asia-northeast1.run.app/mcp
+    <span class="copy-hint">📋 クリックでコピー</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Section 1: Overview -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num blue">1</div>
+      <div class="section-title">このサーバーは何？</div>
+    </div>
+    <div class="card">
+      <h3>🎯 スグクル特定技能派遣の営業を AI で加速するツール群</h3>
+      <p>Claude や ChatGPT などの AI アシスタントに接続すると、以下のことが<strong style="color:#fff">自然な日本語で質問するだけ</strong>でできるようになります：</p>
+      <ul>
+        <li>「<strong style="color:var(--green)">鹿児島のさつまいもの今月の市場価格</strong>を教えて」→ 参考卸売価格・季節傾向が即座に返る</li>
+        <li>「<strong style="color:var(--cyan)">愛媛県の市町村別の農業就業人口</strong>を一覧で見せて」→ 150 市町村のデータベースから取得</li>
+        <li>「<strong style="color:var(--pink)">今月、九州で最も営業すべき市町村</strong>を選んで」→ AI がスコアリングして営業トーク例まで自動生成</li>
+      </ul>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-icon">💡</div>
+      <div>MCP（Model Context Protocol）は AI アシスタントに外部データソースを接続するための標準規格です。サーバーの URL を設定ファイルに書くだけで AI が自動的にツールを認識します。</div>
+    </div>
+  </div>
+
+  <!-- Section 2: Setup -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num green">2</div>
+      <div class="section-title">接続設定（3分で完了）</div>
+    </div>
+
+    <div class="client-tabs">
+      <button class="client-tab active" onclick="showTab('claude')">Claude Desktop</button>
+      <button class="client-tab" onclick="showTab('cursor')">Cursor</button>
+      <button class="client-tab" onclick="showTab('vscode')">VS Code (Copilot)</button>
+      <button class="client-tab" onclick="showTab('gateway')">MCP Gateway</button>
+    </div>
+
+    <!-- Claude Desktop -->
+    <div id="tab-claude" class="client-content active">
+      <div class="step">
+        <div class="step-dot">1</div>
+        <div class="step-content">
+          <h4>設定ファイルを開く</h4>
+          <p>Claude Desktop のメニュー → <strong>Settings</strong> → <strong>Developer</strong> → <strong>Edit Config</strong> をクリック。<br>
+          または直接ファイルを開く：</p>
+          <div class="code-block">
+            <span class="label">Windows</span>
+            <pre><span class="comment">// エクスプローラーのアドレスバーに貼り付け</span>
+<span class="string">%APPDATA%\Claude\claude_desktop_config.json</span></pre>
+          </div>
+          <div class="code-block">
+            <span class="label">Mac</span>
+            <pre><span class="string">~/Library/Application Support/Claude/claude_desktop_config.json</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot">2</div>
+        <div class="step-content">
+          <h4>以下の JSON を貼り付ける</h4>
+          <p>既存の設定がある場合は <code>mcpServers</code> の中に追加してください。</p>
+          <div class="code-block">
+            <span class="label">claude_desktop_config.json</span>
+            <pre><span class="bracket">{</span>
+  <span class="key">"mcpServers"</span>: <span class="bracket">{</span>
+    <span class="key">"agriops-market"</span>: <span class="bracket">{</span>
+      <span class="key">"url"</span>: <span class="string">"https://agriops-market-mcp-731026511067.asia-northeast1.run.app/mcp"</span>
+    <span class="bracket">}</span>
+  <span class="bracket">}</span>
+<span class="bracket">}</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot">3</div>
+        <div class="step-content">
+          <h4>Claude Desktop を再起動</h4>
+          <p>設定ファイルを保存して Claude Desktop を再起動すれば完了。チャット画面の下部にハンマーアイコン（🔨）が表示され、ツールが使えるようになります。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cursor -->
+    <div id="tab-cursor" class="client-content">
+      <div class="step">
+        <div class="step-dot">1</div>
+        <div class="step-content">
+          <h4>MCP 設定ファイルを作成</h4>
+          <p>プロジェクトのルートに <code>.cursor/mcp.json</code> を作成：</p>
+          <div class="code-block">
+            <span class="label">.cursor/mcp.json</span>
+            <pre><span class="bracket">{</span>
+  <span class="key">"mcpServers"</span>: <span class="bracket">{</span>
+    <span class="key">"agriops-market"</span>: <span class="bracket">{</span>
+      <span class="key">"url"</span>: <span class="string">"https://agriops-market-mcp-731026511067.asia-northeast1.run.app/mcp"</span>
+    <span class="bracket">}</span>
+  <span class="bracket">}</span>
+<span class="bracket">}</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot">2</div>
+        <div class="step-content">
+          <h4>Cursor を再起動</h4>
+          <p>設定を保存して Cursor を再起動。Composer（Agent モード）でツールが自動認識されます。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- VS Code -->
+    <div id="tab-vscode" class="client-content">
+      <div class="step">
+        <div class="step-dot">1</div>
+        <div class="step-content">
+          <h4>設定ファイルを作成</h4>
+          <p>プロジェクトのルートに <code>.vscode/mcp.json</code> を作成：</p>
+          <div class="code-block">
+            <span class="label">.vscode/mcp.json</span>
+            <pre><span class="bracket">{</span>
+  <span class="key">"servers"</span>: <span class="bracket">{</span>
+    <span class="key">"agriops-market"</span>: <span class="bracket">{</span>
+      <span class="key">"type"</span>: <span class="string">"http"</span>,
+      <span class="key">"url"</span>: <span class="string">"https://agriops-market-mcp-731026511067.asia-northeast1.run.app/mcp"</span>
+    <span class="bracket">}</span>
+  <span class="bracket">}</span>
+<span class="bracket">}</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-dot">2</div>
+        <div class="step-content">
+          <h4>Copilot Chat で使用</h4>
+          <p>VS Code の Copilot Chat（Agent モード）を開き、<code>@agriops-market</code> と入力するか、ツールアイコンからツールを選択します。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MCP Gateway -->
+    <div id="tab-gateway" class="client-content">
+      <div class="step">
+        <div class="step-dot">1</div>
+        <div class="step-content">
+          <h4>Gateway 設定に追加</h4>
+          <p>MCP Gateway のサーバーリストに以下を追加：</p>
+          <div class="code-block">
+            <span class="label">gateway-config.json</span>
+            <pre><span class="bracket">{</span>
+  <span class="key">"name"</span>: <span class="string">"agriops-market"</span>,
+  <span class="key">"url"</span>: <span class="string">"https://agriops-market-mcp-731026511067.asia-northeast1.run.app/mcp"</span>,
+  <span class="key">"transport"</span>: <span class="string">"streamable-http"</span>,
+  <span class="key">"description"</span>: <span class="string">"農産物市場価格・統計・営業先AI選抜"</span>
+<span class="bracket">}</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-warn">
+      <div class="alert-icon">⚠️</div>
+      <div><strong>重要</strong>：設定の URL は <code>/mcp</code> まで含めてください。<code>/mcp</code> を忘れると接続できません。</div>
+    </div>
+  </div>
+
+  <!-- Section 3: Tools -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num orange">3</div>
+      <div class="section-title">使えるツール一覧（8つ）</div>
+    </div>
+
+    <div class="tool-grid">
+      <div class="tool-card">
+        <div class="tool-name">select_dispatch_sales_targets</div>
+        <div class="tool-desc">市場価格 × 労働力減少率 × SSW適性を3軸で統合スコアリングし、派遣営業アタック先の最優先ターゲット市町村を自動選抜。セールストーク例も自動生成。</div>
+        <span class="tool-tag tag-new">🔥 NEW — AI営業支援</span>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">get_market_price</div>
+        <div class="tool-desc">さつまいも・いちご・トマト・みかん・米・茶・木材など19品目の市場参考卸売価格。月別の季節変動係数付き。</div>
+        <span class="tool-tag tag-price">💰 市場価格</span>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">get_prefecture_crop_profile</div>
+        <div class="tool-desc">都道府県別の作物プロフィール（主要作物・生産量ランク・SSW適性）を一覧で取得。</div>
+        <span class="tool-tag tag-stats">📊 統計データ</span>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">get_municipality_stats</div>
+        <div class="tool-desc">市町村レベルの農業統計（就業人口・経営体数・主要作物・SSW適性トップ作物）。約150市町村をカバー。</div>
+        <span class="tool-tag tag-stats">📊 統計データ</span>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">get_labor_shortage_stats</div>
+        <div class="tool-desc">農業労働力不足の統計。地域別の就業人口減少トレンドと人手不足深刻度を分析。</div>
+        <span class="tool-tag tag-stats">📊 統計データ</span>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">get_livestock_regional_stats</div>
+        <div class="tool-desc">地域別の畜産統計（ブロイラー・養豚・肉用牛等）。飼養頭数・出荷量データ。</div>
+        <span class="tool-tag tag-stats">📊 統計データ</span>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">get_ssw_crop_compatibility</div>
+        <div class="tool-desc">特定技能外国人（SSW）と作物の適性マッチング。作物ごとの必要スキル・繁忙期・雇用形態を分析。</div>
+        <span class="tool-tag tag-ai">🤖 AI分析</span>
+      </div>
+      <div class="tool-card">
+        <div class="tool-name">get_estat_stats</div>
+        <div class="tool-desc">e-Stat（政府統計ポータル）API から農業関連統計を直接取得。※ ESTAT_APP_ID が必要。</div>
+        <span class="tool-tag tag-stats">📊 統計データ</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Example Prompts -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num pink">4</div>
+      <div class="section-title">こう聞くだけで使えます（プロンプト例）</div>
+    </div>
+
+    <p style="color:var(--text-muted); margin-bottom:20px; font-size:14px;">AI チャットに以下のように話しかけるだけで、自動的に適切なツールが呼び出されます。コピーして使ってください。</p>
+
+    <div class="prompt-card">
+      <div class="prompt-icon">🎯</div>
+      <div class="prompt-text">
+        今月、九州で最も派遣営業をすべき市町村トップ5を教えて。営業トーク例も添えて。
+        <em>→ select_dispatch_sales_targets が呼ばれ、スコア順にリスト化されます</em>
+      </div>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-icon">💰</div>
+      <div class="prompt-text">
+        鹿児島のさつまいもの10月の市場価格はいくら？
+        <em>→ get_market_price で季節係数込みの参考卸売価格を取得</em>
+      </div>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-icon">📊</div>
+      <div class="prompt-text">
+        愛媛県の市町村ごとの農業就業人口と5年変化率を一覧で見せて
+        <em>→ get_municipality_stats で愛媛の全市町村を一括取得</em>
+      </div>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-icon">🔍</div>
+      <div class="prompt-text">
+        いちごの栽培で SSW を派遣するのに最も適した地域はどこ？
+        <em>→ get_ssw_crop_compatibility + get_municipality_stats の組み合わせ</em>
+      </div>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-icon">📈</div>
+      <div class="prompt-text">
+        来月（6月）に市場価格が高くなる農産物を教えて。その産地で人手不足が深刻な市町村も合わせて。
+        <em>→ 複数ツールを AI が自動連携して回答</em>
+      </div>
+    </div>
+
+    <div class="prompt-card">
+      <div class="prompt-icon">🐓</div>
+      <div class="prompt-text">
+        宮崎県のブロイラー産地の統計と、捕鳥チーム派遣に適した市町村を教えて
+        <em>→ get_livestock_regional_stats + get_municipality_stats の連携</em>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Troubleshooting -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num purple">5</div>
+      <div class="section-title">うまくいかないときは</div>
+    </div>
+
+    <div class="card">
+      <h3>❌ 「ツールが見つかりません」と言われる</h3>
+      <ul>
+        <li>URL の末尾に <code>/mcp</code> が付いているか確認してください</li>
+        <li>JSON の構文エラーがないか確認（カンマの過不足など）</li>
+        <li>設定後、アプリを<strong>完全に再起動</strong>してください（タスクバーから終了→再起動）</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>❌ 「接続できません」エラー</h3>
+      <ul>
+        <li>オフィスの Wi-Fi / VPN で外部アクセスが制限されていないか確認</li>
+        <li>ブラウザで <a href="https://agriops-market-mcp-731026511067.asia-northeast1.run.app/" target="_blank" style="color:var(--accent-light)">サーバー URL</a> を開いて JSON が表示されるか確認</li>
+        <li>プロキシ環境の場合、ネットワーク管理者に相談してください</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>❌ 「get_estat_stats が使えない」</h3>
+      <ul>
+        <li>このツールのみ e-Stat API キー（<code>ESTAT_APP_ID</code>）が必要です</li>
+        <li>他の 7 ツールは API キーなしで利用可能です</li>
+        <li>e-Stat API キーは <a href="https://www.e-stat.go.jp/" target="_blank" style="color:var(--accent-light)">e-Stat</a> で無料取得できます</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Section 6: Architecture -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num cyan">6</div>
+      <div class="section-title">技術情報（管理者向け）</div>
+    </div>
+
+    <div class="card">
+      <h3>🏗️ インフラ構成</h3>
+      <ul>
+        <li><strong>GCP プロジェクト</strong>: mcp-service-492010</li>
+        <li><strong>Cloud Run サービス</strong>: agriops-market-mcp</li>
+        <li><strong>リージョン</strong>: asia-northeast1（東京）</li>
+        <li><strong>メモリ</strong>: 256Mi / <strong>CPU</strong>: 1</li>
+        <li><strong>スケーリング</strong>: 0〜5 インスタンス（使われていないときはゼロ = 課金なし）</li>
+        <li><strong>プロトコル</strong>: MCP Streamable HTTP（MCP 仕様 2024-11-05 準拠）</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>🔗 エンドポイント一覧</h3>
+      <div class="code-block" style="margin-top:12px">
+        <pre><span class="comment"># サーバー情報（ブラウザで開ける）</span>
+GET  <span class="string">https://agriops-market-mcp-731026511067.asia-northeast1.run.app/</span>
+
+<span class="comment"># MCP 接続エンドポイント（AI クライアントが使う）</span>
+POST <span class="string">https://agriops-market-mcp-731026511067.asia-northeast1.run.app/mcp</span>
+
+<span class="comment"># ヘルスチェック</span>
+GET  <span class="string">https://agriops-market-mcp-731026511067.asia-northeast1.run.app/livez</span>
+GET  <span class="string">https://agriops-market-mcp-731026511067.asia-northeast1.run.app/readyz</span></pre>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>AgriOps Market & Stats MCP Server v1.0.0 — Built by WIN Kagoshima / スグクル</p>
+  <p style="margin-top:8px">
+    <a href="https://agriops-market-mcp-731026511067.asia-northeast1.run.app/" target="_blank">サーバー状態を確認</a>
+    &nbsp;·&nbsp;
+    作成日: 2026年5月25日
+  </p>
+</div>
+
+<script>
+function showTab(tabId) {
+  document.querySelectorAll('.client-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.client-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+}
+</script>
+</body>
+</html>

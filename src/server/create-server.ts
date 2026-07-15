@@ -11,6 +11,11 @@ import type { Config } from "../lib/config.js";
 import type { Logger } from "../lib/logger.js";
 import { registerAllPrompts } from "../prompts/_registry.js";
 import { registerAllResources } from "../resources/_registry.js";
+import { initIotDb } from "../services/iot/iot-db.js";
+import { LaborService } from "../services/iot/labor-service.js";
+import { MachineService } from "../services/iot/machine-service.js";
+import { SensorService } from "../services/iot/sensor-service.js";
+import { TraceabilityService } from "../services/iot/traceability-service.js";
 import { InMemoryTaskStore } from "../tasks/index.js";
 import { registerAllTools } from "../tools/_registry.js";
 import type { Deps } from "./deps.js";
@@ -68,6 +73,29 @@ export function createServer(options: CreateServerOptions): {
           })
         : null;
 
+  const iotDb =
+    overrides?.iotDb !== undefined
+      ? overrides.iotDb
+      : initIotDb(config.iotSnapshotPath, logger.child({ component: "iot-db" }));
+
+  const sensorService =
+    overrides?.sensorService !== undefined
+      ? overrides.sensorService
+      : new SensorService(iotDb as any, () => deps);
+
+  const machineService =
+    overrides?.machineService !== undefined
+      ? overrides.machineService
+      : new MachineService(iotDb as any);
+
+  const laborService =
+    overrides?.laborService !== undefined ? overrides.laborService : new LaborService(() => deps);
+
+  const traceabilityService =
+    overrides?.traceabilityService !== undefined
+      ? overrides.traceabilityService
+      : new TraceabilityService(iotDb as any, () => deps);
+
   const deps: Deps = {
     config,
     logger,
@@ -89,6 +117,11 @@ export function createServer(options: CreateServerOptions): {
     emaff,
     famic,
     estat,
+    iotDb,
+    sensorService,
+    machineService,
+    laborService,
+    traceabilityService,
     tokenStore: overrides?.tokenStore ?? new InMemoryTokenStore(),
     elicitationStore: overrides?.elicitationStore ?? new InMemoryElicitationStore(),
     metrics: overrides?.metrics,

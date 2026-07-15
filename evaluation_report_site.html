@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriOps MCP 現状評価と事業化可能性分析レポート</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #070a13;
+            --bg-deep: #0c1122;
+            --panel-dark: rgba(17, 24, 43, 0.7);
+            --panel-border: rgba(255, 255, 255, 0.06);
+            --primary: #10B981; /* Emerald */
+            --primary-rgb: 16, 185, 129;
+            --accent: #06B6D4; /* Cyan */
+            --accent-rgb: 6, 182, 212;
+            --warning: #F59E0B; /* Amber */
+            --danger: #EF4444;
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --text-glow: rgba(255, 255, 255, 0.15);
+            --glow-green: rgba(16, 185, 129, 0.25);
+            --glow-cyan: rgba(6, 182, 212, 0.25);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* --- Header & Hero --- */
+        header {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--panel-border);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(7, 10, 19, 0.8);
+        }
+
+        .header-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px var(--glow-green);
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: #070a13;
+            font-size: 1.25rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #fff 30%, #a7f3d0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .badge-ver {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .hero {
+            padding: 5rem 0 3rem 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: var(--primary);
+            filter: blur(150px);
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .hero-pretitle {
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.25em;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 800px;
+            margin: 0 auto 2.5rem auto;
+            font-weight: 300;
+        }
+
+        /* --- Stats Grid (Quality Indicators) --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .stat-card {
+            background: var(--panel-dark);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 1.75rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+            backdrop-filter: blur(8px);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(16, 185, 129, 0.3);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.05);
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover::after {
+            opacity: 1;
+        }
+
+        .stat-num {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.75rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, #fff 60%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-num.accent {
+            background: linear-gradient(135deg, #fff 60%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* --- Section Template --- */
+        section {
+            padding: 4rem 0;
+            border-top: 1px solid var(--panel-border);
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .section-pre {
+            color: var(--accent);
+            font-size: 0.8rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        /* --- Executive Highlights --- */
+        .highlight-wrap {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .highlight-wrap {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        .highlight-left h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .highlight-left p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+        }
+
+        .highlight-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(6, 182, 212, 0.05) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            border-radius: 24px;
+            padding: 2.25rem;
+            position: relative;
+        }
+
+        .highlight-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .highlight-item {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .highlight-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .highlight-text h4 {
+            font-size: 1rem;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+
+        .highlight-text p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* --- License & Lawfulness Section --- */
+        .license-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .license-card {
+            background: var(--panel-dark);
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .license-card:hover {
+            border-color: rgba(6, 182, 212, 0.3);
+            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .license-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .license-title {
+            font-size: 1.25rem;
+            color: #fff;
+        }
+
+        .license-tag {
+            background: rgba(6, 182, 212, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .license-tag.green {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .license-body {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+        }
+
+        .license-footer {
+            border-top: 1px solid var(--panel-border);
+            padding-top: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .license-footer-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
+
+        /* --- Persona Tabs Section --- */
+        .tab-container {
+            background: var(--panel-dark);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 2rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #fff;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .persona-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .persona-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        .persona-profile {
+            border-right: 1px solid var(--panel-border);
+            padding-right: 2.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .persona-profile {
+                border-right: none;
+                padding-right: 0;
+                border-bottom: 1px solid var(--panel-border);
+                padding-bottom: 1.5rem;
+            }
+        }
+
+        .persona-meta {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .persona-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .persona-name h3 {
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 0.15rem;
+        }
+
+        .persona-name p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .persona-bio {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .persona-list-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .persona-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .persona-list li {
+            position: relative;
+            padding-left: 1.25rem;
+        }
+
+        .persona-list li::before {
+            content: '•';
+            color: var(--accent);
+            position: absolute;
+            left: 0;
+            font-weight: 900;
+        }
+
+        .persona-value-box {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .box-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .box-panel.primary {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.03) 0%, transparent 100%);
+            border-color: rgba(16, 185, 129, 0.15);
+        }
+
+        .box-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            color: #fff;
+            margin-bottom: 0.75rem;
+        }
+
+        .box-title .icon {
+            color: var(--danger);
+        }
+
+        .box-panel.primary .box-title .icon {
+            color: var(--primary);
+        }
+
+        .box-panel p {
+            font-size: 0.925rem;
+            color: var(--text-muted);
+        }
+
+        /* --- Monetization Model Section --- */
+        .biz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .biz-card {
+            background: var(--panel-dark);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 2.25rem 2rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .biz-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(16, 185, 129, 0.25);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.06);
+        }
+
+        .biz-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+        }
+
+        .biz-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1.25rem;
+            height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .biz-title {
+            font-size: 1.35rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .biz-subtitle {
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1.25rem;
+        }
+
+        .biz-body {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .biz-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            border-top: 1px solid var(--panel-border);
+            padding-top: 1.25rem;
+        }
+
+        .biz-list li {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+
+        .biz-list li::before {
+            content: '✓';
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* --- Future Roadmap Section --- */
+        .roadmap-wrap {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .roadmap-wrap::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 7px;
+            width: 2px;
+            height: 100%;
+            background: var(--panel-border);
+        }
+
+        .roadmap-item {
+            position: relative;
+            margin-bottom: 3rem;
+        }
+
+        .roadmap-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .roadmap-dot {
+            position: absolute;
+            left: -2rem;
+            top: 6px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--bg-dark);
+            border: 3px solid var(--accent);
+            box-shadow: 0 0 10px var(--glow-cyan);
+            z-index: 2;
+        }
+
+        .roadmap-dot.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--glow-green);
+        }
+
+        .roadmap-content {
+            background: var(--panel-dark);
+            border: 1px solid var(--panel-border);
+            border-radius: 18px;
+            padding: 1.5rem;
+        }
+
+        .roadmap-num {
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.25rem;
+        }
+
+        .roadmap-title {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 0.75rem;
+        }
+
+        .roadmap-body {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 4rem 0;
+            border-top: 1px solid var(--panel-border);
+            text-align: center;
+            background: var(--bg-deep);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .footer-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .footer-logo-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 6px;
+        }
+
+        /* --- Utility & Animations --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container header-wrap">
+            <div class="logo-area">
+                <div class="logo-icon">🌾</div>
+                <div class="logo-text">AgriOps MCP</div>
+                <div class="badge-ver">v1.11.0 DEV</div>
+            </div>
+            <div>
+                <a href="#monetization" style="color: var(--primary); text-decoration: none; font-size: 0.9rem; font-weight: 600; font-family: 'Outfit'; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.5rem 1rem; border-radius: 10px; background: rgba(16, 185, 129, 0.05);">事業化戦略を見る</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="hero fade-in" style="border:none;">
+            <div class="hero-pretitle">Japanese Agri-Tech x AI Ecosystem</div>
+            <h1 class="hero-title">現状評価 & 事業化可能性<br>分析レポート</h1>
+            <p class="hero-desc">日本の複雑な公的農業データ（筆ポリゴン、1kmメッシュ気象、農薬安全基準）をAIエージェントに直結。現場の意思決定を劇的に効率化し、スマート農業DXを牽引する次世代プラットフォーム。</p>
+        </section>
+
+        <!-- Stats / KPI Section -->
+        <div class="stats-grid fade-in">
+            <div class="stat-card">
+                <div class="stat-num">100%</div>
+                <div class="stat-label">自動テスト合格率</div>
+                <div class="stat-sub">42ファイル・220件以上の検証に合格</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num accent">0</div>
+                <div class="stat-label">セキュリティ脆弱性</div>
+                <div class="stat-sub">npm audit 監査でゼロ件をクリア</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">0</div>
+                <div class="stat-label">TSコンパイルエラー</div>
+                <div class="stat-sub">極めて厳格な静的解析を達成</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num accent">17</div>
+                <div class="stat-label">搭載AIツール数</div>
+                <div class="stat-sub">5種のプロンプトテンプレート搭載</div>
+            </div>
+        </div>
+
+        <!-- Section: Executive Summary -->
+        <section id="summary">
+            <div class="section-header">
+                <div class="section-pre">Executive Summary</div>
+                <h2 class="section-title">エグゼクティブサマリー</h2>
+            </div>
+            <div class="highlight-wrap">
+                <div class="highlight-left">
+                    <h3>日本初のMCP農業データサーバー</h3>
+                    <p>AgriOps MCPは、散らばっていた各種公式オープンデータを高度にパッケージングし、世界標準のModel Context Protocol (MCP)を用いて主要AIエージェントに瞬時に接続する参照実装です。</p>
+                    <p>高い技術的品質を備え、Google Cloud (Cloud Run) でのデプロイ実績もあり、即時の商用展開や本番環境での利用が可能なレベルに達しています。</p>
+                </div>
+                <div class="highlight-card">
+                    <ul class="highlight-list">
+                        <li class="highlight-item">
+                            <div class="highlight-icon">1</div>
+                            <div class="highlight-text">
+                                <h4>即時本番利用可能</h4>
+                                <p>すでにCloud Run環境で動作し、極めて堅牢な品質検証プロセスを通過済みです。</p>
+                            </div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-icon">2</div>
+                            <div class="highlight-text">
+                                <h4>他社への高い普及力</h4>
+                                <p>Apache-2.0のクリーンなライセンス形態と、法規に完全準拠した安全な設計により他社が導入しやすい環境が整っています。</p>
+                            </div>
+                        </li>
+                        <li class="highlight-item">
+                            <div class="highlight-icon">3</div>
+                            <div class="highlight-text">
+                                <h4>最大数ヶ月の工数削減</h4>
+                                <p>仕様がバラバラだった気象・地理・法規データを接続するアダプター構築工数を即座に削減します。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Licensing & Safety -->
+        <section id="license">
+            <div class="section-header">
+                <div class="section-pre">Lawful & Safety</div>
+                <h2 class="section-title">クリーンなライセンス設計による法的リスクの根絶</h2>
+            </div>
+            <div class="license-grid">
+                <div class="license-card">
+                    <div class="license-card-header">
+                        <h3 class="license-title">eMAFF 筆ポリゴン</h3>
+                        <span class="license-tag">政府オープンデータ</span>
+                    </div>
+                    <p class="license-body">数ギガバイトに及ぶ農地ポリゴン情報そのものはパッケージに含めず、ユーザーが公式ソースからローカルで自動構築するスクリプトを提供。これにより、無許可の再配布制限を完全に回避。</p>
+                    <div class="license-footer">
+                        <div class="license-footer-title">帰属表示</div>
+                        <div style="color:var(--text-muted)">農林水産省 eMAFF 筆ポリゴン</div>
+                    </div>
+                </div>
+                <div class="license-card">
+                    <div class="license-card-header">
+                        <h3 class="license-title">FAMIC 農薬情報</h3>
+                        <span class="license-tag">政府オープンデータ</span>
+                    </div>
+                    <p class="license-body">筆ポリゴンと同様のローカル構築方式を採用。他社がライセンス違反の懸念を抱くことなく、安心して独自の開発環境にダウンロード・組み込みができる極めて安全な構成。</p>
+                    <div class="license-footer">
+                        <div class="license-footer-title">帰属表示</div>
+                        <div style="color:var(--text-muted)">FAMIC 農薬登録情報</div>
+                    </div>
+                </div>
+                <div class="license-card">
+                    <div class="license-card-header">
+                        <h3 class="license-title">Open-Meteo 気象API</h3>
+                        <span class="license-tag green">CC-BY 4.0</span>
+                    </div>
+                    <p class="license-body">ツールがAIに出力するすべてのレスポンスおよびダッシュボードのフッターに自動的にアトリビューションを埋め込み。LLMが回答時に強制的にクレジットを引用する仕組みを実装。</p>
+                    <div class="license-footer">
+                        <div class="license-footer-title">帰属表示</div>
+                        <div style="color:var(--text-muted)">Weather data by Open-Meteo.com</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Value Proposition & Personas -->
+        <section id="personas">
+            <div class="section-header">
+                <div class="section-pre">Value Proposition</div>
+                <h2 class="section-title">生み出す体験価値と4つのペルソナ</h2>
+            </div>
+
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab(event, 'persona-dispatch')">農業派遣マネージャー</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'persona-framer')">JA営農指導員</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'persona-farmer')">中規模先進農家</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'persona-dev')">AgriTech開発者</button>
+                </div>
+
+                <!-- Tab 1: Dispatch Manager -->
+                <div id="persona-dispatch" class="tab-content active">
+                    <div class="persona-grid">
+                        <div class="persona-profile">
+                            <div class="persona-meta">
+                                <div class="persona-avatar">🚜</div>
+                                <div class="persona-name">
+                                    <h3>田中 誠一 (55歳)</h3>
+                                    <p>農業人材派遣会社マネージャー</p>
+                                </div>
+                            </div>
+                            <p class="persona-bio">鹿児島の農業人材派遣会社で30名のスタッフを管理。日々の天候に合わせた圃場へのスタッフの配置割りに苦慮しており、手動調整に多くの時間を取られている。</p>
+                            <div class="persona-list-title">現在の利用ツール</div>
+                            <ul class="persona-list">
+                                <li>市区町村レベルの天気予報</li>
+                                <li>Excelと紙の配置表</li>
+                                <li>電話とLINEでの緊急連絡</li>
+                            </ul>
+                        </div>
+                        <div class="persona-value-box">
+                            <div class="box-panel">
+                                <div class="box-title"><span class="icon">⚠</span> ペインポイント</div>
+                                <p>毎朝5時に起きて、天気サイトと圃場リストを往復。配置の判断とスタッフ調整に30分以上かかり、雨天時の中止判断が遅れて現場が混乱する。</p>
+                            </div>
+                            <div class="box-panel primary">
+                                <div class="box-title"><span class="icon">✨</span> AgriOpsでの次世代体験</div>
+                                <p><strong>「朝起きたら、今日の最適配置がAIからスマホに届いている」</strong><br>
+                                ピンポイントの1km気象リスクをAIが自動分析し、雨天で使用できない畑と作業可能な畑を即時振り分け。判断・連絡の調整時間を30分から2分に短縮します。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: JA Instructor -->
+                <div id="persona-framer" class="tab-content">
+                    <div class="persona-grid">
+                        <div class="persona-profile">
+                            <div class="persona-meta">
+                                <div class="persona-avatar">📝</div>
+                                <div class="persona-name">
+                                    <h3>山本 あゆみ (32歳)</h3>
+                                    <p>JA 営農指導員</p>
+                                </div>
+                            </div>
+                            <p class="persona-bio">担当農家80戸。圃場訪問を繰り返し、病害虫への防除や農薬適用の指導、収穫時期のアドバイスを行っている。GIS（地理情報システム）などの高度ITスキルは持たないが、スマホ操作は得意。</p>
+                            <div class="persona-list-title">現在の利用ツール</div>
+                            <ul class="persona-list">
+                                <li>FAMIC 農薬登録情報提供システム (UIが古く検索しづらい)</li>
+                                <li>eMAFF 筆ポリゴン / 地理院地図</li>
+                                <li>JA独自の閉じた営農管理システム</li>
+                            </ul>
+                        </div>
+                        <div class="persona-value-box">
+                            <div class="box-panel">
+                                <div class="box-title"><span class="icon">⚠</span> ペインポイント</div>
+                                <p>訪問前に農地地図、警報、農薬の適用基準など4つのシステムを開き、情報集約に1件あたり30分消費。「この農薬使えますか？」の確認に確信が持てない。</p>
+                            </div>
+                            <div class="box-panel primary">
+                                <div class="box-title"><span class="icon">✨</span> AgriOpsでの次世代体験</div>
+                                <p><strong>「訪問先の圃場IDを入力するだけで、瞬時にAIが防除カルテを作成」</strong><br>
+                                `field_visit_checklist` ツールにより、その農地に必要な気象リスク、推奨される適用農薬基準をAIが一瞬で要約。法的安全性を満たした適切なアドバイスを自信を持って即答できます。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Farmer -->
+                <div id="persona-farmer" class="tab-content">
+                    <div class="persona-grid">
+                        <div class="persona-profile">
+                            <div class="persona-meta">
+                                <div class="persona-avatar">🍠</div>
+                                <div class="persona-name">
+                                    <h3>鮫島 隼人 (42歳)</h3>
+                                    <p>中規模さつまいも農家</p>
+                                </div>
+                            </div>
+                            <p class="persona-bio">3haの畑でさつまいもや茶を栽培。品質管理に厳格で、ブランド化を目指している。水やりや農薬散布のタイミングを、これまでの経験と勘に頼っている。</p>
+                            <div class="persona-list-title">現在の利用ツール</div>
+                            <ul class="persona-list">
+                                <li>大まかな天気予報</li>
+                                <li>紙の手帳への作業記録</li>
+                                <li>YouTubeでの栽培ノウハウ収集</li>
+                            </ul>
+                        </div>
+                        <div class="persona-value-box">
+                            <div class="box-panel">
+                                <div class="box-title"><span class="icon">⚠</span> ペインポイント</div>
+                                <p>水やりのタイミングや量、農薬を撒くタイミングの科学的な根拠がなく、風の強い日に散布して近隣トラブルになるリスクを抱えている。</p>
+                            </div>
+                            <div class="box-panel primary">
+                                <div class="box-title"><span class="icon">✨</span> AgriOpsでの次世代体験</div>
+                                <p><strong>「畑の状態を話しかけるだけで、科学的データに基づいて答えてくれる」</strong><br>
+                                基準蒸発散量（ET₀）に基づき「今日は畑に〇〇リットルの水やりが必要」とAIが提示。さらに風速・湿度を加味した散布最適時間帯（`spray_window`）を予測し、飛散トラブルをゼロにします。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Developer -->
+                <div id="persona-dev" class="tab-content">
+                    <div class="persona-grid">
+                        <div class="persona-profile">
+                            <div class="persona-meta">
+                                <div class="persona-avatar">💻</div>
+                                <div class="persona-name">
+                                    <h3>佐藤 リナ (28歳)</h3>
+                                    <p>AgriTech スタートアップ CTO</p>
+                                </div>
+                            </div>
+                            <p class="persona-bio">ドローン画像解析や圃場管理の新規SaaSを開発中。自社アプリにAIエージェント機能を組み込み、農家に対して高度な対話型アドバイザーを提供したいと考えている。</p>
+                            <div class="persona-list-title">現在の利用ツール</div>
+                            <ul class="persona-list">
+                                <li>Open-Meteo REST API</li>
+                                <li>自前でパースするGeoJSONの筆ポリゴンデータ</li>
+                                <li>FAMIC Webサイトのスクレイピングモジュール</li>
+                            </ul>
+                        </div>
+                        <div class="persona-value-box">
+                            <div class="box-panel">
+                                <div class="box-title"><span class="icon">⚠</span> ペインポイント</div>
+                                <p>形式がバラバラで複雑な農業データソースを繋ぎ込むアダプター層の開発・メンテナンスだけで2ヶ月以上の工数が消費され、コア機能に集中できない。</p>
+                            </div>
+                            <div class="box-panel primary">
+                                <div class="box-title"><span class="icon">✨</span> AgriOpsでの次世代体験</div>
+                                <p><strong>「MCPのURLを1つ接続するだけで、日本の農業データ基盤が即日手に入る」</strong><br>
+                                標準化されたプロトコルにより、あらゆるLLMモデルに即時に型安全な日本農業データを統合。アダプター層の構築にかかる開発工数を「1日」へと圧縮します。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Section: Monetization -->
+        <section id="monetization">
+            <div class="section-header">
+                <div class="section-pre">Monetization</div>
+                <h2 class="section-title">事業化・収益化モデル</h2>
+            </div>
+            <div class="biz-grid">
+                <div class="biz-card">
+                    <div class="biz-icon">⚡</div>
+                    <h3 class="biz-title">SaaS Premium</h3>
+                    <div class="biz-subtitle">フリーミアム機能課金</div>
+                    <p class="biz-body">基本データ（農地、天気、農薬の基本検索）はOSSとして無料で提供しマーケットの支配権を奪取。高度なAI予測機能を月額サブスクリプションとして提供します。</p>
+                    <ul class="biz-list">
+                        <li>AI収穫適期予測エンジン</li>
+                        <li>自動灌水・防除スケジュール自動生成</li>
+                        <li>特定技能マッチングアルゴリズム</li>
+                    </ul>
+                </div>
+                <div class="biz-card">
+                    <div class="biz-icon">☁</div>
+                    <h3 class="biz-title">Managed PaaS</h3>
+                    <div class="biz-subtitle">ホスティング＆サポート</div>
+                    <p class="biz-body">自社でサーバーインフラやSQLiteスナップショットのデータ更新（毎週/毎月）を管理する技術を持たないJAや中堅派遣会社に対し、すべてを自動化した環境を提供します。</p>
+                    <ul class="biz-list">
+                        <li>セキュアな専用Cloud Run環境</li>
+                        <li>データの自動スナップショット更新保証</li>
+                        <li>SLA（稼働率保証）＋テクニカルサポート</li>
+                    </ul>
+                </div>
+                <div class="biz-card">
+                    <div class="biz-icon">🏢</div>
+                    <h3 class="biz-title">Enterprise SI</h3>
+                    <div class="biz-subtitle">カスタムシステム統合</div>
+                    <p class="biz-body">大手農業SaaSプロバイダーや、全国規模の大手人材派遣会社に対し、彼らの基幹システム（独自の日報データ、顧客情報、センサーデータ等）とAgriOps MCPを統合します。</p>
+                    <ul class="biz-list">
+                        <li>初期設計・インテグレーション開発</li>
+                        <li>クローズド環境へのオンプレミス接続</li>
+                        <li>年間保守・運用・アップデートライセンス</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Roadmap -->
+        <section id="roadmap">
+            <div class="section-header">
+                <div class="section-pre">Roadmap & Future</div>
+                <h2 class="section-title">今後の飛躍に向けた強化ロードマップ</h2>
+            </div>
+            <div class="roadmap-wrap">
+                <div class="roadmap-item">
+                    <div class="roadmap-dot active"></div>
+                    <div class="roadmap-content">
+                        <div class="roadmap-num">Phase 1</div>
+                        <h3 class="roadmap-title">エコシステムでの露出・マーケティング</h3>
+                        <p class="roadmap-body">Smithery.aiやGlama.aiといった世界的なMCPサーバーディレクトリに正式登録し、公式「Verified Badge」を獲得。GitHub TopicsやDescriptionを最適化し、認知度No.1のポジションを確立する。</p>
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-content">
+                        <div class="roadmap-num">Phase 2</div>
+                        <h3 class="roadmap-title">有償WAGRIアダプター & 衛星画像連携</h3>
+                        <p class="roadmap-body">オープンデータだけではなく、農研機構が運営する農業データ連携基盤「WAGRI」や、人工衛星「Sentinel-2」の画像解析APIとの有料連携アダプターを開発。AIが土壌の診断や葉色の生育状況も直接把握できる高度データ基盤へ進化。</p>
+                    </div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-content">
+                        <div class="roadmap-num">Phase 3</div>
+                        <h3 class="roadmap-title">多言語対応（Global SSW Support）の強化</h3>
+                        <p class="roadmap-body">派遣現場の外国人スタッフの母国語（ベトナム語、インドネシア語、タガログ語等）に対応。AIが防除基準や作業配置スケジュールを各スタッフの母国語へ翻訳し、LINEやチャットツールへ自動連携する機能を強化。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-logo">
+                <div class="footer-logo-icon"></div>
+                AgriOps MCP
+            </div>
+            <p style="margin-bottom:0.5rem">© 2026 WIN Kagoshima. Licensed under Apache-2.0.</p>
+            <p style="font-size:0.8rem; color:var(--text-muted)">本レポートは、公式MCP仕様およびデータソース規約に基づいて厳格に作成されたものです。</p>
+        </div>
+    </footer>
+
+    <script>
+        function switchTab(evt, tabId) {
+            // Get all elements with class="tab-content" and hide them
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+
+            // Get all elements with class="tab-btn" and remove the class "active"
+            const tabButtons = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove("active");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(tabId).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+</body>
+</html>

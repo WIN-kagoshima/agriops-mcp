@@ -59,7 +59,7 @@ async function bootClient() {
     version: "test",
     // Explicitly disable DB adapters so better-sqlite3 never opens the
     // empty placeholder .sqlite files we create in the temp directory.
-    overrides: { weather: buildWeather(), emaff: null, famic: null, jma: null },
+    overrides: { weather: buildWeather(), emaff: null, famic: null, jma: null, iotDb: null },
   });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: "snapshot-test", version: "0.0.1" }, { capabilities: {} });
