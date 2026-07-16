@@ -53,3 +53,6 @@ build/
 
 # Test temporary directories
 tests/_tmp_*/
+
+# cookbook-scout local candidates
+.cookbook-candidates/
