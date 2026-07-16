@@ -396,6 +396,11 @@ export const RESOURCE_METADATA: Record<string, ResourceMetadata> = {
     introduced: "1.1.0",
     mimeType: "application/json",
   },
+  "farmland://{fude_id}": {
+    title: "eMAFF farmland polygon by ID",
+    introduced: "1.13.0",
+    mimeType: "application/json",
+  },
   "resource://agriops/topojson/japan-prefectures": {
     title: "TopoJSON: Japan Prefectures",
     introduced: "1.10.0",

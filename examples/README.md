@@ -9,7 +9,7 @@ Minimal clients and configuration snippets that connect to the AgriOps MCP serve
 | [`http-curl/`](http-curl) | Streamable HTTP | Plain `curl` calls against the `/mcp` endpoint. Useful when integrating from any language. |
 | [`agent-workflow/`](agent-workflow) | stdio | Multi-tool workflow (`search_farmland → get_weather_1km → get_pesticide_rules → open_dashboard`) — canonical reference plan for an LLM tool-use loop (Claude / Gemini / OpenAI / ADK). |
 | [`claude-desktop/`](claude-desktop) | stdio / HTTP | `claude_desktop_config.json` snippets for Claude Desktop and Cursor, plus a troubleshooting guide. |
-| [`google-adk/`](google-adk) | Streamable HTTP | Google ADK `agent.py` + WIF auth guide. Exercises all model-visible tools including the new Tasks Primitive and ET₀ agri metrics. |
+| [`google-adk/`](google-adk) | Streamable HTTP | Google ADK `agent.py` + WIF auth guide. Exercises the default 8-tool core plus ET₀ agri metrics; set `AGRIOPS_ENABLE_EXTENDED_TOOLS=true` on the server to also exercise the Tasks Primitive. |
 
 The SDK examples target the same surface so you can compare them side by side.
 None of them require any keys, snapshots, or external accounts: they

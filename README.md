@@ -20,6 +20,18 @@
 
 AgriOps MCP exposes Japanese agricultural data — farmland polygons (eMAFF), 1 km mesh weather (Open-Meteo, JMA), and pesticide registrations (FAMIC) — to AI agents through MCP. The audience is staffing companies that dispatch Specified Skilled Workers (特定技能 / SSW) to farms.
 
+## Demo
+
+<!-- TODO(maintainer): replace with a real ≤30s screen recording GIF from Claude Desktop showing: "search farmland in Kagoshima" → weather check → pesticide lookup → open_dashboard. See docs/articles/show-hn-draft.md for the narrative this should follow. -->
+
+30-second flow this should show once recorded: ask a connected agent to find farmland in a Japanese city → check the week's weather for it → confirm a pesticide's registration for the registered crop → open the strategic dashboard (`ui://agriops/dashboard.html`) for a visual summary. Try it yourself right now:
+
+```bash
+npx -y @sugukuru/agriops-mcp --stdio
+```
+
+Deep-dive articles: [7 MCP primitives design record (JA, Zenn)](docs/articles/zenn-mcp-7-primitives.ja.md) · [English adaptation (dev.to)](docs/articles/devto-mcp-7-primitives.en.md).
+
 ## Status
 
 **Stable since `1.0.0`**. Tool names, prompt names, resource URIs, and input/output schemas are frozen under SemVer. Breaking changes require a `2.0.0`. See [CHANGELOG.md](./CHANGELOG.md).
@@ -139,6 +151,8 @@ The smoke test checks `/livez`, `/readyz`, the Server Card, MCP `initialize`,
 
 ## Tools
 
+**Default surface — 8 core tools.** This is what a fresh connection, the MCP Inspector, or an Anthropic Connectors Directory reviewer sees; no env vars required.
+
 | Name | Phase | Side effect | Summary |
 |---|---|---|---|
 | `get_weather_1km` | 0 | read-only | Hourly forecast at the given lat/lng (up to 7 days). Open-Meteo with ET₀, soil moisture, soil temperature. |
@@ -148,17 +162,13 @@ The smoke test checks `/livez`, `/readyz`, the Server Card, MCP `initialize`,
 | `nearby_farms` | 1 | read-only | Farmland within a radius of a centroid. |
 | `get_pesticide_rules` | 1 | read-only | FAMIC pesticide registrations applicable to a crop / pest. |
 | `create_staff_deploy_plan` | 3 | draft | Generates a non-binding staff deployment plan. Uses Form elicitation when input is missing. |
-| `create_task` | 4 | mutating | Create a background async task (returns task_id for polling). |
-| `get_task_status` | 4 | read-only | Poll a background task by task_id. |
-| `snapshot_status` | 5 | read-only | Reports freshness and provenance of eMAFF/FAMIC SQLite snapshots. |
 | `open_dashboard` | 5 | read-only (UI) | Opens the MCP Apps UI dashboard. Falls back to a structured summary on hosts without MCP Apps. |
-| `crop_calendar` | 6 | read-only | Month-by-month farming calendar for a crop × climate region (5 crops, 9 regions). |
-| `field_weather_report` | 6 | read-only | Integrated weather + JMA + risk report for a single eMAFF field ID. |
-| `spray_window` | 6 | read-only | Finds safe time windows for pesticide spraying (wind/rain/humidity analysis). |
-| `multi_field_compare` | 6 | read-only | Side-by-side comparison of up to 10 fields with risk levels. |
-| `seasonal_risk_forecast` | 6 | read-only | 7-day agricultural risk forecast with daily breakdown and overall risk level. |
 
-App-only (UI-driven) tools and low-level helpers are documented in [docs/api-reference.md](docs/api-reference.md).
+**Extended tools** (`AGRIOPS_ENABLE_EXTENDED_TOOLS=true`) — real product features, opt-in by default since `1.12.0` to keep the default surface lean: the Tasks Primitive (`create_task`, `get_task_status`), `snapshot_status`, and derived agronomy tools (`crop_calendar`, `field_weather_report`, `spray_window`, `multi_field_compare`, `seasonal_risk_forecast`, `optimize_harvest_timing`), plus the Phase 12 Precision Ag/IoT layer.
+
+**Legacy tools** (`AGRIOPS_ENABLE_LEGACY_TOOLS=true`) — the seven tools already marked `deprecated: true` (market price, prefecture crop profile, SSW compatibility, labor/livestock stats, municipality stats, e-Stat).
+
+No tool was renamed or removed by this change — see [`docs/anthropic-directory-submission.md`](docs/anthropic-directory-submission.md) for the rationale. Full tool inventory, app-only (UI-driven) tools, and low-level helpers are documented in [docs/api-reference.md](docs/api-reference.md).
 
 ### Client examples
 
@@ -181,6 +191,17 @@ User-controlled slash commands. The MCP host decides when to surface them; the L
 | `/daily_briefing` | `lat`, `lng` | 1.5.0 |
 | `/field_visit_checklist` | `field_id` | 1.5.0 |
 
+## Performance
+
+End-to-end `tools/call` latency for the two most request-heavy core tools, measured over an in-memory MCP transport against deterministic mock adapters (no network/filesystem I/O — isolates MCP + Zod validation overhead from upstream API latency):
+
+| Tool | p50 (ms) | p95 (ms) | p99 (ms) | ops/sec |
+|---|---|---|---|---|
+| `search_farmland` | 0.042 | 0.057 | 0.123 | ~22,800 |
+| `get_weather_1km` | 0.042 | 0.055 | 0.116 | ~22,800 |
+
+Node v24, darwin/arm64, [tinybench](https://github.com/tinylibs/tinybench). Reproduce with `npm run bench` ([`scripts/bench.ts`](scripts/bench.ts)); real-world latency is dominated by the upstream Open-Meteo/eMAFF/FAMIC calls this overhead sits in front of, not by this server.
+
 ## Data sources & licensing
 
 This server only ships data sources that are open or whose licenses permit redistribution under documented constraints. See [docs/data-license.md](docs/data-license.md) for the full table.
@@ -201,12 +222,18 @@ Reverse-proxy / Agent Gateway deployment guidance lives in
 
 **Maintainers — publishing `@sugukuru/agriops-mcp` to npm:** first-time and CI setup is documented in [`docs/npm-first-publish.md`](docs/npm-first-publish.md).
 
-## Security
+## Security & Privacy
 
 - No secrets in tool output, logs, errors, or UI bundles.
 - DNS rebinding protection enabled on Streamable HTTP transport.
 - Origin / Host allowlist on HTTP transport.
-- See [SECURITY.md](./SECURITY.md) for vulnerability reporting.
+- See [SECURITY.md](./SECURITY.md) for vulnerability reporting and [docs/privacy-policy.md](docs/privacy-policy.md) for what data this server processes and retains.
+
+## Roadmap
+
+- Anthropic Connectors Directory listing (see [docs/anthropic-directory-submission.md](docs/anthropic-directory-submission.md) for current status).
+- Phase 6+: a `tasks` primitive for long-running agronomy jobs, once the official spec capability is stable enough to declare truthfully.
+- Next step under evaluation: connecting AgriOps' farmland/weather/pesticide lookups to Sugukuru's internal placement (`aios`) and visa-status (`SuguVisa`) systems, so a placement decision and its SSW visa-deadline implications can be checked in one conversation.
 
 ## Contributing
 

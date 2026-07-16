@@ -32,7 +32,7 @@
 | セキュリティ | CodeQL + OpenSSF Scorecard + red-team テスト |
 | ライセンス | Apache-2.0 (企業採用に最適) |
 | クライアント例 | Claude Desktop / Cursor / ADK / Python / curl 全カバー |
-| ツール数 | 16 model-visible ツール + 複数プロンプト（詳細は README / api-reference） |
+| ツール数 | デフォルト 8 model-visible ツール（Anthropic Directory 向けスリム面）+ `AGRIOPS_ENABLE_EXTENDED_TOOLS`/`AGRIOPS_ENABLE_LEGACY_TOOLS` で拡張可、複数プロンプト（詳細は README / api-reference / docs/anthropic-directory-submission.md） |
 | 差別化 | **日本農業に特化した唯一の MCP サーバー** |
 
 ### 弱み (Weaknesses)
@@ -316,12 +316,14 @@ AgriOps の構造を「MCP サーバー開発のベストプラクティス」�
 
 ## 即時アクションリスト (今週中)
 
-- [ ] npm publish を有効化（[npm-first-publish.md](npm-first-publish.md): `PUBLISH_TO_NPM=true` + `NPM_TOKEN` → タグプッシュ）
+- [ ] npm publish を有効化（[npm-first-publish.md](npm-first-publish.md): `PUBLISH_TO_NPM=true` + `NPM_TOKEN` → タグプッシュ） — npm 上は `1.11.0` で停滞中、リポジトリは `1.14.2`。タグプッシュで追従が必要
 - [ ] GitHub Topics / Description / Social Preview を設定
 - [ ] GitHub Discussions を有効化
 - [ ] Smithery に Cloud Run URL を登録
 - [ ] Glama / MCP.so / MCP Market にリポジトリを提出
-- [ ] awesome-mcp-servers に PR を提出
+- [x] awesome-mcp-servers に PR を提出 — [punkpeye/awesome-mcp-servers#10187](https://github.com/punkpeye/awesome-mcp-servers/pull/10187)（Data Platforms セクション）
+- [x] awesome-agriculture に PR を提出 — [brycejohnston/awesome-agriculture#42](https://github.com/brycejohnston/awesome-agriculture/pull/42)（Data Standardization, Interoperability and APIs セクション）
 - [ ] MCP 公式 Discord #showcase に投稿
-- [ ] Zenn に紹介記事の下書き開始
+- [x] Zenn に紹介記事の下書き開始 — [docs/articles/zenn-mcp-7-primitives.ja.md](articles/zenn-mcp-7-primitives.ja.md)（canonical）+ [dev.to 英訳](articles/devto-mcp-7-primitives.en.md) + [note 業界向け下書き](articles/note-ssw-placement.ja.md) + [Show HN 下書き](articles/show-hn-draft.md)
 - [ ] JAISA スマートアグリシンポジウム (5/14) の参加申し込み
+- [ ] README/README.ja の Demo セクションに実際の30秒デモ GIF を収録・埋め込み（現在はプレースホルダーのTODO注記のみ）

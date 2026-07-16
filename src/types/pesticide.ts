@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AttributionSchema } from "../lib/attribution.js";
 
 export const PesticideRuleSchema = z.object({
   registrationId: z.string().describe("FAMIC registration number (a stable identifier)."),
@@ -11,7 +12,7 @@ export const PesticideRuleSchema = z.object({
   maxApplicationsPerSeason: z.number().int().min(0).nullable(),
   registrationDate: z.string().nullable(),
   expiresAt: z.string().nullable(),
-  attribution: z.string(),
+  attribution: AttributionSchema,
 });
 
 export type PesticideRule = z.infer<typeof PesticideRuleSchema>;
@@ -19,7 +20,7 @@ export type PesticideRule = z.infer<typeof PesticideRuleSchema>;
 export const PesticideQueryResultSchema = z.object({
   rules: z.array(PesticideRuleSchema),
   nextCursor: z.string().nullable(),
-  attribution: z.string(),
+  attribution: AttributionSchema,
 });
 
 export type PesticideQueryResult = z.infer<typeof PesticideQueryResultSchema>;

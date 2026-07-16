@@ -25,7 +25,7 @@
     "sourceMap": true,
     "incremental": true,
     "tsBuildInfoFile": "./.tsbuildinfo",
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals", "geojson"]
   },
   "include": [
     "server.ts",

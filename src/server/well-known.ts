@@ -58,6 +58,18 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
       return { uri, title: meta.title, introduced: meta.introduced };
     });
 
+  // Non-UI resources / resource templates (tasks, farmland, TopoJSON). Kept
+  // separate from `apps` (which is specifically the MCP Apps UI bundle
+  // resource) so registries can tell "renders a UI" apart from "returns
+  // data". This is what previously went entirely unreported in the card.
+  const resources = options.surface.resources
+    .filter((uri) => !uri.startsWith("ui://") && RESOURCE_METADATA[uri])
+    .map((uri) => {
+      const meta = RESOURCE_METADATA[uri];
+      if (!meta) throw new Error(`internal: missing RESOURCE_METADATA for ${uri}`);
+      return { uri, title: meta.title, introduced: meta.introduced, mimeType: meta.mimeType };
+    });
+
   return {
     name: "AgriOps MCP",
     version: options.version,
@@ -81,12 +93,18 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
       prompts: { listChanged: true },
       resources: { listChanged: true, subscribe: false },
       logging: {},
+      // Activated by the `area_briefing` prompt's completable `prefecture`
+      // argument and the `farmland://{fude_id}` Resource Template — both
+      // register unconditionally, so this is always true at runtime. See
+      // docs/phase-plan.md Phase 13.
+      completions: {},
     },
     transports: ["streamable-http"],
     languages: ["ja", "en"],
     tools,
     prompts,
     apps,
+    resources,
     data_sources: [
       {
         name: "eMAFF Fude Polygon",
@@ -147,13 +165,25 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
     },
     /** Test-suite summary baked at build time; updated on each release. */
     eval: {
-      testFiles: 41,
-      testCases: 208,
+      testFiles: 48,
+      testCases: 263,
       scenarios: 23,
-      conformanceChecks: 11,
-      lastRun: "2026-05-04",
-      note: "v1.6.0: +2 tools (get_market_price, get_prefecture_crop_profile), +2 prompts, crop_calendar expanded to 17 crops with shikoku/tokai native windows",
+      conformanceChecks: 16,
+      lastRun: "2026-07-16",
+      note: "v1.14.2: developer-trust distribution content shipped — Zenn/dev.to 7-primitives design writeups, Show HN draft, note.com industry writeup, README Demo/Roadmap sections, awesome-mcp-servers and awesome-agriculture PRs opened. v1.14.1 verified the Anthropic Directory submission packet locally — 8-tool default surface confirmed via Inspector tools/list + tools/call (all isError: false), description audit against prompt-injection rejection patterns passed. v1.14.0 shipped craft signals: fast-check property-based tests (geo, pagination cursor codec), schema-level non-empty `attribution` requirement across all licensed-source output types, tinybench p50/p95/p99 for search_farmland/get_weather_1km, Inspector tools/list hard-gated in CI",
       repository: "https://github.com/WIN-kagoshima/agriops-mcp/tree/main/tests",
+    },
+    /**
+     * Directory-facing surface note. The `tools` array above already
+     * reflects only what this deployment actually registered (see
+     * `RegisteredSurface`) — this field documents *why* it may be smaller
+     * than the full published catalog for a self-hosted deployment.
+     */
+    toolSurfacePolicy: {
+      defaultModelVisibleCount: 8,
+      extendedToolsEnvVar: "AGRIOPS_ENABLE_EXTENDED_TOOLS",
+      legacyToolsEnvVar: "AGRIOPS_ENABLE_LEGACY_TOOLS",
+      docs: "https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/anthropic-directory-submission.md",
     },
     /** Container image for self-hosted deployments. */
     container: {

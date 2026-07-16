@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AttributionSchema } from "../lib/attribution.js";
 
 export const FarmlandSchema = z.object({
   fieldId: z.string().describe("eMAFF Fude polygon ID. Stable across snapshots."),
@@ -12,7 +13,7 @@ export const FarmlandSchema = z.object({
   }),
   areaM2: z.number().min(0),
   registeredCrop: z.string().nullable().describe("Currently registered crop, if any."),
-  attribution: z.string(),
+  attribution: AttributionSchema,
 });
 
 export type Farmland = z.infer<typeof FarmlandSchema>;
@@ -21,7 +22,7 @@ export const FarmlandSearchResultSchema = z.object({
   fields: z.array(FarmlandSchema),
   nextCursor: z.string().nullable(),
   total: z.number().int().min(0).optional(),
-  attribution: z.string(),
+  attribution: AttributionSchema,
 });
 
 export type FarmlandSearchResult = z.infer<typeof FarmlandSearchResultSchema>;
@@ -32,7 +33,7 @@ export const AreaSummarySchema = z.object({
   totalFields: z.number().int().min(0),
   totalAreaHa: z.number().min(0),
   topCrops: z.array(z.object({ crop: z.string(), count: z.number().int() })).max(20),
-  attribution: z.string(),
+  attribution: AttributionSchema,
 });
 
 export type AreaSummary = z.infer<typeof AreaSummarySchema>;

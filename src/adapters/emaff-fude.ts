@@ -3,6 +3,7 @@ import Database, { type Database as Db } from "better-sqlite3";
 import { NotFoundError, UpstreamError } from "../lib/errors.js";
 import { type LatLng, bboxFromRadius, haversineMeters } from "../lib/geo.js";
 import type { Logger } from "../lib/logger.js";
+import { clampLimit, decodeOffsetCursor, encodeOffsetCursor } from "../lib/pagination.js";
 import type { AreaSummary, Farmland, FarmlandSearchResult } from "../types/farmland.js";
 import type { EmaffAdapter } from "./_interface.js";
 
@@ -62,8 +63,8 @@ export class EmaffSqliteAdapter implements EmaffAdapter {
     limit: number;
     cursor?: string;
   }): Promise<FarmlandSearchResult> {
-    const limit = clampLimit(input.limit);
-    const offset = decodeCursor(input.cursor);
+    const limit = clampLimit(input.limit, DEFAULT_LIMIT, HARD_LIMIT);
+    const offset = decodeOffsetCursor(input.cursor);
     const filters: string[] = [];
     const params: Record<string, string | number> = { limit, offset };
 
@@ -96,7 +97,7 @@ export class EmaffSqliteAdapter implements EmaffAdapter {
 
     const rows = this.db.prepare<unknown[], FieldRow>(sql).all(params) as FieldRow[];
     const fields = rows.map((r) => this.mapRow(r));
-    const nextCursor = fields.length === limit ? encodeCursor(offset + limit) : null;
+    const nextCursor = fields.length === limit ? encodeOffsetCursor(offset + limit) : null;
     return {
       fields,
       nextCursor,
@@ -116,7 +117,7 @@ export class EmaffSqliteAdapter implements EmaffAdapter {
   }
 
   async nearby(center: LatLng, radiusMeters: number, limit: number): Promise<FarmlandSearchResult> {
-    const lim = clampLimit(limit);
+    const lim = clampLimit(limit, DEFAULT_LIMIT, HARD_LIMIT);
     const bbox = bboxFromRadius(center, radiusMeters);
     let rows: FieldRow[];
     try {
@@ -226,26 +227,4 @@ export class EmaffSqliteAdapter implements EmaffAdapter {
       attribution: this.attribution,
     };
   }
-}
-
-function clampLimit(n: number | undefined): number {
-  if (!n || n <= 0) return DEFAULT_LIMIT;
-  return Math.min(HARD_LIMIT, Math.floor(n));
-}
-
-function encodeCursor(offset: number): string {
-  return Buffer.from(JSON.stringify({ o: offset })).toString("base64url");
-}
-
-function decodeCursor(cursor: string | undefined): number {
-  if (!cursor) return 0;
-  try {
-    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8")) as {
-      o?: number;
-    };
-    if (typeof decoded.o === "number" && decoded.o >= 0) return decoded.o;
-  } catch {
-    // fall through
-  }
-  return 0;
 }

@@ -15,8 +15,10 @@ AgriOps MCP is a Node.js server that implements the [Model Context Protocol spec
                   │                │  get_weather_1km          │──│──▶ Open-Meteo API
                   │                │  get_weather_warning      │──│──▶ JMA XML feed
                   │                │  get_pesticide_rules      │──│──▶ FAMIC SQLite
-                  │                │  open_dashboard           │  │    snapshot
-                  │                │  …(17 tools total)…       │  │
+                  │                │  create_staff_deploy_plan │  │    snapshot
+                  │                │  open_dashboard           │  │
+                  │                │  …(8 core tools; extended/│  │
+                  │                │   legacy tiers opt-in)…   │  │
                   │                └──────────────────────────┘  │
                   │                                              │
                   │  /.well-known/mcp-server.json  (Server Card) │
@@ -154,6 +156,16 @@ createServer(config, logger, version, overrides?)
 ```
 
 `surface` is a string array of registered tool/prompt/resource names used by the Server Card (`/.well-known/mcp-server.json`) to report the live capability set.
+
+### Tool surface tiers (since 1.12.0)
+
+Registration is gated on three independent axes, checked in `src/tools/_registry.ts`:
+
+1. **Adapter presence** (`deps.emaff`, `deps.famic`, `deps.jma`, `deps.estat`) — unchanged since Phase 0/1.
+2. **`config.enableExtendedTools`** (env `AGRIOPS_ENABLE_EXTENDED_TOOLS`, default `false`) — the Tasks Primitive, derived agronomy tools, `snapshot_status`, and the Phase 12 IoT layer.
+3. **`config.enableLegacyTools`** (env `AGRIOPS_ENABLE_LEGACY_TOOLS`, default `false`) — the seven tools already flagged `deprecated: true` in `surface-catalog.ts`.
+
+With both flags `false` (the default), exactly 8 model-visible tools register when all adapters are present. This is the surface an Anthropic Connectors Directory reviewer or a first-time agent sees; rationale in [`docs/anthropic-directory-submission.md`](anthropic-directory-submission.md). No tool was renamed, and no schema changed — `TOOL_METADATA` in `surface-catalog.ts` is untouched. `tests/conformance/directory-surface.test.ts` pins the default 8-tool set; `vitest.config.ts` sets both flags to `true` for the rest of the suite so the extended/legacy tools stay covered by their existing tests.
 
 ## Data flow: `search_farmland`
 

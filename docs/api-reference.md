@@ -37,11 +37,19 @@ suite is supposed to keep them in sync.
 
 ## 2. Model-visible tools
 
-The sixteen tools below are exposed via `tools/list` and are the LLM's primary
+The tools below are exposed via `tools/list` and are the LLM's primary
 surface. Their input schemas are JSON Schema (Draft 2020-12); see
 [`src/tools/`](../src/tools/) for the canonical Zod definitions that
 generate them. All Phase 6 tools require the eMAFF adapter for field-ID
 resolution unless noted.
+
+> **Default vs. full catalog.** Since `1.12.0`, only the first 8 tools listed
+> here (`get_weather_1km` through `open_dashboard`) register by default — the
+> surface an Anthropic Connectors Directory reviewer or a first connection
+> sees. The remaining tools below are real, tested, and documented, but
+> require `AGRIOPS_ENABLE_EXTENDED_TOOLS=true` or `AGRIOPS_ENABLE_LEGACY_TOOLS=true`
+> to register. See [`docs/anthropic-directory-submission.md`](anthropic-directory-submission.md)
+> and `src/tools/_registry.ts` for the exact gating.
 
 ### `get_weather_1km` — Phase 0, read-only
 

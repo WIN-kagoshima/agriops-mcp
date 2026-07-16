@@ -1,0 +1,446 @@
+{
+  "name": "AgriOps MCP",
+  "version": "1.14.2",
+  "description": "Japanese agricultural land + 1 km mesh weather + pesticide registration + government statistics (e-Stat) MCP server for Specified Skilled Worker (SSW) workforce dispatching. Reference implementation of MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.",
+  "homepage": "https://github.com/WIN-kagoshima/agriops-mcp",
+  "repository": "https://github.com/WIN-kagoshima/agriops-mcp",
+  "license": "Apache-2.0",
+  "contact": {
+    "issues": "https://github.com/WIN-kagoshima/agriops-mcp/issues",
+    "security": "info@win-g-c.com"
+  },
+  "endpoints": {
+    "mcp": "https://agriops-mcp-n5vdix22hq-an.a.run.app/mcp",
+    "health": "https://agriops-mcp-n5vdix22hq-an.a.run.app/healthz"
+  },
+  "capabilities": {
+    "tools": {
+      "listChanged": true
+    },
+    "prompts": {
+      "listChanged": true
+    },
+    "resources": {
+      "listChanged": true,
+      "subscribe": false
+    },
+    "logging": {},
+    "completions": {}
+  },
+  "transports": ["streamable-http"],
+  "languages": ["ja", "en"],
+  "tools": [
+    {
+      "name": "get_weather_1km",
+      "sideEffect": "read-only",
+      "introduced": "0.1.0",
+      "visibility": "model",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "get_weather_warning",
+      "sideEffect": "read-only",
+      "introduced": "0.5.1",
+      "visibility": "model",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "search_farmland",
+      "sideEffect": "read-only",
+      "introduced": "0.1.0",
+      "visibility": "model",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "area_summary",
+      "sideEffect": "read-only",
+      "introduced": "0.1.0",
+      "visibility": "model",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "nearby_farms",
+      "sideEffect": "read-only",
+      "introduced": "0.1.0",
+      "visibility": "model",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "get_pesticide_rules",
+      "sideEffect": "read-only",
+      "introduced": "0.1.0",
+      "visibility": "model",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "create_staff_deploy_plan",
+      "sideEffect": "draft",
+      "introduced": "0.3.0",
+      "visibility": "model",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "open_dashboard",
+      "sideEffect": "read-only",
+      "introduced": "0.5.0",
+      "visibility": "model",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "fetch_field_geojson",
+      "sideEffect": "read-only",
+      "introduced": "0.5.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "select_field",
+      "sideEffect": "read-only",
+      "introduced": "0.5.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "list_prefectures",
+      "sideEffect": "read-only",
+      "introduced": "0.5.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "list_municipalities",
+      "sideEffect": "read-only",
+      "introduced": "0.5.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "search_operators",
+      "sideEffect": "read-only",
+      "introduced": "0.5.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "summarize_farmland",
+      "sideEffect": "read-only",
+      "introduced": "0.5.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "compute_ndvi_stub",
+      "sideEffect": "read-only",
+      "introduced": "0.5.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "fetch_weather_layer",
+      "sideEffect": "read-only",
+      "introduced": "0.5.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "fetch_topojson_resource",
+      "sideEffect": "read-only",
+      "introduced": "1.10.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "export_plan_csv",
+      "sideEffect": "read-only",
+      "introduced": "0.5.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    }
+  ],
+  "prompts": [
+    {
+      "name": "field_summary",
+      "introduced": "0.2.0"
+    },
+    {
+      "name": "pesticide_advice",
+      "introduced": "0.2.0"
+    },
+    {
+      "name": "staff_deploy_plan",
+      "introduced": "0.2.0"
+    },
+    {
+      "name": "area_briefing",
+      "introduced": "0.2.0"
+    },
+    {
+      "name": "weather_risk_alert",
+      "introduced": "0.2.0"
+    },
+    {
+      "name": "irrigation_schedule",
+      "introduced": "1.3.0"
+    },
+    {
+      "name": "data_freshness_check",
+      "introduced": "1.3.0"
+    },
+    {
+      "name": "harvest_readiness",
+      "introduced": "1.4.0"
+    },
+    {
+      "name": "daily_briefing",
+      "introduced": "1.5.0"
+    },
+    {
+      "name": "field_visit_checklist",
+      "introduced": "1.5.0"
+    },
+    {
+      "name": "market_trend_briefing",
+      "introduced": "1.6.0"
+    },
+    {
+      "name": "region_dispatch_demand",
+      "introduced": "1.6.0"
+    },
+    {
+      "name": "annual_dispatch_plan",
+      "introduced": "1.7.0"
+    },
+    {
+      "name": "ssw_strategy_briefing",
+      "introduced": "1.8.0"
+    },
+    {
+      "name": "strategy_room_dashboard",
+      "introduced": "1.10.0"
+    }
+  ],
+  "apps": [
+    {
+      "uri": "ui://agriops/dashboard.html",
+      "title": "AgriOps MCP map dashboard",
+      "introduced": "0.5.0"
+    }
+  ],
+  "resources": [
+    {
+      "uri": "farmland://{fude_id}",
+      "title": "eMAFF farmland polygon by ID",
+      "introduced": "1.13.0",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "resource://agriops/topojson/japan-prefectures",
+      "title": "TopoJSON: Japan Prefectures",
+      "introduced": "1.10.0",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "resource://agriops/topojson/kyushu-municipalities",
+      "title": "TopoJSON: Kyushu Municipalities",
+      "introduced": "1.10.0",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "resource://agriops/topojson/shikoku-municipalities",
+      "title": "TopoJSON: Shikoku Municipalities",
+      "introduced": "1.10.0",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "resource://agriops/topojson/tokai-kinki-chugoku-municipalities",
+      "title": "TopoJSON: Tokai/Kinki/Chugoku Municipalities",
+      "introduced": "1.10.0",
+      "mimeType": "application/json"
+    }
+  ],
+  "data_sources": [
+    {
+      "name": "eMAFF Fude Polygon",
+      "license": "open-data",
+      "attribution": "農林水産省 eMAFF 筆ポリゴン"
+    },
+    {
+      "name": "Open-Meteo",
+      "license": "CC-BY-4.0",
+      "attribution": "Open-Meteo.com"
+    },
+    {
+      "name": "JMA Disaster XML feed",
+      "license": "Japan Meteorological Business Act",
+      "attribution": "気象庁"
+    },
+    {
+      "name": "FAMIC pesticide registration",
+      "license": "open-data",
+      "attribution": "FAMIC 農薬登録情報"
+    },
+    {
+      "name": "ALIC agricultural market price reference",
+      "license": "open-data",
+      "attribution": "農畜産業振興機構 (ALIC) 野菜情報・果実情報"
+    },
+    {
+      "name": "Forestry Agency timber market reference",
+      "license": "open-data",
+      "attribution": "林野庁 木材需給報告書"
+    },
+    {
+      "name": "e-Stat (政府統計の総合窓口) API",
+      "license": "政府統計API利用規約",
+      "attribution": "政府統計総合窓口(e-Stat)"
+    }
+  ],
+  "spec": {
+    "core": "2025-11-25",
+    "apps": "2026-01-26"
+  },
+  "experimental": false,
+  "clients": [
+    {
+      "name": "Claude Desktop",
+      "tested": true,
+      "transport": "stdio"
+    },
+    {
+      "name": "Cursor",
+      "tested": true,
+      "transport": "streamable-http"
+    },
+    {
+      "name": "ChatGPT (Connectors)",
+      "tested": false,
+      "transport": "streamable-http",
+      "notes": "Planned"
+    },
+    {
+      "name": "Google ADK",
+      "tested": false,
+      "transport": "streamable-http",
+      "notes": "Planned"
+    }
+  ],
+  "observability": {
+    "metrics": "https://agriops-mcp-n5vdix22hq-an.a.run.app/metrics",
+    "health": "https://agriops-mcp-n5vdix22hq-an.a.run.app/livez",
+    "readiness": "https://agriops-mcp-n5vdix22hq-an.a.run.app/readyz",
+    "metricsFormat": "text/plain; version=0.0.4",
+    "metricsAuth": "Bearer (set AGRIOPS_METRICS_BEARER to enable)"
+  },
+  "eval": {
+    "testFiles": 48,
+    "testCases": 263,
+    "scenarios": 23,
+    "conformanceChecks": 16,
+    "lastRun": "2026-07-16",
+    "note": "v1.14.2: developer-trust distribution content shipped — Zenn/dev.to 7-primitives design writeups, Show HN draft, note.com industry writeup, README Demo/Roadmap sections, awesome-mcp-servers and awesome-agriculture PRs opened. v1.14.1 verified the Anthropic Directory submission packet locally — 8-tool default surface confirmed via Inspector tools/list + tools/call (all isError: false), description audit against prompt-injection rejection patterns passed. v1.14.0 shipped craft signals: fast-check property-based tests (geo, pagination cursor codec), schema-level non-empty `attribution` requirement across all licensed-source output types, tinybench p50/p95/p99 for search_farmland/get_weather_1km, Inspector tools/list hard-gated in CI",
+    "repository": "https://github.com/WIN-kagoshima/agriops-mcp/tree/main/tests"
+  },
+  "toolSurfacePolicy": {
+    "defaultModelVisibleCount": 8,
+    "extendedToolsEnvVar": "AGRIOPS_ENABLE_EXTENDED_TOOLS",
+    "legacyToolsEnvVar": "AGRIOPS_ENABLE_LEGACY_TOOLS",
+    "docs": "https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/anthropic-directory-submission.md"
+  },
+  "container": {
+    "image": "ghcr.io/win-kagoshima/agriops-mcp",
+    "platforms": ["linux/amd64", "linux/arm64"],
+    "runtimeNode": "22-lts",
+    "baseImage": "gcr.io/distroless/nodejs22-debian12:nonroot"
+  },
+  "_snapshotNote": "Static fallback for repo clones/crawlers that do not run the server. The live endpoint's GET /.well-known/mcp-server.json is authoritative and may additionally advertise extended/legacy tools if the operator set AGRIOPS_ENABLE_EXTENDED_TOOLS / AGRIOPS_ENABLE_LEGACY_TOOLS=true. Regenerate with `npm run snapshot:well-known`. See docs/anthropic-directory-submission.md."
+}

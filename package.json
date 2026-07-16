@@ -1,6 +1,6 @@
 {
   "name": "@sugukuru/agriops-mcp",
-  "version": "1.11.0",
+  "version": "1.14.2",
   "description": "AgriOps MCP server — Japanese agricultural land + weather + pesticide data for SSW workforce dispatching. Reference implementation of MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.",
   "type": "module",
   "license": "Apache-2.0",
@@ -56,6 +56,8 @@
     "snapshots:build": "tsx scripts/build-snapshots/index.ts",
     "snapshots:build:incremental": "tsx scripts/build-snapshots/index.ts --incremental",
     "snapshots:audit": "tsx scripts/snapshots-audit.ts",
+    "snapshot:well-known": "tsx scripts/generate-well-known-snapshot.ts",
+    "bench": "tsx scripts/bench.ts",
     "inspector": "npx @modelcontextprotocol/inspector node dist/server.js --stdio",
     "deploy:preflight": "tsx scripts/deploy-preflight.ts",
     "deploy:smoke": "tsx scripts/deploy-smoke.ts",
@@ -81,12 +83,14 @@
     "@types/express": "^5.0.0",
     "@types/node": "^20.17.0",
     "@types/react": "^19.2.14",
-    "@types/react-dom": "^18.3.0",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "fast-check": "^4.9.0",
     "maplibre-gl": "^5.24.0",
     "msw": "^2.6.0",
-    "react": "^19.2.6",
-    "react-dom": "^18.3.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "tinybench": "^6.0.2",
     "tsx": "^4.19.0",
     "typescript": "^7.0.2",
     "vite": "^8.0.10",
@@ -110,5 +114,13 @@
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "allowScripts": {
+    "@biomejs/biome@1.9.4": true,
+    "better-sqlite3@12.9.0": true,
+    "esbuild@0.27.7": true,
+    "fsevents@2.3.2": true,
+    "fsevents@2.3.3": true,
+    "msw@2.14.2": true
   }
 }

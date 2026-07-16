@@ -38,6 +38,8 @@ function pollutedConfig(): Config {
       authorizeUrl: "http://localhost:3001/__mock-oauth/authorize",
       tokenUrl: "http://localhost:3001/__mock-oauth/token",
     },
+    enableExtendedTools: false,
+    enableLegacyTools: false,
   };
 }
 

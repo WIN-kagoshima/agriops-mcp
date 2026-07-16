@@ -12,6 +12,18 @@
 
 AgriOps MCP は、日本の農業データ（eMAFF 筆ポリゴン、Open-Meteo / 気象庁の 1km メッシュ気象、FAMIC 農薬登録情報）を MCP 経由で AI エージェントに公開します。農業に特定技能外国人を派遣する派遣会社や、農業改良普及員のデジタルツール活用を想定しています。
 
+## デモ
+
+<!-- TODO(maintainer): Claude Desktop での実画面収録（30秒以内）に置き換える。「鹿児島の農地を検索」→天気確認→農薬確認→ダッシュボード表示、の流れ。 -->
+
+収録予定の30秒デモの流れ: 「鹿児島の農地を検索して」→ その週の天気を確認 → 登録作物に使える農薬を確認 → 戦略ダッシュボード（`ui://agriops/dashboard.html`）を開いて可視化。今すぐ試すには:
+
+```bash
+npx -y @sugukuru/agriops-mcp --stdio
+```
+
+技術解説記事: [7プリミティブの設計記録（Zenn）](docs/articles/zenn-mcp-7-primitives.ja.md) · [特定技能派遣の現場向け（note）](docs/articles/note-ssw-placement.ja.md)。
+
 ## ステータス
 
 **`1.0.0` から安定版**。ツール名・プロンプト名・リソース URI・入出力スキーマは SemVer のもと凍結されています。破壊的変更は `2.0.0` 以降。詳細は [CHANGELOG.md](./CHANGELOG.md)。
@@ -93,25 +105,26 @@ npm run deploy:smoke -- \
 この smoke test は `/livez`, `/readyz`, Server Card, MCP `initialize`,
 `tools/list`, `prompts/list`, `resources/list` を確認します。
 
-## 提供ツール（モデル可視 16 本）
+## 提供ツール
+
+**デフォルト面 — コア 8 本。** 環境変数なしで新規接続・MCP Inspector・Anthropic Connectors Directory のレビュワーが見る面はこれだけです。
 
 | 名前 | Phase | 副作用 | 概要 |
 |---|---|---|---|
 | `get_weather_1km` | 0 | 読み取り | 緯度経度の時間別予報（最大 7 日）。ET₀・土壌水分・地温を含む農業指標付き |
+| `get_weather_warning` | 1 | 読み取り | 気象庁の警報・注意報を都道府県別に取得（10 分キャッシュ） |
 | `search_farmland` | 1 | 読み取り | eMAFF 筆ポリゴンを住所・都道府県・作物で検索 |
 | `area_summary` | 1 | 読み取り | エリア（行政コード or polygon）の農地統計 |
 | `nearby_farms` | 1 | 読み取り | 半径内の近隣農地 |
 | `get_pesticide_rules` | 1 | 読み取り | FAMIC の農薬登録情報を作物・病害虫から検索 |
 | `create_staff_deploy_plan` | 3 | ドラフト | 派遣計画の草案。情報不足時に Form elicitation で質問 |
-| `create_task` | 4 | 変更 | バックグラウンドタスクを作成（task_id を即時返却） |
-| `get_task_status` | 4 | 読み取り | バックグラウンドタスクの状態をポーリング |
-| `snapshot_status` | 5 | 読み取り | eMAFF・FAMIC SQLite スナップショットの鮮度・整合性確認 |
 | `open_dashboard` | 5 | 読み取り（UI） | MCP Apps UI ダッシュボードを開く。非対応ホストではテキスト fallback |
-| `crop_calendar` | 6 | 読み取り | 作物×気候地域の月別作業カレンダー（13 作物・9 地域） |
-| `field_weather_report` | 6 | 読み取り | eMAFF 圃場 ID から気象レポート＋JMA 警報を統合取得 |
-| `spray_window` | 6 | 読み取り | 農薬散布適期（風速・降水・湿度分析）を時間別に算出 |
-| `multi_field_compare` | 6 | 読み取り | 最大 10 圃場の気象・リスクを一覧比較 |
-| `seasonal_risk_forecast` | 6 | 読み取り | 7 日間農業リスク予報（日別内訳＋週次サマリ） |
+
+**拡張ツール**（`AGRIOPS_ENABLE_EXTENDED_TOOLS=true`）— Tasks Primitive（`create_task`/`get_task_status`）、`snapshot_status`、派生農業ツール（`crop_calendar`、`field_weather_report`、`spray_window`、`multi_field_compare`、`seasonal_risk_forecast`、`optimize_harvest_timing`）、Phase 12 IoT レイヤー。`1.12.0` からデフォルト面を軽くするため任意化されましたが、実際に使われている機能です。
+
+**レガシーツール**（`AGRIOPS_ENABLE_LEGACY_TOOLS=true`）— `surface-catalog.ts` で既に `deprecated: true` の 7 本（市場価格・都道府県作物プロファイル・SSW適性・労働力/畜産統計・市町村統計・e-Stat）。
+
+ツール名・スキーマの変更は一切ありません。詳細は [`docs/anthropic-directory-submission.md`](docs/anthropic-directory-submission.md) を参照してください。
 
 ## Prompt（Phase 2+）
 
@@ -130,6 +143,17 @@ npm run deploy:smoke -- \
 | `/daily_briefing` | `lat`, `lng` | 1.5.0 |
 | `/field_visit_checklist` | `field_id` | 1.5.0 |
 
+## パフォーマンス
+
+利用頻度の高いコアツール2本の `tools/call` エンドツーエンド遅延（インメモリ MCP トランスポート、決定的モックアダプタ使用 — ネットワーク/ファイルI/Oなしで MCP + Zod 検証のオーバーヘッドのみを計測）:
+
+| ツール | p50 (ms) | p95 (ms) | p99 (ms) | ops/sec |
+|---|---|---|---|---|
+| `search_farmland` | 0.042 | 0.057 | 0.123 | 約22,800 |
+| `get_weather_1km` | 0.042 | 0.055 | 0.116 | 約22,800 |
+
+Node v24, darwin/arm64, [tinybench](https://github.com/tinylibs/tinybench) 使用。`npm run bench`（[`scripts/bench.ts`](scripts/bench.ts)）で再現可能。実運用の遅延は Open-Meteo / eMAFF / FAMIC 等の上流 API 呼び出しが支配的で、本サーバー自体のオーバーヘッドはごく小さい。
+
 ## データソースとライセンス
 
 詳細は [docs/data-license.md](docs/data-license.md) を参照。
@@ -145,7 +169,7 @@ npm run deploy:smoke -- \
 ## テストカバレッジ
 
 ```
-テストファイル: 41   テストケース: 208
+テストファイル: 48   テストケース: 263
 ```
 
 `npm test` で全テストを実行できます（外部ネットワーク不要）。
@@ -157,6 +181,12 @@ npm run deploy:smoke -- \
 - Agent Gateway / Apigee / Cloud Armor などのリバースプロキシ導入時の前提とポリシーは [docs/agent-gateway-deployment.md](docs/agent-gateway-deployment.md)。
 
 **npm への初回公開（メンテナ）:** [docs/npm-first-publish.md](docs/npm-first-publish.md) を参照してください。
+
+## ロードマップ
+
+- Anthropic Connectors Directory への掲載（現状は [docs/anthropic-directory-submission.md](docs/anthropic-directory-submission.md) を参照）。
+- Phase 6+: 長時間処理向けの `tasks` プリミティブ（公式仕様の capability を嘘なく宣言できる状態になってから対応）。
+- 検討中の次の一歩: 農地・天気・農薬の検索結果を、社内の配置管理システム（aios）と SuguVisa のビザステータス管理と接続し、「この農地に配置すると在留資格の更新期限はいつ来るか」まで一つの会話で確認できるようにする。
 
 ## ライセンス
 

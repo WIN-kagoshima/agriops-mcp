@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import Database, { type Database as Db } from "better-sqlite3";
 import { UpstreamError } from "../lib/errors.js";
 import type { Logger } from "../lib/logger.js";
+import { clampLimit, decodeOffsetCursor, encodeOffsetCursor } from "../lib/pagination.js";
 import type { PesticideQueryResult, PesticideRule } from "../types/pesticide.js";
 import type { FamicAdapter } from "./_interface.js";
 
@@ -54,8 +55,8 @@ export class FamicSqliteAdapter implements FamicAdapter {
     limit: number;
     cursor?: string;
   }): Promise<PesticideQueryResult> {
-    const limit = clampLimit(input.limit);
-    const offset = decodeCursor(input.cursor);
+    const limit = clampLimit(input.limit, DEFAULT_LIMIT, HARD_LIMIT);
+    const offset = decodeOffsetCursor(input.cursor);
     const filters: string[] = [];
     const params: Record<string, string | number> = { limit, offset };
 
@@ -85,7 +86,7 @@ export class FamicSqliteAdapter implements FamicAdapter {
     `;
     const rows = this.db.prepare<unknown[], PesticideRow>(sql).all(params) as PesticideRow[];
     const rules = rows.map((r) => this.mapRow(r));
-    const nextCursor = rules.length === limit ? encodeCursor(offset + limit) : null;
+    const nextCursor = rules.length === limit ? encodeOffsetCursor(offset + limit) : null;
     return {
       rules,
       nextCursor,
@@ -121,28 +122,6 @@ export class FamicSqliteAdapter implements FamicAdapter {
       attribution: this.attribution,
     };
   }
-}
-
-function clampLimit(n: number | undefined): number {
-  if (!n || n <= 0) return DEFAULT_LIMIT;
-  return Math.min(HARD_LIMIT, Math.floor(n));
-}
-
-function encodeCursor(offset: number): string {
-  return Buffer.from(JSON.stringify({ o: offset })).toString("base64url");
-}
-
-function decodeCursor(cursor: string | undefined): number {
-  if (!cursor) return 0;
-  try {
-    const decoded = JSON.parse(Buffer.from(cursor, "base64url").toString("utf-8")) as {
-      o?: number;
-    };
-    if (typeof decoded.o === "number" && decoded.o >= 0) return decoded.o;
-  } catch {
-    // fall through
-  }
-  return 0;
 }
 
 function splitList(s: string | null | undefined): string[] {

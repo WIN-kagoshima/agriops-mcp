@@ -51,6 +51,24 @@ import { registerSprayWindow } from "./spray-window.js";
  * Phase 0 server (no eMAFF) only exposes weather. This keeps the LLM
  * context lean and avoids "tool exists but always errors" UX.
  *
+ * Model-visible surface is additionally gated by two feature flags (see
+ * `src/lib/config.ts`):
+ *
+ *   - `config.enableExtendedTools` (env `AGRIOPS_ENABLE_EXTENDED_TOOLS`):
+ *     multi-step agronomy tools (`crop_calendar`, `spray_window`, ...),
+ *     the async Tasks Primitive (`create_task`/`get_task_status`), and the
+ *     Phase 12 IoT layer. These are real product features but are not part
+ *     of the default 8-tool core, so a Directory reviewer or a first
+ *     connection is not shown ~20 extra tools.
+ *   - `config.enableLegacyTools` (env `AGRIOPS_ENABLE_LEGACY_TOOLS`):
+ *     the seven tools already flagged `deprecated: true` in
+ *     `surface-catalog.ts` (Phase 7-11 market/SSW/e-Stat tools).
+ *
+ * Both default to `false`. Neither flag renames, removes, or changes the
+ * schema of a published tool — see `docs/anthropic-directory-submission.md`
+ * for the rationale. Operators who rely on the extended/legacy tools today
+ * set the corresponding env var to `true` in their deployment.
+ *
  * When `deps.metrics` is present, every tool handler is automatically wrapped
  * to increment `tool_calls_total{tool,outcome}` and observe
  * `tool_duration_ms{tool}`. This is done by temporarily patching
@@ -109,16 +127,19 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
     registered.push(name);
   };
 
-  // ----- Phase 0 -----
+  const extended = deps.config.enableExtendedTools;
+  const legacy = deps.config.enableLegacyTools;
+
+  // ----- Core model-visible surface (always on when deps allow) -----
+  // These 8 tools are the entire default surface. They are the set an
+  // Anthropic Directory reviewer, MCP Inspector, or a first-time agent
+  // sees with no env vars set. See docs/anthropic-directory-submission.md.
   reg("get_weather_1km", () => registerGetWeather1km(server, deps));
 
-  // ----- Phase 1 — JMA warnings; cheap to mount unconditionally because
-  //                 the adapter only goes upstream when the tool is called. -----
   if (deps.jma) {
     reg("get_weather_warning", () => registerGetWeatherWarning(server, deps));
   }
 
-  // ----- Phase 1 — only when eMAFF / FAMIC adapters are configured -----
   if (deps.emaff) {
     reg("search_farmland", () => registerSearchFarmland(server, deps));
     reg("area_summary", () => registerAreaSummary(server, deps));
@@ -128,42 +149,67 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
     reg("get_pesticide_rules", () => registerGetPesticideRules(server, deps));
   }
 
-  // ----- Phase 3 (uses Form elicitation, falls back when client lacks it) -----
+  // Phase 3 (uses Form elicitation, falls back when client lacks it).
   if (deps.emaff) {
     reg("create_staff_deploy_plan", () => registerCreateStaffDeployPlan(server, deps));
   }
 
-  // ----- Phase 4 — async task management -----
-  reg("create_task", () => registerCreateTask(server, deps));
-  reg("get_task_status", () => registerGetTaskStatus(server, deps));
-
-  // ----- Phase 7 — Sugu-kuru regional expansion + market data -----
-  reg("get_market_price", () => registerGetMarketPrice(server, deps));
-  reg("get_prefecture_crop_profile", () => registerGetPrefectureCropProfile(server, deps));
-  reg("optimize_harvest_timing", () => registerOptimizeHarvestTiming(server, deps));
-
-  // ----- Phase 8-9 — SSW strategic intelligence layer -----
-  reg("get_ssw_crop_compatibility", () => registerGetSswCropCompatibility(server, deps));
-  reg("get_labor_shortage_stats", () => registerGetLaborShortageStats(server, deps));
-  reg("get_livestock_regional_stats", () => registerGetLivestockRegionalStats(server, deps));
-
-  // ----- Phase 10 — municipality drill-down -----
-  reg("get_municipality_stats", () => registerGetMunicipalityStats(server, deps));
-
-  // ----- Phase 6 — user-facing agricultural decision tools -----
-  reg("crop_calendar", () => registerCropCalendar(server, deps));
-  reg("spray_window", () => registerSprayWindow(server, deps));
-  reg("seasonal_risk_forecast", () => registerSeasonalRiskForecast(server, deps));
-  if (deps.emaff) {
-    reg("field_weather_report", () => registerFieldWeatherReport(server, deps));
-    reg("multi_field_compare", () => registerMultiFieldCompare(server, deps));
-  }
-
-  // ----- Phase 5 — snapshot freshness + MCP Apps UI dashboard -----
-  reg("snapshot_status", () => registerSnapshotStatus(server, deps));
   reg("open_dashboard", () => registerOpenDashboard(server, deps));
 
-  // ----- Phase 5 app-only helpers (LLM-invisible) -----
+  // ----- Extended surface (AGRIOPS_ENABLE_EXTENDED_TOOLS=true) -----
+  // Real product features for operators who need them by default (e.g. the
+  // SuguKuru internal deployment), opt-in for the public Directory listing.
+  if (extended) {
+    // Phase 4 — async task management.
+    reg("create_task", () => registerCreateTask(server, deps));
+    reg("get_task_status", () => registerGetTaskStatus(server, deps));
+
+    // Phase 5 — snapshot freshness diagnostics.
+    reg("snapshot_status", () => registerSnapshotStatus(server, deps));
+
+    // Phase 6 — derived agronomy tools.
+    reg("crop_calendar", () => registerCropCalendar(server, deps));
+    reg("spray_window", () => registerSprayWindow(server, deps));
+    reg("seasonal_risk_forecast", () => registerSeasonalRiskForecast(server, deps));
+    if (deps.emaff) {
+      reg("field_weather_report", () => registerFieldWeatherReport(server, deps));
+      reg("multi_field_compare", () => registerMultiFieldCompare(server, deps));
+    }
+
+    // Phase 7 — market data.
+    reg("optimize_harvest_timing", () => registerOptimizeHarvestTiming(server, deps));
+
+    // Phase 12 — Precision Agriculture & IoT Unified Layer.
+    reg("get_realtime_sensor_data", () => registerGetRealTimeSensorData(server, deps));
+    reg("get_machine_iot_status", () => registerGetMachineIoTStatus(server, deps));
+    reg("predict_labor_demand", () => registerPredictLaborDemand(server, deps));
+    reg("plan_irrigation", () => registerPlanIrrigation(server, deps));
+    reg("generate_subsidy_application", () => registerGenerateSubsidyApplication(server, deps));
+    reg("get_traceability_report", () => registerGetTraceabilityReport(server, deps));
+  }
+
+  // ----- Legacy / deprecated surface (AGRIOPS_ENABLE_LEGACY_TOOLS=true) -----
+  // All seven are already flagged `deprecated: true` in surface-catalog.ts.
+  if (legacy) {
+    // Phase 7 — Sugu-kuru regional expansion + market data.
+    reg("get_market_price", () => registerGetMarketPrice(server, deps));
+    reg("get_prefecture_crop_profile", () => registerGetPrefectureCropProfile(server, deps));
+
+    // Phase 8-9 — SSW strategic intelligence layer.
+    reg("get_ssw_crop_compatibility", () => registerGetSswCropCompatibility(server, deps));
+    reg("get_labor_shortage_stats", () => registerGetLaborShortageStats(server, deps));
+    reg("get_livestock_regional_stats", () => registerGetLivestockRegionalStats(server, deps));
+
+    // Phase 10 — municipality drill-down.
+    reg("get_municipality_stats", () => registerGetMunicipalityStats(server, deps));
+
+    // Phase 11 — e-Stat live government statistics.
+    if (deps.estat) {
+      reg("get_estat_stats", () => registerGetEstatStats(server, deps));
+    }
+  }
+
+  // ----- Phase 5 app-only helpers (LLM-invisible; always on) -----
   if (deps.emaff) {
     reg("fetch_field_geojson", () => registerFetchFieldGeojson(server, deps));
     reg("select_field", () => registerSelectField(server, deps));
@@ -176,19 +222,6 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   reg("fetch_weather_layer", () => registerFetchWeatherLayer(server, deps));
   reg("fetch_topojson_resource", () => registerFetchTopoJsonResource(server, deps));
   reg("export_plan_csv", () => registerExportPlanCsv(server, deps));
-
-  // ----- Phase 11 — e-Stat live government statistics -----
-  if (deps.estat) {
-    reg("get_estat_stats", () => registerGetEstatStats(server, deps));
-  }
-
-  // ----- Phase 12 — Precision Agriculture & IoT Unified Layer -----
-  reg("get_realtime_sensor_data", () => registerGetRealTimeSensorData(server, deps));
-  reg("get_machine_iot_status", () => registerGetMachineIoTStatus(server, deps));
-  reg("predict_labor_demand", () => registerPredictLaborDemand(server, deps));
-  reg("plan_irrigation", () => registerPlanIrrigation(server, deps));
-  reg("generate_subsidy_application", () => registerGenerateSubsidyApplication(server, deps));
-  reg("get_traceability_report", () => registerGetTraceabilityReport(server, deps));
 
   // Restore the original registerTool after all registrations are complete.
   serverRecord.registerTool = originalRegisterTool;

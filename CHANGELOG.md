@@ -8,6 +8,71 @@ From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt
 
 Pre-`1.0.0` releases were explicitly **experimental**.
 
+## [1.14.2] — 2026-07-16 — Narrative & community distribution
+
+### Added
+- **`docs/articles/`**: canonical content for developer-trust distribution — [`zenn-mcp-7-primitives.ja.md`](docs/articles/zenn-mcp-7-primitives.ja.md) (Japanese, deep technical dive into implementing all 7 MCP primitives, canonical source), [`devto-mcp-7-primitives.en.md`](docs/articles/devto-mcp-7-primitives.en.md) (English adaptation), [`show-hn-draft.md`](docs/articles/show-hn-draft.md) (title + post text + anticipated Q&A prep), and [`note-ssw-placement.ja.md`](docs/articles/note-ssw-placement.ja.md) (non-technical, SSW-placement-industry angle for note.com).
+- **README.md / README.ja.md**: added a "Demo" / "デモ" section (placeholder pending a real screen-recorded GIF, tracked as a TODO) and a "Roadmap" / "ロードマップ" section noting the planned `aios`/SuguVisa integration, per the go-to-market plan's developer-trust-first distribution strategy.
+- Submitted PRs adding AgriOps MCP to two community-curated lists: [punkpeye/awesome-mcp-servers#10187](https://github.com/punkpeye/awesome-mcp-servers/pull/10187) (Data Platforms) and [brycejohnston/awesome-agriculture#42](https://github.com/brycejohnston/awesome-agriculture/pull/42) (Data Standardization, Interoperability and APIs).
+
+### Changed
+- `docs/go-to-market.md`: checked off the completed items in the "即時アクションリスト" (awesome-list PRs, Zenn/dev.to/note/Show HN drafts) and flagged the remaining npm-publish-lag and demo-GIF gaps explicitly.
+- `README.ja.md`: corrected the stale test-coverage figures (41 files / 208 cases → 48 files / 263 cases).
+
+## [1.14.1] — 2026-07-16 — Anthropic submission packet verification
+
+### Added
+- **`docs/anthropic-directory-submission.md` §8**: local verification log for the Phase 4 pre-submission checklist — confirmed via `@modelcontextprotocol/inspector` `--cli` that the default (no feature flags) surface exposes exactly the 8 model-visible tools plus 10 `ui/visibility: ["app"]` helper tools, and that `tools/call` succeeds (`isError: false`) for all 8 default tools end-to-end against fixture SQLite snapshots.
+- Description audit (§5) completed: all 8 default tool descriptions re-read against the Directory's prompt-injection rejection patterns — all are factual "what it does" statements, no imperative "always call this tool" phrasing.
+- MCP Apps screenshot recipe (§8.3) validated: a mock `window.mcpApps` bridge injected into the built `dist/ui/dashboard.html` standalone confirms `bar_compare`, `radar`, and `choropleth` views all render correctly post the React 19 pinning fix.
+
+### Changed
+- `docs/anthropic-directory-submission.md`: checklist statuses updated; documented two local-environment gotchas (relative `EMAFF_SNAPSHOT_PATH`/`FAMIC_SNAPSHOT_PATH` resolution, and an upstream `@modelcontextprotocol/inspector@0.22.0` CWD-resolution bug in `--cli` mode) so future verification passes don't re-debug them. Confirmed the production Cloud Run endpoint still returns `403 Forbidden` to anonymous clients — tracked as the remaining ops action item before portal submission.
+
+## [1.14.0] — 2026-07-16 — Craft signals
+
+### Added
+- **fast-check property-based tests**: `tests/unit/geo.pbt.test.ts` (haversine symmetry/zero/triangle-inequality/bounds, `bboxFromRadius` containment and monotonicity, `isValidLatLng` boundary behavior) and `tests/unit/pagination.pbt.test.ts` (cursor round-trip for any non-negative safe integer, garbage input never throws and always resumes at a valid offset, `clampLimit` bounds).
+- **`src/lib/pagination.ts`**: extracted `encodeOffsetCursor` / `decodeOffsetCursor` / `clampLimit`, previously duplicated verbatim in `src/adapters/emaff-fude.ts` and `src/adapters/famic-pesticide.ts`. Same behavior, single source of truth, now directly unit-testable.
+- **`src/lib/attribution.ts`**: shared `AttributionSchema` (`z.string().min(1)`) used by every output schema backed by a licensed source (Open-Meteo, eMAFF, FAMIC, JMA). Previously `attribution: z.string()` accepted an empty string despite `docs/data-license.md` mandating every adapter populate it — this closes that gap at the schema level instead of relying on adapter discipline.
+- **`tests/conformance/attribution.test.ts`**: fast-check property proving `AttributionSchema` rejects `""` and accepts any non-empty string, a table test confirming the 4 core output schemas (`WeatherForecastSchema`, `FarmlandSearchResultSchema`, `AreaSummarySchema`, `PesticideQueryResultSchema`) reject an empty `attribution`, and an end-to-end pass calling all 5 attribution-bearing core tools against the live server.
+- **`scripts/bench.ts` / `npm run bench`**: [tinybench](https://github.com/tinylibs/tinybench)-based p50/p95/p99 latency benchmark for `search_farmland` and `get_weather_1km`, measuring the full `tools/call` round trip over an in-memory transport with deterministic mock adapters (isolates MCP + Zod overhead from upstream API latency). Results published in README.md / README.ja.md "Performance" sections.
+- CI: the MCP Inspector `tools/list` smoke step is now a hard gate (`continue-on-error: true` removed) — a broken tool surface now fails CI instead of silently passing.
+
+### Changed
+- `src/types/farmland.ts`, `src/types/pesticide.ts`, `src/types/weather.ts`, `src/tools/get-weather-warning.ts`: `attribution` fields now use the shared `AttributionSchema` instead of a bare `z.string()`.
+- `src/adapters/emaff-fude.ts`, `src/adapters/famic-pesticide.ts`: use the shared pagination helpers; local duplicate `clampLimit`/`encodeCursor`/`decodeCursor` removed.
+
+## [1.13.0] — 2026-07-16 — Completion primitive
+
+### Added
+- **`completions` capability** (Phase 13, closes the 7th and final MCP primitive gap: Tools, Prompts, Resources, Resource Templates, Completion, Logging, Pagination are now all genuinely active — not just declared). The server negotiates `completions: {}` because the `area_briefing` prompt registers a completable argument; this was previously a truthfulness gap (`docs/phase-plan.md` Phase 13 tracked it as missing).
+- **`farmland://{fude_id}` Resource Template** (`src/resources/farmland-template.ts`): read-only lookup of a single eMAFF Fude polygon by `fieldId`, same JSON shape as one entry of `search_farmland`'s `structuredContent.fields`. Registers only when the `emaff` adapter is configured. Ships a `complete` handler for `fude_id` that proxies to `emaff.search`, so clients get live autocompletion instead of guessing IDs. Reading an unknown ID returns a structured `{ error: "farmland_not_found" }` payload rather than a protocol-level error.
+- **`src/lib/prefectures.ts`**: extracted the shared 47-prefecture name/ISO-code table and `normalisePrefectureCode` / `completePrefectureName` helpers (previously duplicated inline in `area-briefing.ts`). `completePrefectureName` matches on Japanese-name prefix or `JP-nn` code prefix.
+- `area_briefing` prompt's `prefecture` argument is now wrapped in the SDK's `completable()`, wired to `completePrefectureName`, giving Directory reviewers and IDE clients live prefecture autocompletion instead of a bare string field.
+- **`tests/conformance/completion.test.ts`**: end-to-end `completion/complete` conformance — capability negotiation, prompt-argument completion (`ref/prompt`) by name and by ISO code, resource-template completion (`ref/resource`) by partial `fieldId`, and both the found/not-found `farmland://` read paths.
+
+### Changed
+- `src/server/surface-catalog.ts`: added `RESOURCE_METADATA` entry for `farmland://{fude_id}`.
+- `src/server/well-known.ts`: Server Card now lists a `resources` array (previously only `apps`/UI resources were surfaced) so `farmland://{fude_id}` and other non-UI resources are discoverable by crawlers; `capabilities.completions` explicitly declared.
+- `src/resources/_registry.ts`: registers the new farmland template when `deps.emaff` is present; also gated `tasks://{task_id}` behind `config.enableExtendedTools` for consistency with its sibling tools (was previously always registered regardless of the flag — a latent tier-leak fixed as part of this pass).
+- `docs/phase-plan.md` Phase 13 status: Planned → Shipped/Current.
+
+## [1.12.0] — 2026-07-16 — Directory & reference-quality surface
+
+### Added
+- **Tool surface tiering**: two opt-in feature flags gate the default model-visible surface — `AGRIOPS_ENABLE_EXTENDED_TOOLS` (Tasks Primitive, derived agronomy tools, `snapshot_status`, Phase 12 IoT layer) and `AGRIOPS_ENABLE_LEGACY_TOOLS` (the seven tools already flagged `deprecated: true`). Both default to `false`. With no env vars set, exactly 8 model-visible tools register: `get_weather_1km`, `get_weather_warning`, `search_farmland`, `area_summary`, `nearby_farms`, `get_pesticide_rules`, `create_staff_deploy_plan`, `open_dashboard`. This is the surface an Anthropic Connectors Directory reviewer, the MCP Inspector, or a first-time agent sees. No tool was renamed, removed, or had its schema changed — this is a registration-policy change only.
+- **`config.enableExtendedTools` / `config.enableLegacyTools`** (`src/lib/config.ts`), consumed by `src/tools/_registry.ts`.
+- **`docs/anthropic-directory-submission.md`**: submission-shape decision (anonymous Streamable HTTP remote MCP, no OAuth for the public-data default surface) and pre-submission checklist mapped to Anthropic's official criteria.
+- **`docs/privacy-policy.md`**: public privacy policy describing what data the server processes, caches, and retains.
+- **`docs/phase-plan.md`**: canonical phase → version → capability map (previously referenced by `AGENTS.md` but missing from the repo).
+- **`tests/conformance/directory-surface.test.ts`**: pins the default 8-tool surface and asserts no extended/legacy tool registers without its flag.
+
+### Changed
+- `vitest.config.ts`: sets `AGRIOPS_ENABLE_EXTENDED_TOOLS=true` and `AGRIOPS_ENABLE_LEGACY_TOOLS=true` for the test run by default, so existing tests keep exercising the full tool surface; `directory-surface.test.ts` explicitly unsets both to assert the opposite default.
+- `src/server/well-known.ts`: refreshed the stale `eval` block (test counts, `lastRun`) and added a `toolSurfacePolicy` field documenting the two env vars.
+- `AGENTS.md`, `SECURITY.md`, `docs/architecture.md`, `docs/api-reference.md`, `docs/go-to-market.md`, `README.md`, `README.ja.md`, `examples/README.md`, `.env.example`: synced tool-count claims and phase/version tables with the actual registered surface (previously drifted — `AGENTS.md` said "17 tools" at `1.0.0`, `SECURITY.md` said current stable was `1.5.0`, `docs/architecture.md`'s diagram said "17 tools total").
+
 ## [1.11.0] — 2026-05-12
 
 ### Added

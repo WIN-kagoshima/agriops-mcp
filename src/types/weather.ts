@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AttributionSchema } from "../lib/attribution.js";
 
 export const HourlyWeatherSchema = z.object({
   time: z.string().describe("ISO 8601 timestamp with timezone."),
@@ -34,9 +35,7 @@ export type HourlyWeather = z.infer<typeof HourlyWeatherSchema>;
 
 export const WeatherForecastSchema = z.object({
   source: z.string().describe("Provider identifier, e.g. open-meteo."),
-  attribution: z
-    .string()
-    .describe("License attribution string the LLM should quote when surfacing this data."),
+  attribution: AttributionSchema,
   location: z.object({
     lat: z.number(),
     lng: z.number(),

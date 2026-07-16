@@ -60,6 +60,8 @@ describe("Phase 4 OAuth URL elicitation flow", () => {
         authorizeUrl: `${baseUrl}/__mock-oauth/authorize`,
         tokenUrl: `${baseUrl}/__mock-oauth/token`,
       },
+      enableExtendedTools: false,
+      enableLegacyTools: false,
     };
 
     mountConnectHandler(app, {

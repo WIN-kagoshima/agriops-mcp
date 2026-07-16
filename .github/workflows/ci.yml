@@ -69,10 +69,9 @@ jobs:
             exit 1
           fi
 
-      - name: Inspector smoke (stdio, optional)
+      - name: Inspector smoke (stdio, hard gate)
         run: |
           npx --yes @modelcontextprotocol/inspector --cli node dist/server.js --stdio --method tools/list
-        continue-on-error: true
 
   ui-tests:
     name: UI (Playwright)  EPhase 5+

@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { JmaWarning } from "../adapters/_interface.js";
+import { AttributionSchema } from "../lib/attribution.js";
 import { safeErrorMessage } from "../lib/errors.js";
 import type { Deps } from "../server/deps.js";
 import { getToolAnnotations } from "../server/surface-catalog.js";
@@ -52,7 +53,7 @@ const JmaWarningItemSchema = z.object({
 const outputSchema = z.object({
   warnings: z.array(JmaWarningItemSchema),
   fetchedAt: z.string(),
-  attribution: z.string(),
+  attribution: AttributionSchema,
   count: z.number().int(),
 });
 
