@@ -131,22 +131,42 @@ jobs:
       # `_authToken` entry here (not skipping `registry-url` altogether,
       # which `npm ci`'s cache resolution still wants) restores npm's normal
       # "no usable token configured -> try OIDC" trusted-publishing path.
+      #
+      # Skipped when NPM_TOKEN (see below) is set: in that fallback mode we
+      # *want* the `_authToken=${NODE_AUTH_TOKEN}` line so classic
+      # token auth kicks in instead.
       - name: Remove setup-node's placeholder npm auth token (unblocks OIDC)
+        if: ${{ secrets.NPM_TOKEN == '' }}
         run: |
           npm config delete //registry.npmjs.org/:_authToken
           echo "npm --version: $(npm --version)"
           echo "id-token env present: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ] && echo yes || echo no)"
           echo "_authToken still configured: $(npm config get //registry.npmjs.org/:_authToken 2>/dev/null || echo '(unset)')"
 
-      # Trusted publishing: no NODE_AUTH_TOKEN / NPM_TOKEN. The npm CLI
-      # detects the GitHub Actions OIDC environment (permissions.id-token:
-      # write, above) and exchanges it for a short-lived publish token
-      # directly with the registry, then attaches build provenance
-      # automatically. Required for every stable tag per the
-      # public-release-hardening plan — not optional/env-gated like the
-      # previous NPM_TOKEN-based step. Prerelease tags (`v1.2.3-beta.0`) are
-      # still skipped: they exist for internal/Cloud Run testing, not for the
-      # npm `latest`/public dist-tag.
-      - name: Publish to npm (trusted publishing, stable tags only)
+      # Preferred path: npm trusted publishing (OIDC, no long-lived token).
+      # The npm CLI detects the GitHub Actions OIDC environment
+      # (permissions.id-token: write, above) and exchanges it for a
+      # short-lived publish token directly with the registry, then attaches
+      # build provenance automatically.
+      #
+      # Temporary fallback: as of 2026-07-22, OIDC trusted publishing for
+      # this exact repo/workflow/package still fails with a registry-side
+      # `ENEEDAUTH` despite every documented requirement being verified
+      # correct on both the GitHub Actions side (npm >= 11.5.1, `id-token:
+      # write`, no stale `_authToken`, `package.json#repository.url`
+      # without the `git+` scheme) and the npmjs.com Trusted Publisher
+      # config side (org/repo/workflow filename/environment all confirmed
+      # matching, "Allow npm publish" checked) — consistent with open
+      # upstream reports for scoped packages (npm/cli#8976, npm/cli#9088).
+      # Per this repo's "Pragmatism over purity" principle
+      # (.cursor/rules/01-design-principles.mdc), `NPM_TOKEN` — a
+      # granular, package-scoped, 2FA-bypass-enabled access token — is
+      # wired in as NODE_AUTH_TOKEN so releases are not blocked on an
+      # upstream registry bug. Remove this fallback (and the `if` above)
+      # once OIDC is confirmed working again; do not let both linger
+      # indefinitely as an unreviewed permanent state.
+      - name: Publish to npm (stable tags only)
         if: ${{ !contains(github.ref_name, '-') }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public --provenance

@@ -8,6 +8,11 @@ From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt
 
 Pre-`1.0.0` releases were explicitly **experimental**.
 
+## [1.15.6] — 2026-07-22 — Temporary NPM_TOKEN fallback for npm publish
+
+### Changed
+- **`.github/workflows/release.yml`**: `v1.15.5` confirmed npm trusted publishing is correctly configured on both sides (npm CLI 11.18.0, `id-token: write`, no stale `_authToken`, `package.json#repository.url` without `git+`, and an npmjs.com Trusted Publisher config independently re-verified field-by-field against `WIN-kagoshima/agriops-mcp`/`release.yml`) but the OIDC exchange still fails with a registry-side `ENEEDAUTH` — consistent with open upstream reports for scoped packages ([npm/cli#8976](https://github.com/npm/cli/issues/8976), [npm/cli#9088](https://github.com/npm/cli/issues/9088)). Per "Pragmatism over purity", wired a granular, package-scoped, 2FA-bypass-enabled `NPM_TOKEN` in as `NODE_AUTH_TOKEN` for the publish step so stable-tag releases are not indefinitely blocked on an upstream registry bug; the OIDC path (and the `_authToken` cleanup from `1.15.4`) is retained and still runs whenever `NPM_TOKEN` is absent, so this fallback can be removed the moment trusted publishing starts working.
+
 ## [1.15.5] — 2026-07-22 — Fix npm trusted-publishing repository.url mismatch
 
 ### Fixed
@@ -556,7 +561,8 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.5...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.6...HEAD
+[1.15.6]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.5...v1.15.6
 [1.15.5]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.4...v1.15.5
 [1.15.4]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.3...v1.15.4
 [1.15.3]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.2...v1.15.3
