@@ -8,6 +8,12 @@ From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt
 
 Pre-`1.0.0` releases were explicitly **experimental**.
 
+## [1.15.4] — 2026-07-22 — Fix npm trusted-publishing OIDC exchange
+
+### Fixed
+- **`.github/workflows/release.yml`**: `v1.15.3`'s npm publish step failed on every run with a misleading `404 Not Found` from the registry. Root cause: `actions/setup-node`'s `registry-url` input writes `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}` into `.npmrc`; with no `NODE_AUTH_TOKEN` secret configured (the correct state for trusted publishing), that placeholder expands to an empty string, but npm CLI still treats the line as "auth is configured" and skips its own OIDC token exchange, attempting a classic publish with empty credentials instead (see [npm/documentation#1960](https://github.com/npm/documentation/issues/1960), [npm/cli#8976](https://github.com/npm/cli/issues/8976)). Added a step that runs `npm config delete //registry.npmjs.org/:_authToken` immediately before `npm publish`, restoring npm's normal "no usable token configured → try OIDC" trusted-publishing path. The npm Trusted Publisher configuration itself (`docs/npm-first-publish.md` §A) was correct throughout — this was purely a CI-workflow ordering bug.
+- `v1.15.3`'s GitHub Release, Cloud Run deployments (public anonymous + operational), and GitHub Pages site are unaffected and remain the current live/published artifacts for those surfaces; only the npm package needed this patch to actually publish.
+
 ## [1.15.3] — 2026-07-22 — Public-release hardening (anonymous Cloud Run, Pages, npm trusted publishing)
 
 ### Added
@@ -544,7 +550,8 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.3...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.4...HEAD
+[1.15.4]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.3...v1.15.4
 [1.15.3]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.2...v1.15.3
 [1.15.2]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.1...v1.15.2
 [1.15.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.0...v1.15.1
