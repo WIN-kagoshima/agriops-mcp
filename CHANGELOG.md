@@ -8,6 +8,12 @@ From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt
 
 Pre-`1.0.0` releases were explicitly **experimental**.
 
+## [1.15.5] — 2026-07-22 — Fix npm trusted-publishing repository.url mismatch
+
+### Fixed
+- **`package.json`**: `repository.url` used the `git+https://` scheme prefix (`git+https://github.com/WIN-kagoshima/agriops-mcp.git`). npm's trusted-publisher OIDC exchange validates the publishing repo against this exact field, and community reports (e.g. [npm/cli#8976](https://github.com/npm/cli/issues/8976)) confirm the `git+` prefix causes a mismatch that surfaces as `ENEEDAUTH`. Changed to the plain `https://github.com/WIN-kagoshima/agriops-mcp.git` form npm's docs use in every trusted-publishing example.
+- **`.github/workflows/release.yml`**: added non-secret diagnostics (npm version, whether the GitHub OIDC request env vars are present, whether a stale `_authToken` config survived) right after the token-cleanup step introduced in `1.15.4`, so a future trusted-publishing failure is actionable from the CI log alone instead of requiring another guess-and-release cycle.
+
 ## [1.15.4] — 2026-07-22 — Fix npm trusted-publishing OIDC exchange
 
 ### Fixed
@@ -550,7 +556,8 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.4...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.5...HEAD
+[1.15.5]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.4...v1.15.5
 [1.15.4]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.3...v1.15.4
 [1.15.3]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.2...v1.15.3
 [1.15.2]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.1...v1.15.2
