@@ -50,29 +50,29 @@ jobs:
           for (const name of manifests) {
             const p = join(SNAPSHOT_DIR, name);
             if (!existsSync(p)) {
-              issues.push(\`MISSING: \${name} 窶・file not found at \${p}\`);
+              issues.push(\`MISSING: \${name} - file not found at \${p}\`);
               continue;
             }
             let manifest;
             try {
               manifest = JSON.parse(readFileSync(p, "utf8"));
             } catch {
-              issues.push(\`CORRUPT: \${name} 窶・not valid JSON\`);
+              issues.push(\`CORRUPT: \${name} - not valid JSON\`);
               continue;
             }
             const built = new Date(manifest.builtAt ?? manifest.built_at ?? "");
             if (isNaN(built.getTime())) {
-              issues.push(\`INVALID_DATE: \${name} 窶・builtAt field missing or unparseable\`);
+              issues.push(\`INVALID_DATE: \${name} - builtAt field missing or unparseable\`);
               continue;
             }
             const ageMs = now - built;
             const ageDays = ageMs / (1000 * 60 * 60 * 24);
             if (ageDays > STALE_DAYS) {
               issues.push(
-                \`STALE: \${name} 窶・built \${built.toISOString()} (\${ageDays.toFixed(1)} days ago, limit \${STALE_DAYS} days)\`
+                \`STALE: \${name} - built \${built.toISOString()} (\${ageDays.toFixed(1)} days ago, limit \${STALE_DAYS} days)\`
               );
             } else {
-              console.log(\`OK: \${name} 窶・\${ageDays.toFixed(1)} days old\`);
+              console.log(\`OK: \${name} - \${ageDays.toFixed(1)} days old\`);
             }
           }
 
@@ -96,7 +96,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const title = "淀・・Snapshot data is stale 窶・rebuild required";
+            const title = "[data-freshness] Snapshot data is stale - rebuild required";
             const label = "data-freshness";
             const issues_text = `${{ steps.freshness.outputs.issues }}`;
 
@@ -150,7 +150,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: open.number,
-                body: `套 **Weekly re-check** 窶・still stale as of ${new Date().toISOString().slice(0, 10)}.\n\n${issues_text}`,
+                body: `**Weekly re-check** - still stale as of ${new Date().toISOString().slice(0, 10)}.\n\n${issues_text}`,
               });
               console.log(`Updated existing issue #${open.number}`);
             } else {
@@ -169,7 +169,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const title = "淀・・Snapshot data is stale 窶・rebuild required";
+            const title = "[data-freshness] Snapshot data is stale - rebuild required";
             const label = "data-freshness";
 
             const existing = await github.rest.issues.listForRepo({
@@ -185,7 +185,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: open.number,
-                body: `笨・Snapshots are fresh as of ${new Date().toISOString().slice(0, 10)}. Closing.`,
+                body: `Snapshots are fresh as of ${new Date().toISOString().slice(0, 10)}. Closing.`,
               });
               await github.rest.issues.update({
                 owner: context.repo.owner,

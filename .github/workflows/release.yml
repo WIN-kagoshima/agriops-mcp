@@ -107,7 +107,7 @@ jobs:
       - name: Stage release assets
         run: |
           mkdir -p release-assets
-          cp dist/ui/dashboard.html release-assets/agriops-mcp-dashboard-${GITHUB_REF_NAME}.html
+          cp dist/ui/dashboard.html "release-assets/agriops-mcp-dashboard-${GITHUB_REF_NAME}.html"
           (cd dist && tar -czf "../release-assets/agriops-mcp-server-${GITHUB_REF_NAME}.tar.gz" .)
           shasum -a 256 release-assets/* > release-assets/SHA256SUMS
 

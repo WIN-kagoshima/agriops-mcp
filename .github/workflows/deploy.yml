@@ -189,7 +189,7 @@ jobs:
             --skip-billing
 
       - name: Configure docker for Artifact Registry
-        run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
+        run: gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
 
       - name: Print Cloud Build auth context
         run: |
@@ -208,13 +208,13 @@ jobs:
           gcloud builds submit \
             --no-source \
             --config=cloudbuild.remote.yaml \
-            --project=$PROJECT_ID \
-            --substitutions=_REGION=$REGION,_REPO=$REPOSITORY,_MCP_BASE_URL=$MCP_BASE_URL,_SERVICE_ACCOUNT=$GCP_RUNTIME_SERVICE_ACCOUNT,_TOKEN_ENC_SECRET=agriops-token-enc-key,_SESSION_COOKIE_SECRET=agriops-session-cookie-secret,_SNAPSHOT_BUCKET=$SNAPSHOT_BUCKET,_GIT_SHA=$GITHUB_SHA
+            --project="$PROJECT_ID" \
+            --substitutions="_REGION=$REGION,_REPO=$REPOSITORY,_MCP_BASE_URL=$MCP_BASE_URL,_SERVICE_ACCOUNT=$GCP_RUNTIME_SERVICE_ACCOUNT,_TOKEN_ENC_SECRET=agriops-token-enc-key,_SESSION_COOKIE_SECRET=agriops-session-cookie-secret,_SNAPSHOT_BUCKET=$SNAPSHOT_BUCKET,_GIT_SHA=$GITHUB_SHA"
 
       - name: Print Cloud Run URL
         run: |
-          gcloud run services describe $SERVICE \
-            --region=$REGION --format='value(status.url)'
+          gcloud run services describe "$SERVICE" \
+            --region="$REGION" --format='value(status.url)'
 
       - name: Mint Cloud Run identity token
         id: cloud-run-auth
