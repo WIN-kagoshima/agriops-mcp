@@ -8,6 +8,27 @@ From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt
 
 Pre-`1.0.0` releases were explicitly **experimental**.
 
+## [1.15.0] — 2026-07-22 — Directory UX & artifact portability
+
+### Added
+- **`AGRIOPS_ALLOWED_HOSTS`** (`src/lib/config.ts`, `src/server/transport-http.ts`, `.env.example`): additional trusted hostnames (comma-separated, no scheme) for the Streamable HTTP DNS-rebinding allowlist, alongside `MCP_BASE_URL`'s own host. Fixes a `421 Forbidden` on platforms (Cloud Run) that expose more than one hostname for the same service.
+- **Embedded artifact resources** ("take this artifact home"): `search_farmland` and `nearby_farms` now embed a GeoJSON `FeatureCollection` content block (`application/geo+json`); `get_pesticide_rules` and `create_staff_deploy_plan` now embed a CSV content block (`text/csv`, RFC 4180). Uses the MCP Spec §6.4 `EmbeddedResourceSchema` shape — purely additive, ignored by clients that don't render it. New `src/lib/csv.ts` (shared CSV serialiser, also adopted by the existing `export_plan_csv` app tool) and `src/lib/artifacts.ts` (GeoJSON/CSV resource-block builders).
+- **`outputSchema` for `create_staff_deploy_plan`**: previously the only default-tier tool without one. Covers both the successful-draft and Form-elicitation-declined response shapes.
+- **Dashboard CSV export**: the AgriOps Dashboard MCP App (`ui://agriops/dashboard.html`) header gained a "CSV ダウンロード" button (`src/ui/csv-export.ts`) that serialises the currently rendered tabular data to CSV and triggers a browser download, with a copy-to-clipboard fallback panel for MCP Apps hosts that sandbox the iframe against anchor-click downloads.
+- **`tests/conformance/artifacts.test.ts`**: end-to-end coverage for all 4 embedded-resource tools (shape, mimeType, row-count parity with `structuredContent`, zero-result omission) plus `create_staff_deploy_plan`'s both output shapes against its new `outputSchema`.
+- **`scripts/capture-directory-screenshots.ts`** / `npm run capture:screenshots`: headless-Playwright capture of 5 dashboard screenshots (choropleth, radar, bar_compare, timeseries, CSV-export fallback) against `dist/ui/dashboard.html` with a mock `window.mcpApps` bridge, for the Anthropic Directory submission portal. Output committed at `assets/directory-screenshots/`.
+
+### Fixed
+- **`assets/logo.png`**: was a JPEG mislabeled with a `.png` extension (confirmed via `file`); re-encoded in place to a true PNG.
+- **Dashboard/tool-surface consistency**: the dashboard and several prompts (`strategy_room_dashboard`, `market_trend_briefing`, ...) called 5 tools (`get_municipality_stats`, `get_labor_shortage_stats`, `get_ssw_crop_compatibility`, `get_livestock_regional_stats`, `get_market_price`) that did not exist at all on the default (`AGRIOPS_ENABLE_LEGACY_TOOLS` unset) 8-tool surface — every dashboard quick-action click would have hit "tool not found" for a Directory reviewer or first-time connection. These 5 tools now register unconditionally, with `_meta["ui/visibility"] = ["app"]` (LLM-invisible, UI-callable) when the legacy flag is off, and as before (model-visible, `deprecated: true`) when it's on. Prompts requiring extended/legacy-only tools are now gated behind those flags instead of always registering; `strategy_room_dashboard` degrades its instructions gracefully when the tools its analysis view needs aren't model-visible in the current configuration.
+
+### Changed
+- **`src/server/surface-catalog.ts` / `src/server/well-known.ts`**: `RegisteredSurface` gained `appOnlyToolNames`, so `.well-known/mcp-server.json` reports each tool's *runtime* visibility (accounting for the fix above) instead of only its static catalog entry — the Server Card no longer claims the 5 dashboard-helper tools are model-visible on the default surface.
+- **`src/tools/_registry.ts`**: `registerAllTools` now returns `{ tools, appOnlyToolNames }` instead of a bare tool-name array.
+- **`src/server/create-server.ts`**: server `instructions` are now built by `buildInstructions()` after tool registration, conditionally mentioning `get_estat_stats` only when it will actually be registered — previously a default (no env flags) connection could be instructed to call a tool absent from `tools/list`.
+- **`docs/anthropic-directory-submission.md`**: checklist updated (icon, screenshots, portable artifacts all marked Done); new §9 documents this release's changes in detail.
+- **`tests/conformance/directory-surface.test.ts`**: split the legacy-tool assertions into `LEGACY_ONLY_TOOLS` (still fully gated) and `DASHBOARD_HELPER_TOOLS` (registered unconditionally, asserted to carry the `ui/visibility: ["app"]` hint by default).
+
 ## [1.14.2] — 2026-07-16 — Narrative & community distribution
 
 ### Added

@@ -1,6 +1,6 @@
 {
   "name": "AgriOps MCP",
-  "version": "1.14.2",
+  "version": "1.15.0",
   "description": "Japanese agricultural land + 1 km mesh weather + pesticide registration + government statistics (e-Stat) MCP server for Specified Skilled Worker (SSW) workforce dispatching. Reference implementation of MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.",
   "homepage": "https://github.com/WIN-kagoshima/agriops-mcp",
   "repository": "https://github.com/WIN-kagoshima/agriops-mcp",
@@ -119,6 +119,66 @@
       "sideEffect": "read-only",
       "introduced": "0.5.0",
       "visibility": "model",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "get_market_price",
+      "sideEffect": "read-only",
+      "introduced": "1.6.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "get_ssw_crop_compatibility",
+      "sideEffect": "read-only",
+      "introduced": "1.8.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "get_labor_shortage_stats",
+      "sideEffect": "read-only",
+      "introduced": "1.8.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "get_livestock_regional_stats",
+      "sideEffect": "read-only",
+      "introduced": "1.9.0",
+      "visibility": "app",
+      "annotations": {
+        "readOnlyHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "destructiveHint": false
+      }
+    },
+    {
+      "name": "get_municipality_stats",
+      "sideEffect": "read-only",
+      "introduced": "1.10.0",
+      "visibility": "app",
       "annotations": {
         "readOnlyHint": true,
         "idempotentHint": true,
@@ -273,10 +333,6 @@
       "introduced": "1.3.0"
     },
     {
-      "name": "data_freshness_check",
-      "introduced": "1.3.0"
-    },
-    {
       "name": "harvest_readiness",
       "introduced": "1.4.0"
     },
@@ -287,22 +343,6 @@
     {
       "name": "field_visit_checklist",
       "introduced": "1.5.0"
-    },
-    {
-      "name": "market_trend_briefing",
-      "introduced": "1.6.0"
-    },
-    {
-      "name": "region_dispatch_demand",
-      "introduced": "1.6.0"
-    },
-    {
-      "name": "annual_dispatch_plan",
-      "introduced": "1.7.0"
-    },
-    {
-      "name": "ssw_strategy_briefing",
-      "introduced": "1.8.0"
     },
     {
       "name": "strategy_room_dashboard",
@@ -422,12 +462,12 @@
     "metricsAuth": "Bearer (set AGRIOPS_METRICS_BEARER to enable)"
   },
   "eval": {
-    "testFiles": 48,
-    "testCases": 263,
+    "testFiles": 49,
+    "testCases": 270,
     "scenarios": 23,
-    "conformanceChecks": 16,
-    "lastRun": "2026-07-16",
-    "note": "v1.14.2: developer-trust distribution content shipped — Zenn/dev.to 7-primitives design writeups, Show HN draft, note.com industry writeup, README Demo/Roadmap sections, awesome-mcp-servers and awesome-agriculture PRs opened. v1.14.1 verified the Anthropic Directory submission packet locally — 8-tool default surface confirmed via Inspector tools/list + tools/call (all isError: false), description audit against prompt-injection rejection patterns passed. v1.14.0 shipped craft signals: fast-check property-based tests (geo, pagination cursor codec), schema-level non-empty `attribution` requirement across all licensed-source output types, tinybench p50/p95/p99 for search_farmland/get_weather_1km, Inspector tools/list hard-gated in CI",
+    "conformanceChecks": 17,
+    "lastRun": "2026-07-22",
+    "note": "v1.15.0: Directory UX/spec-compliance pass — AGRIOPS_ALLOWED_HOSTS for multi-hostname Cloud Run deployments; dashboard-helper tools now register unconditionally as ui/visibility:['app'] (Server Card reports runtime visibility, not just the static catalog) fixing a tool-not-found gap in the MCP Apps dashboard/prompts on the default surface; create_staff_deploy_plan gained an outputSchema; search_farmland/nearby_farms/get_pesticide_rules/create_staff_deploy_plan now embed a GeoJSON or CSV resource block ('take this artifact home'); dashboard gained a CSV-download button with a copy-to-clipboard fallback; assets/logo.png (was a mislabeled JPEG) re-encoded to a true PNG; 5 dashboard screenshots captured via npm run capture:screenshots. v1.14.2 shipped developer-trust distribution content (Zenn/dev.to 7-primitives writeups, Show HN draft, note.com writeup, README Demo/Roadmap, awesome-list PRs). v1.14.1 verified the Anthropic Directory submission packet locally. v1.14.0 shipped craft signals (fast-check PBT, non-empty attribution schema, tinybench, CI hard gate).",
     "repository": "https://github.com/WIN-kagoshima/agriops-mcp/tree/main/tests"
   },
   "toolSurfacePolicy": {

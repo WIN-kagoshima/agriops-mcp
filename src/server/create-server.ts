@@ -23,6 +23,23 @@ import { type RegisteredSurface, emptyRegisteredSurface } from "./surface-catalo
 
 const SERVER_NAME = "agriops-mcp";
 
+function buildInstructions(opts: { estatEnabled: boolean }): string {
+  const lines = [
+    "This server exposes Japanese agricultural data — farmland polygons (eMAFF), 1 km mesh weather (Open-Meteo), and pesticide registrations (FAMIC).",
+    "Cross-tool patterns: use `search_farmland` to get a `field_id`, then `get_weather_1km` with the field's centroid for site-specific weather, then `get_pesticide_rules` for the registered crop.",
+  ];
+  if (opts.estatEnabled) {
+    lines.push(
+      "For government statistics (census, crop output, livestock): use `get_estat_stats` with mode='search' first to find a statsDataId, then mode='data' to retrieve values. Presets: census_workers, crop_output, livestock.",
+    );
+  }
+  lines.push(
+    "All data sources include a license attribution string in `structuredContent.attribution`. Surface it when summarising the data to end users.",
+    "Stable since 1.0.0: tool names, resource URIs, prompt names, and input/output schemas are frozen under SemVer.",
+  );
+  return lines.join(" ");
+}
+
 export interface CreateServerOptions {
   config: Config;
   logger: Logger;
@@ -158,18 +175,20 @@ export function createServer(options: CreateServerOptions): {
         resources: { listChanged: true, subscribe: false },
         logging: {},
       },
-      instructions: [
-        "This server exposes Japanese agricultural data — farmland polygons (eMAFF), 1 km mesh weather (Open-Meteo), pesticide registrations (FAMIC), and government statistics (e-Stat).",
-        "Cross-tool patterns: use `search_farmland` to get a `field_id`, then `get_weather_1km` with the field's centroid for site-specific weather, then `get_pesticide_rules` for the registered crop.",
-        "For government statistics (census, crop output, livestock): use `get_estat_stats` with mode='search' first to find a statsDataId, then mode='data' to retrieve values. Presets: census_workers, crop_output, livestock.",
-        "All data sources include a license attribution string in `structuredContent.attribution`. Surface it when summarising the data to end users.",
-        "Stable since 1.0.0: tool names, resource URIs, prompt names, and input/output schemas are frozen under SemVer.",
-      ].join(" "),
+      // Built after we know which optional tools will actually register
+      // (see below) so a default (no env flags) connection is never told
+      // to call a tool that isn't in `tools/list` — see
+      // docs/anthropic-directory-submission.md.
+      instructions: buildInstructions({
+        estatEnabled: config.enableLegacyTools && Boolean(estat),
+      }),
     },
   );
 
   const surface: RegisteredSurface = emptyRegisteredSurface();
-  surface.tools = registerAllTools(server, deps);
+  const toolSurface = registerAllTools(server, deps);
+  surface.tools = toolSurface.tools;
+  surface.appOnlyToolNames = toolSurface.appOnlyToolNames;
   surface.prompts = registerAllPrompts(server, deps);
   surface.resources = registerAllResources(server, deps);
 

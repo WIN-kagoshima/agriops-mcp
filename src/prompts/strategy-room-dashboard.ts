@@ -10,7 +10,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { Deps } from "../server/deps.js";
 
-export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: Deps): void {
+export function registerStrategyRoomDashboardPrompt(server: McpServer, deps: Deps): void {
   server.registerPrompt(
     "strategy_room_dashboard",
     {
@@ -44,12 +44,22 @@ export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: De
     },
     async ({ analysis_goal, prefecture_code, crop_or_sector }) => {
       const pref = prefecture_code ?? "JP-46";
+      // The five legacy market/SSW tools referenced below are only
+      // model-visible when AGRIOPS_ENABLE_LEGACY_TOOLS=true; on the
+      // Directory default they still exist but only the dashboard's own
+      // internal tool calls can reach them (see DASHBOARD_HELPER_TOOL_NAMES
+      // in src/tools/_registry.ts). Telling the LLM to call one directly on
+      // the default surface would produce a "tool not found" failure, so we
+      // only emit that instruction when it will actually work.
+      const legacyToolsVisible = deps.config.enableLegacyTools;
+      const sswStrategyPromptAvailable = legacyToolsVisible && deps.config.enableExtendedTools;
 
       // Determine best view specification from goal description
       const goalLower = analysis_goal.toLowerCase();
       let viewSpec = "municipality_drill";
       let toolHint = `get_municipality_stats({ prefectureCode: "${pref}" })`;
       let vizDesc = "市町村別 SSW 適性スコア（コロプレスマップ）";
+      let toolHintAvailable = legacyToolsVisible;
 
       if (
         goalLower.includes("全国") ||
@@ -59,6 +69,7 @@ export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: De
         viewSpec = "national_labor_choropleth";
         toolHint = 'get_labor_shortage_stats({ prefectureCode: "JP-00" })';
         vizDesc = "全国農業就業人口 5年変化率（コロプレスマップ）";
+        toolHintAvailable = legacyToolsVisible;
       } else if (
         goalLower.includes("レーダー") ||
         goalLower.includes("radar") ||
@@ -69,6 +80,7 @@ export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: De
         viewSpec = `ssw_radar:${crop}`;
         toolHint = `get_ssw_crop_compatibility({ crop: "${crop}" })`;
         vizDesc = `${crop} SSW 適性レーダー（5軸ペンタゴン）`;
+        toolHintAvailable = legacyToolsVisible;
       } else if (
         goalLower.includes("畜産") ||
         goalLower.includes("ブロイラー") ||
@@ -78,6 +90,7 @@ export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: De
         viewSpec = `livestock_bar:${pref}`;
         toolHint = `get_livestock_regional_stats({ prefectureCode: "${pref}" })`;
         vizDesc = `${pref} 畜産 SSW 適性スコア比較（棒グラフ）`;
+        toolHintAvailable = legacyToolsVisible;
       } else if (
         goalLower.includes("市場価格") ||
         goalLower.includes("timeseries") ||
@@ -87,6 +100,7 @@ export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: De
         viewSpec = `market_price:${crop}`;
         toolHint = `get_market_price({ crop: "${crop}" })`;
         vizDesc = `${crop} 市場価格推移（時系列グラフ）`;
+        toolHintAvailable = legacyToolsVisible;
       } else if (
         goalLower.includes("サンキー") ||
         goalLower.includes("ローテーション") ||
@@ -96,6 +110,7 @@ export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: De
         toolHint =
           'ssw_strategy_briefing({ focus_region: "愛媛+和歌山+徳島", priority: "year_round" })';
         vizDesc = "SSW 通年ローテーション フロー図（サンキー）";
+        toolHintAvailable = sswStrategyPromptAvailable;
       } else if (
         goalLower.includes("カレンダー") ||
         goalLower.includes("作物カレンダー") ||
@@ -104,7 +119,19 @@ export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: De
         viewSpec = `crop_calendar:${pref}`;
         toolHint = `get_prefecture_crop_profile({ prefectureCode: "${pref}" })`;
         vizDesc = `${pref} 作物カレンダー（年間ヒートマップ）`;
+        // get_prefecture_crop_profile (unlike the other legacy tools) isn't
+        // registered at all on the default surface, dashboard-visible or not.
+        toolHintAvailable = legacyToolsVisible;
       }
+
+      const step1 = toolHintAvailable
+        ? ["// Step 1: データ取得", toolHint, "", "// Step 2: ダッシュボード起動"]
+        : [
+            "// この分析ビューが参照するツールは現在の構成では呼び出せません",
+            "// (AGRIOPS_ENABLE_LEGACY_TOOLS / AGRIOPS_ENABLE_EXTENDED_TOOLS が必要)。",
+            "// ダッシュボードは初期表示時に市町村統計を自動取得します。",
+            "// ダッシュボード起動",
+          ];
 
       return {
         messages: [
@@ -122,14 +149,14 @@ export function registerStrategyRoomDashboardPrompt(server: McpServer, _deps: De
                 "## 推奨アクション",
                 "",
                 `最適ビュー: **${vizDesc}**`,
+                toolHintAvailable
+                  ? ""
+                  : "（この構成では上記ビューへの直接データ取得は無効です。ダッシュボード自体は開き、市町村統計から操作できます。）",
                 "",
                 "以下のツール呼び出しを実行してからダッシュボードを起動してください:",
                 "",
                 "```",
-                "// Step 1: データ取得",
-                toolHint,
-                "",
-                "// Step 2: ダッシュボード起動",
+                ...step1,
                 "open_dashboard({",
                 `  initialPrefectureCode: "${pref}",`,
                 `  viewSpec: "${viewSpec}",`,

@@ -28,6 +28,7 @@ function pollutedConfig(): Config {
     logLevel: "warn",
     baseUrl: "http://localhost:3001",
     openMeteoBaseUrl: "https://api.open-meteo.com/v1",
+    allowedHosts: [],
     emaffSnapshotPath: "./snapshots/this-file-does-not-exist.sqlite",
     famicSnapshotPath: "./snapshots/this-file-does-not-exist.sqlite",
     iotSnapshotPath: "./snapshots/this-file-does-not-exist.sqlite",

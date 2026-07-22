@@ -1,6 +1,6 @@
 # Anthropic Connectors Directory — submission plan
 
-_Status: technical checklist complete; two manual/ops items remain (org access, anonymous endpoint) before portal submission. This document is the single source of truth for the "make AgriOps MCP listing-ready" effort. It captures the Phase 0 decision (submission shape) and the Phase 4 pre-submission checklist referenced in [AGENTS.md](../AGENTS.md)._
+_Status: technical checklist complete, including the artifact-portability and asset-generation follow-up items from the 2026-07-22 UX/spec-compliance pass; two manual/ops items remain (org access, anonymous endpoint) before portal submission. This document is the single source of truth for the "make AgriOps MCP listing-ready" effort. It captures the Phase 0 decision (submission shape) and the Phase 4 pre-submission checklist referenced in [AGENTS.md](../AGENTS.md)._
 
 Authoritative references: [Connectors directory](https://claude.com/docs/connectors/directory), [Submission](https://claude.com/docs/connectors/building/submission), [Pre-submission checklist](https://claude.com/docs/connectors/building/review-criteria), [Software Directory Policy](https://support.claude.com/en/articles/13145358-anthropic-software-directory-policy).
 
@@ -53,11 +53,12 @@ Mapped to the [official checklist](https://claude.com/docs/connectors/building/r
 | Public documentation | Done | This repository's README/docs, public on GitHub |
 | Privacy Policy (public HTTPS URL) | **Action item** — publish [docs/privacy-policy.md](privacy-policy.md) at a stable HTTPS URL (GitHub raw/Pages URL is acceptable per the docs) | — |
 | Test credentials | N/A — anonymous connector, no account | — |
-| Icon | **Action item** — reuse `assets/logo.png`, confirm it meets the directory's icon spec before upload | — |
-| MCP Apps screenshots (3–5 PNG, ≥1000px wide) | Recipe validated 2026-07-16, final capture pending (§6) — bar_compare / radar / choropleth views confirmed rendering correctly end-to-end | — |
+| Icon | Done — `assets/logo.png` was actually a mislabeled JPEG (`file` reported `JPEG image data` despite the `.png` extension); re-encoded in place to a true 1024×1024 PNG 2026-07-22 | `assets/logo.png` |
+| MCP Apps screenshots (3–5 PNG, ≥1000px wide) | Done — 5 × 1280×900 PNGs captured 2026-07-22 via `npm run capture:screenshots` (`scripts/capture-directory-screenshots.ts`), covering choropleth / radar / bar_compare / timeseries views plus the new CSV-export fallback panel. Still recommend a final live-host recapture before upload per §6's note | `assets/directory-screenshots/1..5-*.png` |
 | Org access: Team/Enterprise + Directory management permission | **Action item (manual, non-technical)** — confirm with the WIN Kagoshima / スグクル Claude.ai org admin | — |
 | Live endpoint reachable anonymously | **Action item (manual, ops)** — `agriops-mcp-n5vdix22hq-an.a.run.app/mcp` currently returns `403 Forbidden` to an anonymous client (verified 2026-07-16 with Inspector CLI over Streamable HTTP); needs `--allow-unauthenticated` per §2 | — |
 | Inspector functional pass, all 8 default tools | Done — verified 2026-07-16 (§8) | `tools/call` succeeded (`isError: false`) for all 8 default-tier tools against a local stdio build with fixture snapshots |
+| Portable output artifacts (resource links / embedded resources) | Done 2026-07-22 — `search_farmland` / `nearby_farms` embed a GeoJSON `FeatureCollection`; `get_pesticide_rules` / `create_staff_deploy_plan` embed CSV; dashboard UI adds a "CSV ダウンロード" button with a copy-to-clipboard fallback for sandboxed hosts | `src/lib/artifacts.ts`, `tests/conformance/artifacts.test.ts`, `src/ui/csv-export.ts` |
 
 ## 5. Description audit (prompt-injection guardrail)
 
@@ -66,6 +67,8 @@ Before submission, re-read every default-tier tool description against the Direc
 ## 6. MCP Apps screenshots
 
 Capture 3–5 PNG screenshots (≥1000px wide) of `ui://agriops/dashboard.html` rendered inside a host that supports MCP Apps (Claude Desktop or the MCP Inspector's Apps preview once available), showing: (1) the farmland map with a search result, (2) the weather overlay, (3) the strategy-room / staff-deploy view. Store under `assets/directory-screenshots/` (create on capture) and reference them from the submission portal — screenshots are uploaded through the portal itself, not committed as part of the server response.
+
+**2026-07-22 update**: `npm run capture:screenshots` (`scripts/capture-directory-screenshots.ts`) automates this with a headless Playwright pass against `dist/ui/dashboard.html`, injecting a mock `window.mcpApps` bridge that returns realistic `withVizHint`-shaped payloads for the dashboard-helper tools. It wrote 5 PNGs to `assets/directory-screenshots/`: municipality choropleth (map load), SSW-compatibility radar, livestock bar-compare, market-price time series, and the new CSV-export fallback panel. These are committed as a working baseline so the portal-upload step is never blocked; still recapture against a real Claude Desktop / Inspector Apps-preview connection before final submission, since the mock bridge is a local-iteration aid, not a substitute for host-verified rendering (see §8.3's original caveat, which still applies).
 
 ## 7. Parallel listings
 
@@ -103,7 +106,18 @@ window.mcpApps = {
 
 Then interact with the prefecture selector / quick-action buttons as a user would — the dashboard calls `window.mcpApps.callTool` on every navigation, so each click renders a new view with the injected data. This validated `bar_compare`, `radar`, and `choropleth` (maplibre-gl + OSM tiles) all render correctly post the React 19 pinning fix in `package.json`. Final submission screenshots should still be recaptured against a live connection per the note in §6 (screenshots are uploaded through the portal, not committed to the repo).
 
-## 9. What we deliberately did not do
+## 9. 2026-07-22 UX & spec-compliance pass
+
+A follow-up pass focused on user experience, artifact portability, and closing latent surface-consistency gaps found while re-reading the current MCP spec and Directory review criteria against this codebase:
+
+- **`AGRIOPS_ALLOWED_HOSTS`** (`src/lib/config.ts`, `src/server/transport-http.ts`): the Streamable HTTP DNS-rebinding host allowlist previously only trusted `MCP_BASE_URL`'s own host. Cloud Run exposes both a stable custom domain (if configured) and its own per-revision `*.run.app` URL; a request arriving on the second host was rejected with `421` even though the service was otherwise reachable — the root cause of the "live endpoint reachable anonymously" gap tracked in §4. `AGRIOPS_ALLOWED_HOSTS` (comma-separated, no scheme) lets an operator list additional trusted hostnames.
+- **Dashboard/tool-surface consistency**: the AgriOps Dashboard MCP App (`ui://agriops/dashboard.html`) and several prompts (`strategy_room_dashboard`, `market_trend_briefing`, ...) called five tools (`get_municipality_stats`, `get_labor_shortage_stats`, `get_ssw_crop_compatibility`, `get_livestock_regional_stats`, `get_market_price`) that simply did not exist on the default 8-tool surface, because they were entirely gated behind `AGRIOPS_ENABLE_LEGACY_TOOLS`. A Directory reviewer opening the dashboard with no env flags set would have hit "tool not found" on every quick-action click. Fixed by registering these five tools **unconditionally**, but with `_meta["ui/visibility"] = ["app"]` when the legacy flag is off — the same LLM-invisible-but-UI-callable pattern already used for the Phase 5 app-only helpers. `.well-known/mcp-server.json` and `src/server/well-known.ts` were updated to report each tool's *runtime* visibility (`RegisteredSurface.appOnlyToolNames`) rather than only the static catalog entry, so the Server Card doesn't claim these are model-visible when they aren't. Prompts that need extended/legacy-only tools are now gated behind the same flags, and `strategy_room_dashboard` degrades its tool-call instruction gracefully (falls back to "just open the dashboard") when the flag combination it needs isn't set. Covered by `tests/conformance/directory-surface.test.ts`.
+- **`create_staff_deploy_plan` `outputSchema`**: the tool previously had no `outputSchema`, despite every other default-tier tool having one. Added, covering both the successful-draft and Form-elicitation-declined response shapes.
+- **Portable output artifacts** (the main UX ask behind this pass — "take this artifact home"): `search_farmland` and `nearby_farms` now embed a GeoJSON `FeatureCollection` resource block; `get_pesticide_rules` and `create_staff_deploy_plan` now embed a CSV resource block (RFC 4180, shared serialiser in `src/lib/csv.ts`). These use the MCP Spec §6.4 `EmbeddedResourceSchema` shape (inline `resource` content block, not a `resource_link` the client would have to fetch separately) since the data is generated per-call and has no stable URI. Purely additive — clients that don't render embedded resources just ignore the extra content block. See `src/lib/artifacts.ts`, `tests/conformance/artifacts.test.ts`.
+- **Dashboard CSV export button**: the dashboard header gained a "CSV ダウンロード" button that serialises whatever tabular data is currently rendered (any `viz_hint` with a `dataPath` array, or the DataTable fallback) into CSV client-side and triggers a browser download. Per "Interoperability over optimization," some MCP Apps hosts sandbox the iframe in a way that silently drops anchor-click downloads, so the same click also opens a read-only textarea with a "コピー" (copy) button as a working fallback. See `src/ui/csv-export.ts`.
+- **Icon and screenshots**: see the checklist table above (§4) — `assets/logo.png` was a mislabeled JPEG, now a true PNG; 5 dashboard screenshots captured via the new `npm run capture:screenshots` script.
+
+## 10. What we deliberately did not do
 
 - **No server split.** One adapter-based server, gated tool tiers — not `agriops-core` + `agriops-ops`. Matches "convergence over choice."
 - **No OAuth 2.1/PKCE build-out for the default surface.** Not required for an anonymous public-data connector; would add complexity with no reviewer benefit at this tier.

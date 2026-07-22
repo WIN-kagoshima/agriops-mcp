@@ -28,6 +28,7 @@ export interface WellKnownOptions {
  * and update CHANGELOG.md.
  */
 export function buildServerCard(options: WellKnownOptions): Record<string, unknown> {
+  const appOnly = new Set(options.surface.appOnlyToolNames ?? []);
   const tools = options.surface.tools
     .filter((name) => TOOL_METADATA[name])
     .map((name) => {
@@ -37,7 +38,12 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
         name,
         sideEffect: meta.sideEffect,
         introduced: meta.introduced,
-        visibility: meta.visibility,
+        // Report the *runtime* visibility, not just the static catalog
+        // entry — a handful of tools (dashboard-helper legacy tools, see
+        // RegisteredSurface.appOnlyToolNames) are catalogued as
+        // "model" for self-hosted operators with AGRIOPS_ENABLE_LEGACY_TOOLS=true
+        // but register as LLM-invisible app tools otherwise.
+        visibility: appOnly.has(name) ? "app" : meta.visibility,
         annotations: meta.annotations,
       };
     });
@@ -165,12 +171,12 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
     },
     /** Test-suite summary baked at build time; updated on each release. */
     eval: {
-      testFiles: 48,
-      testCases: 263,
+      testFiles: 49,
+      testCases: 270,
       scenarios: 23,
-      conformanceChecks: 16,
-      lastRun: "2026-07-16",
-      note: "v1.14.2: developer-trust distribution content shipped — Zenn/dev.to 7-primitives design writeups, Show HN draft, note.com industry writeup, README Demo/Roadmap sections, awesome-mcp-servers and awesome-agriculture PRs opened. v1.14.1 verified the Anthropic Directory submission packet locally — 8-tool default surface confirmed via Inspector tools/list + tools/call (all isError: false), description audit against prompt-injection rejection patterns passed. v1.14.0 shipped craft signals: fast-check property-based tests (geo, pagination cursor codec), schema-level non-empty `attribution` requirement across all licensed-source output types, tinybench p50/p95/p99 for search_farmland/get_weather_1km, Inspector tools/list hard-gated in CI",
+      conformanceChecks: 17,
+      lastRun: "2026-07-22",
+      note: "v1.15.0: Directory UX/spec-compliance pass — AGRIOPS_ALLOWED_HOSTS for multi-hostname Cloud Run deployments; dashboard-helper tools now register unconditionally as ui/visibility:['app'] (Server Card reports runtime visibility, not just the static catalog) fixing a tool-not-found gap in the MCP Apps dashboard/prompts on the default surface; create_staff_deploy_plan gained an outputSchema; search_farmland/nearby_farms/get_pesticide_rules/create_staff_deploy_plan now embed a GeoJSON or CSV resource block ('take this artifact home'); dashboard gained a CSV-download button with a copy-to-clipboard fallback; assets/logo.png (was a mislabeled JPEG) re-encoded to a true PNG; 5 dashboard screenshots captured via npm run capture:screenshots. v1.14.2 shipped developer-trust distribution content (Zenn/dev.to 7-primitives writeups, Show HN draft, note.com writeup, README Demo/Roadmap, awesome-list PRs). v1.14.1 verified the Anthropic Directory submission packet locally. v1.14.0 shipped craft signals (fast-check PBT, non-empty attribution schema, tinybench, CI hard gate).",
       repository: "https://github.com/WIN-kagoshima/agriops-mcp/tree/main/tests",
     },
     /**

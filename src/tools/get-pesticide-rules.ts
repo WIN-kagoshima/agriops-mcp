@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { pesticideRulesCsvResource } from "../lib/artifacts.js";
 import { safeErrorMessage } from "../lib/errors.js";
 import { enforceSizeCap } from "../lib/tool-size.js";
 import type { Deps } from "../server/deps.js";
@@ -75,6 +76,9 @@ export function registerGetPesticideRules(server: McpServer, deps: Deps): void {
             content: [
               { type: "text" as const, text },
               { type: "text" as const, text: validated.attribution },
+              ...(validated.rules.length > 0
+                ? [pesticideRulesCsvResource(meta.name, validated.rules)]
+                : []),
             ],
             structuredContent: validated as unknown as Record<string, unknown>,
           },

@@ -169,7 +169,7 @@ Node v24, darwin/arm64, [tinybench](https://github.com/tinylibs/tinybench) 使�
 ## テストカバレッジ
 
 ```
-テストファイル: 48   テストケース: 263
+テストファイル: 49   テストケース: 270
 ```
 
 `npm test` で全テストを実行できます（外部ネットワーク不要）。

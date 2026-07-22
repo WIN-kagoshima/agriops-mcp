@@ -5,6 +5,24 @@ const ConfigSchema = z.object({
   logLevel: z.enum(["debug", "info", "warn", "error"]).default("info"),
   baseUrl: z.string().url().default("http://localhost:3001"),
   openMeteoBaseUrl: z.string().url().default("https://api.open-meteo.com/v1"),
+  /**
+   * Extra hostnames (no scheme, optionally with `:port`) accepted by the
+   * Streamable HTTP `/mcp` endpoint's DNS-rebinding allowlist, in addition
+   * to `baseUrl`'s own host. Cloud Run exposes both a stable custom
+   * `MCP_BASE_URL` (if set) and its own revision/service URL
+   * (`*.run.app`); without this, requests that arrive on the `run.app`
+   * host get rejected with 421 even though the service itself is
+   * reachable. Comma-separated, e.g. "agriops-mcp-abc123-an.a.run.app".
+   */
+  allowedHosts: z
+    .string()
+    .default("")
+    .transform((v) =>
+      v
+        .split(",")
+        .map((h) => h.trim())
+        .filter((h) => h.length > 0),
+    ),
   emaffSnapshotPath: z.string().default("./snapshots/emaff-fude-kagoshima.sqlite"),
   famicSnapshotPath: z.string().default("./snapshots/famic-pesticide-2026.sqlite"),
   iotSnapshotPath: z.string().default("./snapshots/iot-unified.sqlite"),
@@ -53,6 +71,7 @@ export function loadConfig(): Config {
     logLevel: readEnv("LOG_LEVEL"),
     baseUrl: readEnv("MCP_BASE_URL"),
     openMeteoBaseUrl: readEnv("OPEN_METEO_BASE_URL"),
+    allowedHosts: readEnv("AGRIOPS_ALLOWED_HOSTS"),
     emaffSnapshotPath: readEnv("EMAFF_SNAPSHOT_PATH"),
     famicSnapshotPath: readEnv("FAMIC_SNAPSHOT_PATH"),
     iotSnapshotPath: readEnv("IOT_SNAPSHOT_PATH"),

@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { farmlandGeoJsonResource } from "../lib/artifacts.js";
 import { safeErrorMessage } from "../lib/errors.js";
 import { isValidLatLng } from "../lib/geo.js";
 import { enforceSizeCap } from "../lib/tool-size.js";
@@ -79,6 +80,9 @@ export function registerNearbyFarms(server: McpServer, deps: Deps): void {
             content: [
               { type: "text" as const, text },
               { type: "text" as const, text: validated.attribution },
+              ...(validated.fields.length > 0
+                ? [farmlandGeoJsonResource(meta.name, validated.fields)]
+                : []),
             ],
             structuredContent: validated as unknown as Record<string, unknown>,
           },
