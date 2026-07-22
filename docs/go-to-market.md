@@ -109,10 +109,10 @@ npx smithery mcp publish "https://agriops-mcp-n5vdix22hq-an.a.run.app/mcp" \
 ### 4.1 npm 公開
 
 ```bash
-# 1. リポジトリ Variables: PUBLISH_TO_NPM=true
-# 2. リポジトリ Secrets: NPM_TOKEN（npm の granular token 等）
-# 3. タグプッシュで自動公開（package.json / CHANGELOG と一致させる）
-git tag v1.10.2   # or current version
+# 1. npm trusted publishing（OIDC）を Trusted Publisher として一度だけ設定する
+#    （npm-first-publish.md §A — NPM_TOKEN / PUBLISH_TO_NPM は不要・不使用）
+# 2. タグプッシュで自動公開（package.json / CHANGELOG と一致させる）
+git tag v1.15.3   # or current version
 git push origin v1.10.2
 # → release.yml が npm publish --access public --provenance を実行
 ```
@@ -316,7 +316,7 @@ AgriOps の構造を「MCP サーバー開発のベストプラクティス」�
 
 ## 即時アクションリスト (今週中)
 
-- [ ] npm publish を有効化（[npm-first-publish.md](npm-first-publish.md): `PUBLISH_TO_NPM=true` + `NPM_TOKEN` → タグプッシュ） — npm 上は `1.11.0` で停滞中、リポジトリは `1.14.2`。タグプッシュで追従が必要
+- [ ] npm publish を有効化（[npm-first-publish.md](npm-first-publish.md): npm trusted publishing を Trusted Publisher として設定 → タグプッシュ）
 - [ ] GitHub Topics / Description / Social Preview を設定
 - [ ] GitHub Discussions を有効化
 - [ ] Smithery に Cloud Run URL を登録

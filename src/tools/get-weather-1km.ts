@@ -54,7 +54,7 @@ export function registerGetWeather1km(server: McpServer, deps: Deps): void {
         "Agricultural indicators are also included: ET₀ evapotranspiration (mm, FAO-56 Penman-Monteith, " +
         "key for irrigation scheduling), soil temperature at 0 cm (°C, for germination/root decisions), " +
         "and volumetric soil moisture 0–1 cm (m³/m³, for field operation timing). " +
-        "An `attribution` string MUST be quoted when surfacing the data to end users. " +
+        "The result includes an `attribution` string identifying the data source and its license. " +
         "Read-only and idempotent; safe to retry.",
       inputSchema: inputSchema.shape,
       outputSchema: WeatherForecastSchema.shape,

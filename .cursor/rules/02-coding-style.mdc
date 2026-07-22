@@ -7,7 +7,7 @@ globs: src/**/*.ts, src/**/*.tsx, scripts/**/*.ts, server.ts, tests/**/*.ts
 
 ## Module system
 
-- Node 20+, TypeScript ESM, `moduleResolution: NodeNext`.
+- Node 22+ (`package.json` `engines.node`), TypeScript ESM, `moduleResolution: NodeNext`.
 - Imports use the `.js` extension for local files (e.g. `import { x } from "./foo.js";`).
 - Use `node:` protocol for Node built-ins: `import { readFile } from "node:fs/promises";`.
 

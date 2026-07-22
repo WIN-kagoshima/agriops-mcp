@@ -29,7 +29,8 @@ describe("Phase 5 MCP Apps UI", () => {
     const read = await client.readResource({ uri: "ui://agriops/dashboard.html" });
     expect(read.contents).toHaveLength(1);
     const c = read.contents[0] as { mimeType?: string; text?: string };
-    expect(c.mimeType).toBe("text/html");
+    // MCP Apps Extension 2026-01-26 resource MIME type, not bare "text/html".
+    expect(c.mimeType).toBe("text/html;profile=mcp-app");
     expect(c.text).toMatch(/<!doctype html>/i);
 
     await client.close();
@@ -63,6 +64,39 @@ describe("Phase 5 MCP Apps UI", () => {
     // Fallback: even on hosts without MCP Apps the LLM gets a useful text summary.
     const content = result.content as Array<{ type: string; text?: string }>;
     expect(content[0]?.text).toMatch(/dashboard/i);
+
+    await client.close();
+    await server.close();
+  });
+
+  it("open_dashboard's tool definition carries official MCP Apps ui metadata (nested + legacy flat)", async () => {
+    const config = loadConfig();
+    const logger = createLogger({ level: "warn" });
+    const { server } = createServer({
+      config,
+      logger,
+      version: "0.5.0-test",
+      overrides: {
+        weather: new OpenMeteoWeatherAdapter({ fetchImpl: async () => new Response("{}") }),
+      },
+    });
+
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: "test", version: "0.0.1" }, { capabilities: {} });
+    await Promise.all([client.connect(clientTransport), server.connect(serverTransport)]);
+
+    const list = await client.listTools();
+    const tool = list.tools.find((t) => t.name === "open_dashboard");
+    expect(tool).toBeDefined();
+    const toolMeta = (tool as { _meta?: Record<string, unknown> })._meta ?? {};
+    expect((toolMeta.ui as { resourceUri?: string } | undefined)?.resourceUri).toBe(
+      "ui://agriops/dashboard.html",
+    );
+    // Deprecated flat key, mirrored automatically by `registerAppTool` for
+    // hosts that have not upgraded to the nested `_meta.ui` format.
+    expect(toolMeta["ui/resourceUri"]).toBe("ui://agriops/dashboard.html");
+    // Existing OpenAI Apps SDK compatibility key kept alongside.
+    expect(toolMeta["openai/outputTemplate"]).toBe("ui://agriops/dashboard.html");
 
     await client.close();
     await server.close();

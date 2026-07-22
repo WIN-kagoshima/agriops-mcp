@@ -14,7 +14,7 @@ Why stateless: scale-to-zero containers cannot retain in-memory session state ac
 ## Container
 
 - Multi-stage Dockerfile.
-- Final stage is a minimal Node 20 distroless image (`gcr.io/distroless/nodejs20-debian12:nonroot`).
+- Final stage is a minimal Node 22 distroless image (`gcr.io/distroless/nodejs22-debian12:nonroot`), matching `package.json` `engines.node`.
 - The `snapshots/*.sqlite` files are baked in at build time (or downloaded from GCS in the build step) so the runtime needs no write filesystem.
 - Image must run as a non-root user.
 

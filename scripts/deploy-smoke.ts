@@ -5,6 +5,8 @@ interface Options {
   expectedVersion?: string;
   healthPath: string;
   metricsBearer?: string;
+  expectToolCount?: number;
+  callTool: boolean;
 }
 
 interface SmokeResult {
@@ -21,7 +23,7 @@ interface RpcResponse {
 }
 
 function parseArgs(argv: string[]): Options {
-  const options: Options = { allowNotReady: false, healthPath: "/healthz" };
+  const options: Options = { allowNotReady: false, healthPath: "/healthz", callTool: false };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]?.trim();
     if (arg === undefined || arg === "") continue;
@@ -31,6 +33,10 @@ function parseArgs(argv: string[]): Options {
     }
     if (arg === "--allow-not-ready") {
       options.allowNotReady = true;
+      continue;
+    }
+    if (arg === "--call-tool") {
+      options.callTool = true;
       continue;
     }
     const eq = arg.indexOf("=");
@@ -61,6 +67,10 @@ function parseArgs(argv: string[]): Options {
         options.metricsBearer = next;
         if (inlineValue === undefined) i++;
         break;
+      case "--expect-tool-count":
+        options.expectToolCount = Number.parseInt(next, 10);
+        if (inlineValue === undefined) i++;
+        break;
       default:
         throw new Error(`Unknown argument: ${key}`);
     }
@@ -81,6 +91,9 @@ Options:
   --expected-version <v>  Require /livez or Server Card to report this version.
   --health-path <path>    Liveness path to check. Default: /healthz.
   --metrics-bearer <tok>  Also check /metrics using this bearer token.
+  --expect-tool-count <n> Require tools/list to return exactly n model-visible tools.
+  --call-tool             Also call get_weather_1km and assert isError:false (real functional check,
+                           not just tools/list metadata).
 `);
 }
 
@@ -169,6 +182,29 @@ function namesFromList(parsed: unknown, key: "tools" | "prompts" | "resources"):
   return items
     .filter(isRecord)
     .map((item) => String(key === "resources" ? item.uri : item.name))
+    .filter(Boolean)
+    .sort();
+}
+
+/**
+ * `tools/list` also returns app-only helpers that carry the runtime
+ * `_meta["ui/visibility"] = ["app"]` hint (dashboard-internal tools, hidden
+ * from the LLM by hosts that honor the hint — see
+ * `tests/conformance/directory-surface.test.ts`). Filter those out to count
+ * the actual model-visible surface a reviewer's LLM would see, not the raw
+ * registered-tool count.
+ */
+function modelVisibleToolNames(parsed: unknown): string[] {
+  const response = resultObject(parsed);
+  const items = Array.isArray(response.tools) ? response.tools : [];
+  return items
+    .filter(isRecord)
+    .filter((item) => {
+      const meta = isRecord(item._meta) ? item._meta : undefined;
+      const visibility = meta?.["ui/visibility"];
+      return !(Array.isArray(visibility) && visibility.includes("app"));
+    })
+    .map((item) => String(item.name))
     .filter(Boolean)
     .sort();
 }
@@ -288,6 +324,36 @@ async function main(): Promise<void> {
         .join(",")}`,
     ),
   );
+
+  if (options.expectToolCount !== undefined) {
+    const modelVisible = modelVisibleToolNames(toolsList.parsed);
+    results.push(
+      result(
+        "MCP tools/list model-visible count",
+        toolsList.status === 200 && modelVisible.length === options.expectToolCount,
+        `expected=${options.expectToolCount}, observed=${modelVisible.length}, tools=${modelVisible.join(",")} (raw tools/list count=${toolNames.length})`,
+      ),
+    );
+  }
+
+  if (options.callTool) {
+    const call = await callRpc(
+      baseUrl,
+      "tools/call",
+      { name: "get_weather_1km", arguments: { lat: 35.6812, lng: 139.7671 } },
+      5,
+      defaultHeaders,
+    );
+    const callResponse = resultObject(call.parsed);
+    const callOk = call.status === 200 && callResponse.isError !== true;
+    results.push(
+      result(
+        "tools/call get_weather_1km",
+        callOk,
+        `status=${call.status}, isError=${String(callResponse.isError)}`,
+      ),
+    );
+  }
 
   const promptsList = await callRpc(baseUrl, "prompts/list", {}, 3, defaultHeaders);
   const promptNames = namesFromList(promptsList.parsed, "prompts");

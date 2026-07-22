@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Support — AgriOps MCP</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="AgriOps MCP support and vulnerability reporting in 日本語 / English / Bahasa Indonesia." />
+  <link rel="icon" href="../assets/logo.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <img src="../assets/logo.png" alt="AgriOps MCP logo" />
+      <div class="site-title"><a href="../">AgriOps MCP — Public Docs</a></div>
+    </header>
+    <nav class="site-nav">
+      <a href="../">Home</a>
+      <a href="../privacy-policy/">Privacy Policy</a>
+      <a href="./">Support</a>
+      <a href="../data-license/">Data License</a>
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp">GitHub</a>
+    </nav>
+
+    <h1>Support — AgriOps MCP</h1>
+    <p class="muted">最終更新 / Last updated / Terakhir diperbarui: 2026-07-22 (v1.15.3)</p>
+
+    <h2 class="lang-heading">日本語</h2>
+
+    <h3>サポートが必要なとき</h3>
+    <ul>
+      <li>使い方・ツールの挙動に関する質問 →
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/issues">GitHub Issues</a>
+        で「question」ラベルを付けて投稿してください。</li>
+      <li>不具合報告 → 再現手順、使用したツール名と入力、期待した結果と実際の結果を含めて
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/issues">GitHub Issues</a> に投稿してください。</li>
+      <li>ドキュメント → <a href="https://github.com/WIN-kagoshima/agriops-mcp#readme">README</a>、
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/tree/main/docs">docs/</a> フォルダ、
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/api-reference.md">API リファレンス</a>
+        を参照してください。</li>
+    </ul>
+
+    <h3>脆弱性の報告（セキュリティ）</h3>
+    <p><strong>公開の GitHub Issue は使わないでください。</strong></p>
+    <p>
+      <code>info@win-g-c.com</code> 宛に、以下を含めてメールしてください:
+    </p>
+    <ul>
+      <li>問題の説明</li>
+      <li>再現手順（可能であれば最小限のMCPクライアントのやり取りログ）</li>
+      <li>発生した <code>package.json</code> の <code>version</code> と使用したトランスポート（<code>stdio</code> または <code>streamable-http</code>）</li>
+      <li>可能であれば対処案</li>
+    </ul>
+    <p>
+      3営業日以内に受領を連絡し、30日以内に修正または対処方法の文書化を目指します。詳細は
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/SECURITY.md">SECURITY.md</a> を参照してください。
+    </p>
+
+    <h3>対応バージョン</h3>
+    <table>
+      <thead><tr><th>バージョン</th><th>状態</th></tr></thead>
+      <tbody>
+        <tr><td><code>1.x</code></td><td>サポート対象（最新安定版は <code>package.json</code> を参照）</td></tr>
+        <tr><td><code>0.5.x</code></td><td>セキュリティパッチのみ</td></tr>
+        <tr><td><code>0.4.x</code> 以前</td><td>サポート終了</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="lang-heading">English</h2>
+
+    <h3>When you need support</h3>
+    <ul>
+      <li>Usage / tool-behaviour questions → open a
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/issues">GitHub Issue</a> with the "question" label.</li>
+      <li>Bug reports → open a
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/issues">GitHub Issue</a> including reproduction
+        steps, the tool name and input you used, and the expected vs. actual result.</li>
+      <li>Documentation → see the
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp#readme">README</a>, the
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/tree/main/docs">docs/</a> folder, and the
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/api-reference.md">API reference</a>.</li>
+    </ul>
+
+    <h3>Reporting a vulnerability (security)</h3>
+    <p><strong>Please do not open a public GitHub issue.</strong></p>
+    <p>Email <code>info@win-g-c.com</code> with:</p>
+    <ul>
+      <li>A description of the issue.</li>
+      <li>Steps to reproduce, ideally with a minimal MCP client transcript.</li>
+      <li>The version (<code>package.json</code> <code>version</code>) and transport (<code>stdio</code> or
+        <code>streamable-http</code>) where you observed it.</li>
+      <li>Any suggested mitigation.</li>
+    </ul>
+    <p>
+      We will acknowledge within 3 business days and aim to ship a fix or a documented mitigation within 30
+      days. Full hardening notes are in
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/SECURITY.md">SECURITY.md</a>.
+    </p>
+
+    <h3>Supported versions</h3>
+    <table>
+      <thead><tr><th>Version</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><code>1.x</code></td><td>Supported (see <code>package.json</code> for current stable)</td></tr>
+        <tr><td><code>0.5.x</code></td><td>Security patches only</td></tr>
+        <tr><td><code>0.4.x</code> and earlier</td><td>End of life</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="lang-heading">Bahasa Indonesia</h2>
+
+    <h3>Kapan Anda membutuhkan dukungan</h3>
+    <ul>
+      <li>Pertanyaan penggunaan / perilaku tool → buka
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/issues">GitHub Issue</a> dengan label "question".</li>
+      <li>Laporan bug → buka
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/issues">GitHub Issue</a> yang menyertakan langkah
+        reproduksi, nama tool dan input yang Anda gunakan, serta hasil yang diharapkan vs. hasil aktual.</li>
+      <li>Dokumentasi → lihat
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp#readme">README</a>, folder
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/tree/main/docs">docs/</a>, dan
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/api-reference.md">referensi API</a>.</li>
+    </ul>
+
+    <h3>Melaporkan kerentanan (keamanan)</h3>
+    <p><strong>Jangan membuka GitHub issue publik.</strong></p>
+    <p>Kirim email ke <code>info@win-g-c.com</code> yang berisi:</p>
+    <ul>
+      <li>Deskripsi masalah.</li>
+      <li>Langkah reproduksi, idealnya dengan transkrip minimal klien MCP.</li>
+      <li>Versi (<code>version</code> pada <code>package.json</code>) dan transport (<code>stdio</code> atau
+        <code>streamable-http</code>) tempat Anda mengamati masalah tersebut.</li>
+      <li>Saran mitigasi jika ada.</li>
+    </ul>
+    <p>
+      Kami akan mengonfirmasi penerimaan dalam 3 hari kerja dan berupaya merilis perbaikan atau mitigasi
+      terdokumentasi dalam 30 hari. Catatan pengamanan lengkap ada di
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/SECURITY.md">SECURITY.md</a>.
+    </p>
+
+    <h3>Versi yang didukung</h3>
+    <table>
+      <thead><tr><th>Versi</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><code>1.x</code></td><td>Didukung (lihat <code>package.json</code> untuk versi stabil saat ini)</td></tr>
+        <tr><td><code>0.5.x</code></td><td>Hanya patch keamanan</td></tr>
+        <tr><td><code>0.4.x</code> dan sebelumnya</td><td>Tidak lagi didukung (end of life)</td></tr>
+      </tbody>
+    </table>
+
+    <footer class="site-footer">
+      <p>© WIN Kagoshima — <a href="https://github.com/WIN-kagoshima/agriops-mcp">agriops-mcp</a> (Apache-2.0)</p>
+    </footer>
+  </div>
+</body>
+</html>

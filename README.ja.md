@@ -85,13 +85,27 @@ npm run start:http        # $PORT (default 3001) で待ち受け
 
 ### デプロイ済み参照エンドポイント
 
-初回の本番 Cloud Run デプロイは以下で稼働しています。
+同一のサーバーイメージを使う 2 つの Cloud Run デプロイがあります（IAM 設定と環境変数のみ異なります）。
+
+**運用用（IAM 保護）:**
 
 ```text
 https://agriops-mcp-n5vdix22hq-an.a.run.app
 ```
 
-デフォルトでは IAM 保護されています。運用者は次で確認できます。
+**公開用（匿名アクセス・デフォルト 8 ツール面。MCP registry / Anthropic Connectors Directory 向け）:**
+
+```text
+https://agriops-mcp-public-731026511067.asia-northeast1.run.app
+```
+
+`mcp-service-492010` プロジェクトの専用 `agriops-mcp-public` Cloud Run サービス（[`cloudbuild.public.yaml`](cloudbuild.public.yaml) / [`.github/workflows/deploy-public.yml`](.github/workflows/deploy-public.yml) でビルド。詳細は
+[`docs/anthropic-directory-submission.md`](docs/anthropic-directory-submission.md)）。
+`AGRIOPS_ENABLE_EXTENDED_TOOLS` / `AGRIOPS_ENABLE_LEGACY_TOOLS` は有効化せず、運用用と同じ rate limit・
+Host/Origin allowlist を適用します。eMAFF/FAMIC のスナップショットは公式公開データ（筆ポリゴン公開サイトの
+FlatGeobuf、FAMIC の CSV）から再構築した実データで、テスト用フィクスチャではありません。
+
+運用用デプロイは次で確認できます。
 
 ```bash
 TOKEN="$(gcloud auth print-identity-token)"
@@ -165,6 +179,14 @@ Node v24, darwin/arm64, [tinybench](https://github.com/tinylibs/tinybench) 使�
 | FAMIC 農薬登録 | オープンデータ | SQLite snapshot をローカルでビルド |
 | 気象庁防災 XML | 気象業務法に基づく利用 | Phase 1+ で短期キャッシュのみ |
 | WAGRI | 会員規約 | **本 OSS リリースでは対象外**（Phase 7+ の別パッケージ） |
+
+## セキュリティ & プライバシー
+
+- ツール出力・ログ・エラー・UI バンドルに秘密情報を含めません。
+- Streamable HTTP transport で DNS rebinding 対策を有効化しています。
+- HTTP transport に Origin / Host allowlist を設定しています。
+- 脆弱性報告は [SECURITY.md](./SECURITY.md)、本サーバーが処理・保持するデータの詳細は [docs/privacy-policy.md](docs/privacy-policy.md) を参照してください。
+- 公開 HTTPS 版（日本語 / English / Bahasa Indonesia）を GitHub Pages で公開しています: [Privacy Policy](https://win-kagoshima.github.io/agriops-mcp/privacy-policy/) · [Support](https://win-kagoshima.github.io/agriops-mcp/support/) · [Data License](https://win-kagoshima.github.io/agriops-mcp/data-license/)
 
 ## テストカバレッジ
 

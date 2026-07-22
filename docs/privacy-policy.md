@@ -1,8 +1,13 @@
 # Privacy Policy — AgriOps MCP
 
-_Last updated: 2026-07-16 (v1.14.2)_
+_Last updated: 2026-07-22 (v1.15.3)_
 
-This policy covers the `@sugukuru/agriops-mcp` server (the "Server"), operated by WIN Kagoshima ("we", "us"), including the reference Cloud Run deployment referenced in [README.md](../README.md) and any self-hosted deployment running unmodified server code.
+> **Public HTTPS copy**: this same content is published in 日本語 → English → Bahasa Indonesia at
+> <https://win-kagoshima.github.io/agriops-mcp/privacy-policy/> (GitHub Pages, see
+> [`.github/workflows/pages.yml`](../.github/workflows/pages.yml)). That page is the canonical URL to
+> hand to a registry or reviewer; this file is the source-controlled English original it's generated from.
+
+This policy covers the `@sugukuru/agriops-mcp` server (the "Server"), operated by WIN Kagoshima ("we", "us"), including both reference Cloud Run deployments referenced in [README.md](../README.md) — the IAM-protected operational deployment and the anonymous public deployment used for MCP registry / Anthropic Connectors Directory listing — and any self-hosted deployment running unmodified server code.
 
 ## 1. What the Server does
 
@@ -40,4 +45,6 @@ Tool results include data from Open-Meteo (CC-BY 4.0), 農林水産省 eMAFF, FA
 
 ## 6. Contact
 
-Security or privacy questions: `info@win-g-c.com` (see [SECURITY.md](../SECURITY.md) for the vulnerability-reporting process). This policy is versioned in this repository; changes are visible in `git log docs/privacy-policy.md`.
+Security or privacy questions: `info@win-g-c.com` (see [SECURITY.md](../SECURITY.md), or the public
+[Support page](https://win-kagoshima.github.io/agriops-mcp/support/), for the vulnerability-reporting
+process). This policy is versioned in this repository; changes are visible in `git log docs/privacy-policy.md`.

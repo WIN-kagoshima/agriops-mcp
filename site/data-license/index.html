@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Data License — AgriOps MCP</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="AgriOps MCP data source licenses and attribution requirements." />
+  <link rel="icon" href="../assets/logo.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <img src="../assets/logo.png" alt="AgriOps MCP logo" />
+      <div class="site-title"><a href="../">AgriOps MCP — Public Docs</a></div>
+    </header>
+    <nav class="site-nav">
+      <a href="../">Home</a>
+      <a href="../privacy-policy/">Privacy Policy</a>
+      <a href="../support/">Support</a>
+      <a href="./">Data License</a>
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp">GitHub</a>
+    </nav>
+
+    <h1>Data License — AgriOps MCP</h1>
+    <p class="muted">最終更新 / Last updated / Terakhir diperbarui: 2026-07-22 (v1.15.3)</p>
+
+    <div class="card">
+      <p>
+        <strong>日本語:</strong> 本サーバーが利用する各データソースには、明確なライセンスと帰属表示の
+        要件があります。以下は英語の技術リファレンス表です（法令・機関名の誤訳を避けるため原文のまま
+        掲載）。最新版は常に
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/data-license.md">docs/data-license.md</a>
+        を正とします。
+      </p>
+      <p>
+        <strong>Bahasa Indonesia:</strong> Setiap sumber data yang digunakan server ini memiliki lisensi
+        dan persyaratan atribusi yang jelas. Tabel referensi teknis di bawah disajikan dalam bahasa Inggris
+        (untuk menghindari kesalahan penerjemahan nama lembaga/hukum resmi). Sumber otoritatif dan
+        selalu terbaru adalah
+        <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/data-license.md">docs/data-license.md</a>.
+      </p>
+    </div>
+
+    <h2 class="lang-heading">English — data source reference</h2>
+    <p>Every data source consumed by AgriOps MCP has a documented license. This table is generated from
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/data-license.md">docs/data-license.md</a>,
+      the canonical, version-controlled reference; <code>.well-known/mcp-server.json</code>'s
+      <code>data_sources</code> field derives from the same source list.</p>
+
+    <h3>In-scope sources (default + extended surface)</h3>
+    <table>
+      <thead><tr><th>Source</th><th>License</th><th>Redistribution</th><th>Caching</th><th>Attribution required</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Open-Meteo</strong></td><td>CC-BY 4.0</td><td>Allowed</td><td>1 hour cache</td><td>Yes — "Weather data by Open-Meteo.com (CC-BY 4.0)"</td></tr>
+        <tr><td><strong>eMAFF Fude Polygon</strong></td><td>Public open data (農林水産省 / open.fude.maff.go.jp)</td><td>Allowed</td><td>OK</td><td>Yes — "Source: 農林水産省 eMAFF 筆ポリゴン"</td></tr>
+        <tr><td><strong>FAMIC pesticide registrations</strong></td><td>Public open data (FAMIC 農薬登録情報)</td><td>Allowed</td><td>OK</td><td>Yes — "Source: FAMIC 農薬登録情報"</td></tr>
+        <tr><td><strong>JMA disaster XML feed</strong></td><td>Japan Meteorological Business Act</td><td>Conditional</td><td>Short cache only (≤10 min)</td><td>Yes — "気象庁 + 発表時刻 + 改変有無"</td></tr>
+        <tr><td><strong>e-Stat API</strong> (legacy tier, opt-in)</td><td>政府統計API利用規約</td><td>API access only (no redistribution)</td><td>24h cache OK</td><td>Yes — official e-Stat attribution string</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Out-of-scope sources (not in this OSS release)</h3>
+    <table>
+      <thead><tr><th>Source</th><th>License</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><strong>WAGRI</strong></td><td>Member agreement</td><td>Phase 7+ only. Redistribution prohibited; only allowed via an authenticated user-token flow.</td></tr>
+        <tr><td><strong>Sentinel-2 / SAGRI</strong></td><td>Various</td><td>Phase 7+ only. The current <code>compute_ndvi_stub</code> tool is a deterministic placeholder.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Operational requirements</h3>
+    <ol>
+      <li><strong>Adapters must populate <code>attribution</code>.</strong> Every adapter's result type carries an <code>attribution: string</code> field, copied into <code>structuredContent.attribution</code> so the LLM can quote it when summarising the data to end users.</li>
+      <li><strong>The MCP Apps UI must display attribution near the data.</strong> The dashboard shows attribution in the map footer and in the weather overlay tooltip.</li>
+      <li><strong>Adding a new data source requires four updates:</strong> the canonical doc, <code>.well-known/mcp-server.json</code> <code>data_sources</code>, the adapter implementation with <code>attribution</code>, and a unit test asserting <code>attribution</code> is non-empty.</li>
+    </ol>
+
+    <p class="muted">
+      For the full revision history (when an upstream license changed and how we responded), see the
+      "Revisions" table at the bottom of
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/data-license.md">docs/data-license.md</a>.
+    </p>
+
+    <footer class="site-footer">
+      <p>© WIN Kagoshima — <a href="https://github.com/WIN-kagoshima/agriops-mcp">agriops-mcp</a> (Apache-2.0)</p>
+    </footer>
+  </div>
+</body>
+</html>

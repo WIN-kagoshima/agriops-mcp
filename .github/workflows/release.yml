@@ -2,10 +2,13 @@ name: Release
 
 # Triggered by pushing a SemVer-prefixed tag (e.g. `v0.5.0`).
 # Builds the package, runs the full test suite, builds the UI bundle,
-# and publishes a GitHub Release with the dashboard.html attached.
-#
-# Publishing to npm is disabled by default  Eflip the `publish-npm`
-# input or wire the `NPM_TOKEN` secret if/when you want it.
+# publishes a GitHub Release with the dashboard.html attached, and — for
+# stable (non-prerelease) tags — publishes to npm via **npm trusted
+# publishing** (OIDC, no long-lived NPM_TOKEN). This requires the package to
+# be configured as a Trusted Publisher for this exact repo + workflow file at
+# https://www.npmjs.com/package/@sugukuru/agriops-mcp/access (Publishing
+# access tab) before the first trusted-publish run. See the
+# public-release-hardening plan §5 for the migration rationale.
 
 on:
   push:
@@ -36,6 +39,14 @@ jobs:
           node-version: 22
           cache: npm
           registry-url: "https://registry.npmjs.org"
+
+      # npm trusted publishing (OIDC token exchange) requires npm CLI
+      # >= 11.5.1. Node 22's bundled npm may be older, so pin explicitly
+      # rather than relying on whatever ships with the runner's Node install.
+      - name: Ensure npm CLI supports trusted publishing
+        run: |
+          npm install -g npm@^11.5.1
+          npm --version
 
       - name: Install dependencies
         run: npm ci
@@ -106,10 +117,15 @@ jobs:
             release-assets/agriops-mcp-server-${{ github.ref_name }}.tar.gz
             release-assets/SHA256SUMS
 
-      # NPM_TOKEN must be an npm *Automation* granular token when 2FA is enabled;
-      # otherwise npm publish fails with EOTP (one-time password) in CI.
-      - name: Publish to npm (optional)
-        if: ${{ vars.PUBLISH_TO_NPM == 'true' && !contains(github.ref_name, '-') }}
+      # Trusted publishing: no NODE_AUTH_TOKEN / NPM_TOKEN. The npm CLI
+      # detects the GitHub Actions OIDC environment (permissions.id-token:
+      # write, above) and exchanges it for a short-lived publish token
+      # directly with the registry, then attaches build provenance
+      # automatically. Required for every stable tag per the
+      # public-release-hardening plan — not optional/env-gated like the
+      # previous NPM_TOKEN-based step. Prerelease tags (`v1.2.3-beta.0`) are
+      # still skipped: they exist for internal/Cloud Run testing, not for the
+      # npm `latest`/public dist-tag.
+      - name: Publish to npm (trusted publishing, stable tags only)
+        if: ${{ !contains(github.ref_name, '-') }}
         run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

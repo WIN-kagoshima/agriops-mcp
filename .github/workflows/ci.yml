@@ -73,6 +73,37 @@ jobs:
         run: |
           npx --yes @modelcontextprotocol/inspector --cli node dist/server.js --stdio --method tools/list
 
+  well-known-drift:
+    name: .well-known/mcp-server.json drift (hard gate)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Regenerate static Server Card snapshot
+        run: npm run snapshot:well-known
+
+      - name: Fail if the committed snapshot has drifted
+        # .well-known/mcp-server.json is the public contract crawlers and
+        # registries read without hitting the live endpoint (AGENTS.md
+        # "What you must NOT do"). If this diffs, the default surface,
+        # prompts, or resources changed without regenerating the snapshot —
+        # run `npm run snapshot:well-known` locally and commit the result.
+        run: |
+          if ! git diff --exit-code -- .well-known/mcp-server.json; then
+            echo "::error file=.well-known/mcp-server.json::Committed Server Card snapshot is stale. Run 'npm run snapshot:well-known' and commit the diff."
+            exit 1
+          fi
+
   ui-tests:
     name: UI (Playwright)  EPhase 5+
     runs-on: ubuntu-latest

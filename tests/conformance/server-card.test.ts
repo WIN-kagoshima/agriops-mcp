@@ -139,6 +139,36 @@ describe("Server Card conformance", () => {
     }
   });
 
+  it("description does not overclaim e-Stat availability when get_estat_stats is not registered", async () => {
+    const { surface, close } = await bootClient();
+    try {
+      expect(surface.tools).not.toContain("get_estat_stats");
+      const card = buildServerCard({
+        baseUrl: "https://example.test",
+        version: "0.5.0",
+        surface,
+      });
+      expect(card.description as string).not.toMatch(/e-Stat/);
+    } finally {
+      await close();
+    }
+  });
+
+  it("advertises a public privacy policy URL and a support URL", async () => {
+    const { surface, close } = await bootClient();
+    try {
+      const card = buildServerCard({
+        baseUrl: "https://example.test",
+        version: "0.5.0",
+        surface,
+      });
+      expect(card.privacyPolicy as string).toMatch(/^https:\/\//);
+      expect(card.supportUrl as string).toMatch(/^https:\/\//);
+    } finally {
+      await close();
+    }
+  });
+
   it("Phase 0 mode (no eMAFF/FAMIC) advertises only weather tools in the card", async () => {
     const config = loadConfig();
     const logger = createLogger({ level: "warn" });
