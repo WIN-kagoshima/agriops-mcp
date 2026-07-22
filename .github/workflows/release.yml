@@ -117,6 +117,23 @@ jobs:
             release-assets/agriops-mcp-server-${{ github.ref_name }}.tar.gz
             release-assets/SHA256SUMS
 
+      # actions/setup-node's `registry-url` input (above) writes
+      # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}` into .npmrc.
+      # With no NODE_AUTH_TOKEN secret configured (the correct state for
+      # trusted publishing — no long-lived token exists to set), that
+      # placeholder expands to an empty string, but npm CLI still sees an
+      # `_authToken` line as "auth is configured" and skips its own OIDC
+      # exchange entirely, attempting a classic publish with empty
+      # credentials instead. The registry then returns a misleading
+      # `404 Not Found` (not the expected auth error) — see
+      # https://github.com/npm/documentation/issues/1960 and
+      # https://github.com/npm/cli/issues/8976. Deleting the stale
+      # `_authToken` entry here (not skipping `registry-url` altogether,
+      # which `npm ci`'s cache resolution still wants) restores npm's normal
+      # "no usable token configured -> try OIDC" trusted-publishing path.
+      - name: Remove setup-node's placeholder npm auth token (unblocks OIDC)
+        run: npm config delete //registry.npmjs.org/:_authToken
+
       # Trusted publishing: no NODE_AUTH_TOKEN / NPM_TOKEN. The npm CLI
       # detects the GitHub Actions OIDC environment (permissions.id-token:
       # write, above) and exchanges it for a short-lived publish token
