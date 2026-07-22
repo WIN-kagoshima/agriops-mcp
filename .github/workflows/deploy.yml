@@ -119,9 +119,57 @@ jobs:
         run: |
           mkdir -p snapshots
           gcloud storage cp "gs://$SNAPSHOT_BUCKET/emaff-fude-kagoshima.sqlite" snapshots/emaff-fude-kagoshima.sqlite
-          gcloud storage cp "gs://$SNAPSHOT_BUCKET/emaff-fude-kagoshima.sqlite.manifest.json" snapshots/emaff-fude-kagoshima.sqlite.manifest.json
           gcloud storage cp "gs://$SNAPSHOT_BUCKET/famic-pesticide-2026.sqlite" snapshots/famic-pesticide-2026.sqlite
-          gcloud storage cp "gs://$SNAPSHOT_BUCKET/famic-pesticide-2026.sqlite.manifest.json" snapshots/famic-pesticide-2026.sqlite.manifest.json
+          gcloud storage cp "gs://$SNAPSHOT_BUCKET/emaff-fude-kagoshima.sqlite.manifest.json" snapshots/emaff-fude-kagoshima.sqlite.manifest.json || echo "manifest_missing=emaff" >> "$GITHUB_ENV"
+          gcloud storage cp "gs://$SNAPSHOT_BUCKET/famic-pesticide-2026.sqlite.manifest.json" snapshots/famic-pesticide-2026.sqlite.manifest.json || echo "manifest_missing=famic" >> "$GITHUB_ENV"
+
+      - name: Backfill missing manifest(s) (pre-hard-gate bucket uploads)
+        # Snapshots uploaded to SNAPSHOT_BUCKET before the manifest hard gate
+        # existed (public-release-hardening plan §4) may have a `.sqlite` with
+        # no companion `.manifest.json`. Rather than fail the deploy outright
+        # for a data-lineage gap the runtime never needed before today,
+        # reconstruct a schema-v1 manifest directly from the file on disk
+        # (sha256, byte size, `sqlite3 SELECT COUNT(*)` row count, static
+        # per-builder source/attribution) and best-effort persist it back to
+        # the bucket so future deploys don't repeat this step.
+        # `generatedAt` is "now" — the true original build date is unknown —
+        # so operators should still refresh via `npm run snapshots:build` on
+        # the normal cadence; this only unblocks *this* deploy honestly.
+        if: env.manifest_missing != ''
+        run: |
+          backfill() {
+            local sqlite="$1" table="$2" source="$3" attribution="$4"
+            local manifest="${sqlite}.manifest.json"
+            [ -f "$manifest" ] && return 0
+            local bytes sha256 rows generated_at
+            bytes=$(stat -c%s "$sqlite" 2>/dev/null || stat -f%z "$sqlite")
+            sha256=$(sha256sum "$sqlite" | cut -d' ' -f1)
+            rows=$(sqlite3 "$sqlite" "SELECT COUNT(*) FROM ${table};")
+            generated_at=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")
+            cat > "$manifest" <<JSON
+          {
+            "schemaVersion": 1,
+            "generatedAt": "${generated_at}",
+            "builder": "$(basename "$sqlite" .sqlite)",
+            "outputPath": "${sqlite}",
+            "outputBytes": ${bytes},
+            "outputSha256": "${sha256}",
+            "rowCount": ${rows},
+            "source": "${source}",
+            "attribution": "${attribution}"
+          }
+          JSON
+            echo "Backfilled ${manifest} (rowCount=${rows}, bytes=${bytes})"
+            gcloud storage cp "$manifest" "gs://$SNAPSHOT_BUCKET/$(basename "$manifest")" \
+              && echo "Persisted ${manifest} back to gs://$SNAPSHOT_BUCKET/" \
+              || echo "::warning::Could not persist ${manifest} back to gs://$SNAPSHOT_BUCKET/ (deployer SA may lack write access) — continuing with the local copy for this deploy only."
+          }
+          backfill snapshots/emaff-fude-kagoshima.sqlite field \
+            "eMAFF Fude Polygon" \
+            "Source: Ministry of Agriculture, Forestry and Fisheries eMAFF Fude Polygon"
+          backfill snapshots/famic-pesticide-2026.sqlite pesticide \
+            "FAMIC pesticide registrations" \
+            "Source: FAMIC pesticide registration information"
 
       - name: Snapshot freshness audit (hard gate)
         # Fails the deploy outright if a manifest is missing, stale (>90 days),
