@@ -641,7 +641,37 @@ const outputSchema = z.object({
   availableProducts: z.array(z.string()),
   attribution: z.string(),
   disclaimer: z.string(),
+  /**
+   * Full 12-month reference curve — added so the `timeseries` `viz_hint`
+   * (declared since 1.10.0, see CHANGELOG "12-month price curve") has an
+   * actual array to point `dataPath` at. Previously `structuredContent` only
+   * ever carried the single requested/current month, so the dashboard's
+   * TimeSeries view always rendered empty against real (non-fixture) data.
+   * Additive field — every field above is unchanged, so existing consumers
+   * that only read the flat top-level fields are unaffected.
+   */
+  monthlySeries: z.array(
+    z.object({
+      month: z.number().int().min(1).max(12),
+      estimatedPriceYen: z.number(),
+      seasonalFactor: z.number(),
+    }),
+  ),
 });
+
+function buildMonthlySeries(
+  entry: PriceEntry,
+): { month: number; estimatedPriceYen: number; seasonalFactor: number }[] {
+  return Array.from({ length: 12 }, (_, i) => {
+    const month = i + 1;
+    const factor = entry.seasonality.find((s) => s.month === month)?.factor ?? 1.0;
+    return {
+      month,
+      estimatedPriceYen: Math.round(entry.nationalAvg.typicalYen * factor),
+      seasonalFactor: factor,
+    };
+  });
+}
 
 function findProduct(name: string): PriceEntry | null {
   const lower = name.toLowerCase();
@@ -713,6 +743,7 @@ export function registerGetMarketPrice(server: McpServer, _deps: Deps): void {
             attribution: "AgriOps MCP 参照価格DB",
             disclaimer:
               "これは参考価格です。実際の取引価格とは異なります。最新情報はALIC・農林水産省の公表データを参照してください。",
+            monthlySeries: [],
           } as unknown as Record<string, unknown>,
         };
       }
@@ -739,6 +770,7 @@ export function registerGetMarketPrice(server: McpServer, _deps: Deps): void {
         attribution: entry.source,
         disclaimer:
           "これは参考価格です。実際の取引価格とは異なります。最新情報はALIC・農林水産省の公表データを参照してください。",
+        monthlySeries: buildMonthlySeries(entry),
       };
 
       const trendLabel = seasonFactor > 1.1 ? "高め" : seasonFactor < 0.9 ? "低め" : "平年並み";
@@ -766,7 +798,8 @@ export function registerGetMarketPrice(server: McpServer, _deps: Deps): void {
         structuredContent: withVizHint(structured as unknown as Record<string, unknown>, {
           preferredView: "timeseries",
           timeKey: "month",
-          valueKeys: ["estimatedPriceYen", "seasonalFactor"],
+          valueKeys: ["estimatedPriceYen"],
+          dataPath: "monthlySeries",
           title: `${structured.crop} 市場価格（月別推計）`,
           legend: { unit: "円/kg", tone: "success" },
         }),

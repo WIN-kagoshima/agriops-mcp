@@ -61,3 +61,7 @@ tests/_tmp_*/
 
 # cookbook-scout local candidates
 .cookbook-candidates/
+
+# Scratch HTML snapshot written by capture-directory-screenshots-live.ts for
+# local inspection only — the committed artifacts are the PNGs, not this.
+assets/directory-screenshots/_live-dashboard-snapshot.html

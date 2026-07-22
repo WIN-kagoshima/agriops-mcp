@@ -8,6 +8,14 @@ From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt
 
 Pre-`1.0.0` releases were explicitly **experimental**.
 
+## [1.15.8] — 2026-07-22 — Fix `get_market_price` timeseries view rendering empty on real data
+
+### Fixed
+- **`get_market_price` (`src/tools/get-market-price.ts`)**: since `1.10.0`, this tool's `viz_hint` has declared `preferredView: "timeseries"` ("12-month price curve" per that release's changelog entry), but `structuredContent` only ever carried the single requested/current month as a flat object — never an array. `TimeSeries.tsx` requires an array at `dataPath` (or the top level) and renders "データがありません" (no data) otherwise, so the dashboard's "市場価格" quick-action has shown an empty chart against *any* real (non-fixture, non-hand-mocked) tool response since that release. This was only caught now because `npm run capture:screenshots:live` (see below) sources real `tools/call` data from the live public Cloud Run endpoint instead of a hand-written mock array that happened to already match the shape the chart expects — the existing mock-based `npm run capture:screenshots` could never have surfaced it. Fixed by adding a new, additive `monthlySeries: { month, estimatedPriceYen, seasonalFactor }[]` field (all other fields unchanged, so nothing that only read the flat top-level fields is affected) covering all 12 months, and pointing `viz_hint.dataPath` at it. Also dropped `seasonalFactor` from `viz_hint.valueKeys` — it and `estimatedPriceYen` do not share a scale, so plotting both on the chart's single shared y-axis made the factor line invisible. Covered by five new tests in `tests/unit/get-market-price.test.ts`.
+
+### Added
+- **`scripts/capture-directory-screenshots-live.ts`** (`npm run capture:screenshots:live`): a second Directory-screenshot capture path that fetches the dashboard HTML bundle *and* all four dashboard-helper tool responses from a real, anonymously-reachable live endpoint via genuine `initialize` / `resources/read` / `tools/call` JSON-RPC — not the mock `window.mcpApps` bridge `scripts/capture-directory-screenshots.ts` uses. This is what caught the `get_market_price` bug above; kept alongside the mock-based script as the "closest to a real host" recapture path documented in `docs/anthropic-directory-submission.md` §6/§8.3, short of an actual Claude Desktop / Inspector Apps-preview session.
+
 ## [1.15.7] — 2026-07-22 — Fix invalid `secrets` context in release.yml `if:`
 
 ### Fixed
