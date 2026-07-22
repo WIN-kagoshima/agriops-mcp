@@ -132,7 +132,11 @@ jobs:
       # which `npm ci`'s cache resolution still wants) restores npm's normal
       # "no usable token configured -> try OIDC" trusted-publishing path.
       - name: Remove setup-node's placeholder npm auth token (unblocks OIDC)
-        run: npm config delete //registry.npmjs.org/:_authToken
+        run: |
+          npm config delete //registry.npmjs.org/:_authToken
+          echo "npm --version: $(npm --version)"
+          echo "id-token env present: $([ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ] && echo yes || echo no)"
+          echo "_authToken still configured: $(npm config get //registry.npmjs.org/:_authToken 2>/dev/null || echo '(unset)')"
 
       # Trusted publishing: no NODE_AUTH_TOKEN / NPM_TOKEN. The npm CLI
       # detects the GitHub Actions OIDC environment (permissions.id-token:
