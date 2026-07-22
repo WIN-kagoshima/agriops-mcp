@@ -82,7 +82,9 @@ async function callRpc(
   try {
     return { status: res.status, parsed: parseJson(text) };
   } catch {
-    throw new Error(`Failed to parse response for ${method}: status=${res.status} body=${text.slice(0, 300)}`);
+    throw new Error(
+      `Failed to parse response for ${method}: status=${res.status} body=${text.slice(0, 300)}`,
+    );
   }
 }
 
@@ -100,7 +102,9 @@ async function callTool(
   const res = await callRpc(baseUrl, "tools/call", { name, arguments: args }, id);
   const result = resultObject(res.parsed);
   if (res.status !== 200 || result.isError === true) {
-    throw new Error(`tools/call ${name} failed: status=${res.status} result=${JSON.stringify(result).slice(0, 500)}`);
+    throw new Error(
+      `tools/call ${name} failed: status=${res.status} result=${JSON.stringify(result).slice(0, 500)}`,
+    );
   }
   return {
     content: result.content,
@@ -135,7 +139,9 @@ async function main() {
   const firstContent = Array.isArray(contents) && isRecord(contents[0]) ? contents[0] : undefined;
   const html = typeof firstContent?.text === "string" ? firstContent.text : undefined;
   if (resourceRes.status !== 200 || !html) {
-    throw new Error(`resources/read ${DASHBOARD_URI} failed against ${baseUrl}: status=${resourceRes.status}`);
+    throw new Error(
+      `resources/read ${DASHBOARD_URI} failed against ${baseUrl}: status=${resourceRes.status}`,
+    );
   }
   console.log(`Fetched live dashboard bundle: ${html.length.toLocaleString()} bytes`);
 

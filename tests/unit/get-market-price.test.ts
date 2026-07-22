@@ -11,9 +11,9 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { describe, expect, it } from "vitest";
-import { extractVizHint } from "../../src/lib/viz-hint.js";
 import { loadConfig } from "../../src/lib/config.js";
 import { createLogger } from "../../src/lib/logger.js";
+import { extractVizHint } from "../../src/lib/viz-hint.js";
 import { createServer } from "../../src/server/create-server.js";
 
 async function boot() {
