@@ -8,6 +8,14 @@ From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt
 
 Pre-`1.0.0` releases were explicitly **experimental**.
 
+## [1.15.1] — 2026-07-22 — CI unblock + IoT snapshot seeding race fix
+
+### Fixed
+- **CI `npm ci` ERESOLVE** (`.npmrc`): every GitHub Actions workflow (`ci.yml`, `codeql.yml`, `deploy.yml`, `production-smoke.yml`, `release.yml`) had been failing at the `npm ci` step since 2026-07-15 — the root `react@19.2.6` devDependency and the vendored `@modelcontextprotocol/inspector-client`'s radix-ui peer requirement on `react@^18.3.1` trip npm's strict peer resolver even though the lockfile already nests a private `react@18.3.1` copy that makes this work at runtime. Added `legacy-peer-deps=true` to a new `.npmrc`.
+- **Corrupted `package-lock.json` entry**: `@types/qs@6.15.0` carried a bogus `os: ["linux"]` restriction, wrong `license`, and a nonexistent `engines` field (none present in the real published package — same integrity hash, so not a supply-chain substitution, just bad lockfile data) that broke `npm ci`/`npm install` on non-Linux machines. Regenerated the lockfile via `npm install`, which also refreshed a stale `@types/react-dom@18.3.7` entry to `19.2.3` to match `@types/react@^19`.
+- **IoT snapshot seed race** (`src/services/iot/iot-db.ts`): `initIotDb()`'s "seed if empty" check-then-insert was not atomic across concurrent connections to the same on-disk SQLite file (parallel test workers, or multiple Cloud Run instances cold-starting against the same GCS-restored snapshot), causing an intermittent `UNIQUE constraint failed: machine_telemetry.machine_id`. The seed check and inserts now run inside a single `BEGIN IMMEDIATE` transaction (serializes concurrent seeders; the loser re-checks and finds the data already there) with a 5s `busy_timeout`, and the machine/batch inserts use `INSERT OR IGNORE` as defense-in-depth.
+- 4 pre-existing Biome lint errors in `market-mcp/` (literal-key and template-literal style violations) that were hidden behind the `npm ci` failure and would have failed CI's lint step next — fixed via `biome check --write --unsafe`.
+
 ## [1.15.0] — 2026-07-22 — Directory UX & artifact portability
 
 ### Added
