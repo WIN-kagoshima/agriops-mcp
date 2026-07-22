@@ -28,6 +28,13 @@ jobs:
     name: Build, test, and release ${{ github.ref_name }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    # `secrets` isn't a valid context in step-level `if:` expressions (only
+    # env/github/inputs/job/matrix/needs/runner/steps/strategy/vars are) —
+    # https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
+    # so the NPM_TOKEN-fallback presence check below is threaded through
+    # `env` instead of referencing `secrets` directly in an `if:`.
+    env:
+      NPM_TOKEN_FALLBACK_SET: ${{ secrets.NPM_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -136,7 +143,7 @@ jobs:
       # *want* the `_authToken=${NODE_AUTH_TOKEN}` line so classic
       # token auth kicks in instead.
       - name: Remove setup-node's placeholder npm auth token (unblocks OIDC)
-        if: ${{ secrets.NPM_TOKEN == '' }}
+        if: ${{ env.NPM_TOKEN_FALLBACK_SET != 'true' }}
         run: |
           npm config delete //registry.npmjs.org/:_authToken
           echo "npm --version: $(npm --version)"

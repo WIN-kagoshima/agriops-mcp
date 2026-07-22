@@ -104,6 +104,23 @@ jobs:
             exit 1
           fi
 
+  workflow-lint:
+    name: GitHub Actions workflow lint (hard gate)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      # Catches schema errors (e.g. using the `secrets` context in a
+      # step-level `if:`, which is rejected by GitHub with zero jobs
+      # scheduled and no useful log — see the v1.15.6 -> v1.15.7 incident
+      # in CHANGELOG.md) *before* a tag push discovers them the hard way.
+      - name: actionlint
+        uses: reviewdog/action-actionlint@v1
+        with:
+          fail_level: error
+          reporter: github-check
+
   ui-tests:
     name: UI (Playwright)  EPhase 5+
     runs-on: ubuntu-latest

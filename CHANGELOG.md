@@ -8,6 +8,11 @@ From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt
 
 Pre-`1.0.0` releases were explicitly **experimental**.
 
+## [1.15.7] — 2026-07-22 — Fix invalid `secrets` context in release.yml `if:`
+
+### Fixed
+- **`.github/workflows/release.yml`**: `v1.15.6`'s `if: ${{ secrets.NPM_TOKEN == '' }}` on a step made the entire workflow file invalid — GitHub Actions does not permit the `secrets` context inside step-level `if:` expressions (only `env`/`github`/`inputs`/`job`/`matrix`/`needs`/`runner`/`steps`/`strategy`/`vars` are allowed there), so the tag push for `v1.15.6` never even scheduled a job (0 jobs created, "workflow file issue"). Caught locally afterward with `actionlint` (now part of the pre-tag checklist in `docs/npm-first-publish.md`). Fixed by threading the secret's presence through a job-level `env: NPM_TOKEN_FALLBACK_SET: ${{ secrets.NPM_TOKEN != '' }}` and checking `env.NPM_TOKEN_FALLBACK_SET` in the step's `if:` instead. `v1.15.6`'s intended NPM_TOKEN-fallback behavior (see its changelog entry) is otherwise unchanged.
+
 ## [1.15.6] — 2026-07-22 — Temporary NPM_TOKEN fallback for npm publish
 
 ### Changed
@@ -561,7 +566,8 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.6...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.7...HEAD
+[1.15.7]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.6...v1.15.7
 [1.15.6]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.5...v1.15.6
 [1.15.5]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.4...v1.15.5
 [1.15.4]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.3...v1.15.4

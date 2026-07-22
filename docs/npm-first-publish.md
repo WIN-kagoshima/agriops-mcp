@@ -23,7 +23,7 @@
 1. `main`（またはデフォルトブランチ）に、次が揃っていることを確認する。
    - `package.json` の `version`
    - 同じバージョンの `CHANGELOG.md` 見出し `## [x.y.z]`
-   - CI が緑
+   - CI が緑（`ci.yml` の `GitHub Actions workflow lint (hard gate)` ジョブが `.github/workflows/*.yml` を `actionlint` で検証する — `v1.15.6` はこれがまだ無い時期に `secrets` コンテキストをステップの `if:` に書いてしまい、タグを push してもジョブが一つも起動しない壊れたリリースになった）
 2. タグを `package.json` のバージョンに合わせて作成し、リモートへプッシュする。
 
    ```bash
