@@ -4,7 +4,7 @@
 
 ## 0. 前提
 
-- 公開は **npm trusted publishing**（OIDC）を使用します。長期の `NPM_TOKEN` は不要・不使用です。1.15.3 以降、[`.github/workflows/release.yml`](../.github/workflows/release.yml) はこの方式のみをサポートします（`NPM_TOKEN` ベースの旧方式は削除済み）。
+- 公開は本来 **npm trusted publishing**（OIDC）を使用する設計です。1.15.3〜1.15.5 で `NPM_TOKEN` ベースの旧方式は一度削除しましたが、**1.15.6 時点では一時的に `NPM_TOKEN`（granular access token, package-scoped, 2FA bypass 有効）へフォールバックしています**。理由: `WIN-kagoshima/agriops-mcp` に対する OIDC 交換が、CI 側（npm CLI バージョン, `id-token: write`, 不要な `_authToken` 除去, `package.json#repository.url` の `git+` 除去）・npmjs.com 側（Trusted Publisher の org/repo/workflow filename/environment/Allowed actions を1フィールドずつ再確認済み）の両方を検証・修正してもなお `ENEEDAUTH` で失敗し続けており、スコープ付きパッケージに関する npm 側の未解決 issue（[npm/cli#8976](https://github.com/npm/cli/issues/8976), [npm/cli#9088](https://github.com/npm/cli/issues/9088)）と一致する挙動だったため。`.github/workflows/release.yml` は `NPM_TOKEN` が secrets に存在する限りそれを使い、存在しない場合は OIDC 経路にフォールバックする（コードはそのまま残っている）。**OIDC が動くようになったことを確認できたら、`NPM_TOKEN` secret を削除し、`release.yml` の `if: secrets.NPM_TOKEN == ''` 分岐と `env: NODE_AUTH_TOKEN` 行を外すこと** — 恒久的に両方残さない。
 - **スコープ `@sugukuru`** は [sugukuru](https://www.npmjs.com/~sugukuru) ユーザに紐づく公開スコープです。
 
 ## A. npm trusted publishing の初回設定（メンテナが一度だけ行う）
