@@ -8,6 +8,11 @@ From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt
 
 Pre-`1.0.0` releases were explicitly **experimental**.
 
+## [1.15.2] — 2026-07-22 — Dockerfile ERESOLVE fix (Cloud Run deploy)
+
+### Fixed
+- **Cloud Build `docker build` ERESOLVE**: the `deps` and `prod-deps` stages in `Dockerfile` `COPY`'d `package.json package-lock.json*` but not the `.npmrc` added in 1.15.1, so `npm ci` inside the Docker build still hit the same `react@19.2.6` vs `react@^18.3.1` peer conflict that `.npmrc`'s `legacy-peer-deps=true` was supposed to fix — this is what actually broke the first post-fix Cloud Run deploy (`gcloud builds submit` build step 3). Both stages now `COPY package.json package-lock.json* .npmrc ./`. Verified with a full local `docker build .` + container smoke test (`/livez` → `200 {"version":"1.15.2", ...}`).
+
 ## [1.15.1] — 2026-07-22 — CI unblock + IoT snapshot seeding race fix
 
 ### Fixed
