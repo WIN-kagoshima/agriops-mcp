@@ -22,7 +22,7 @@ import { registerGetSswCropCompatibility } from "./src/tools/get-ssw-crop-compat
 import { registerSelectDispatchSalesTargets } from "./src/tools/select-dispatch-sales-targets.js";
 
 type Level = "debug" | "info" | "warn" | "error";
-const logLevel = (process.env["LOG_LEVEL"] ?? "info") as Level;
+const logLevel = (process.env.LOG_LEVEL ?? "info") as Level;
 const logger = createLogger({ level: logLevel, base: { service: "agriops-market-mcp" } });
 
 function parseTransport(argv: string[]): "stdio" | "http" {
@@ -45,7 +45,7 @@ function buildServer(): McpServer {
   );
 
   // Initialize e-Stat adapter if API key is provided
-  const estatAppId = process.env["ESTAT_APP_ID"];
+  const estatAppId = process.env.ESTAT_APP_ID;
   let estatAdapter = null;
   if (estatAppId) {
     logger.info("Initializing e-Stat API Adapter");
@@ -81,7 +81,7 @@ async function startStdio(server: McpServer): Promise<void> {
 }
 
 async function startHttp(server: McpServer): Promise<{ stop: () => Promise<void> }> {
-  const port = Number(process.env["PORT"]) || 3001;
+  const port = Number(process.env.PORT) || 3001;
   const app = express();
 
   // Parse JSON request bodies (required for MCP POST /mcp)

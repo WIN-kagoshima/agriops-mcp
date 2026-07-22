@@ -50,6 +50,7 @@ describe("Phase 4 OAuth URL elicitation flow", () => {
       logLevel: "warn",
       baseUrl,
       openMeteoBaseUrl: "https://api.open-meteo.com/v1",
+      allowedHosts: [],
       emaffSnapshotPath: "./snapshots/none.sqlite",
       famicSnapshotPath: "./snapshots/none.sqlite",
       iotSnapshotPath: "./snapshots/none.sqlite",

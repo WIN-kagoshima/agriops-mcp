@@ -590,7 +590,7 @@ export function registerSelectDispatchSalesTargets(server: McpServer, _deps: any
             `- **労働力減少率**: 5年間で **-${t.laborDecreaseRatePercent}%** (${t.agriWorkers2015.toLocaleString()}人 → ${t.agriWorkers2020.toLocaleString()}人)`,
             `- **SSW適性**: ${t.topSswCrop} (${t.scores.sswFit}点)`,
             `- **選抜理由**: ${t.whySelected}`,
-            `- **スグクル営業アプローチトーク例**:`,
+            "- **スグクル営業アプローチトーク例**:",
             `  > *${t.salesScript}*`,
             `- **現場メモ**: ${t.sswMemo}`,
             "",

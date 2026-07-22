@@ -48,14 +48,21 @@ const EXTENDED_ONLY_TOOLS = [
   "get_traceability_report",
 ];
 
-const LEGACY_ONLY_TOOLS = [
+/** Not registered at all by default — nothing else depends on them. */
+const LEGACY_ONLY_TOOLS = ["get_prefecture_crop_profile", "get_estat_stats"];
+
+/**
+ * Registered unconditionally (the AgriOps Dashboard MCP App calls these
+ * internally) but LLM-invisible by default — see `DASHBOARD_HELPER_TOOL_NAMES`
+ * in `src/tools/_registry.ts`. Model-visible only when
+ * `AGRIOPS_ENABLE_LEGACY_TOOLS=true`.
+ */
+const DASHBOARD_HELPER_TOOLS = [
   "get_market_price",
-  "get_prefecture_crop_profile",
   "get_ssw_crop_compatibility",
   "get_labor_shortage_stats",
   "get_livestock_regional_stats",
   "get_municipality_stats",
-  "get_estat_stats",
 ];
 
 describe("Directory surface (default, no feature flags)", () => {
@@ -136,12 +143,14 @@ describe("Directory surface (default, no feature flags)", () => {
     const { client, close } = await bootDefaultClient();
     try {
       const live = await client.listTools();
-      // `tools/list` also includes app-only helpers (fetch_field_geojson, etc.)
-      // for hosts that don't honor the `ui/visibility` hint; filter to the
-      // tools TOOL_METADATA classifies as "model" to assert the LLM-facing
-      // surface specifically.
+      // `tools/list` also includes app-only helpers (fetch_field_geojson,
+      // the dashboard-helper legacy tools, etc.) for hosts that don't honor
+      // the `ui/visibility` hint; filter to tools TOOL_METADATA classifies
+      // as "model" AND that do not carry the runtime `ui/visibility: ["app"]`
+      // hint to assert the LLM-facing surface specifically.
       const modelVisible = live.tools
         .filter((t) => TOOL_METADATA[t.name]?.visibility === "model")
+        .filter((t) => !hasAppVisibilityHint(t))
         .map((t) => t.name)
         .sort();
       expect(modelVisible).toEqual([...CORE_TOOLS].sort());
@@ -175,4 +184,32 @@ describe("Directory surface (default, no feature flags)", () => {
       await close();
     }
   });
+
+  it("registers dashboard-helper legacy tools as LLM-invisible app tools by default", async () => {
+    const { client, close } = await bootDefaultClient();
+    try {
+      const live = await client.listTools();
+      const byName = new Map(live.tools.map((t) => [t.name, t]));
+      for (const name of DASHBOARD_HELPER_TOOLS) {
+        const tool = byName.get(name);
+        expect(
+          tool,
+          `${name} should still be registered by default (dashboard depends on it)`,
+        ).toBeDefined();
+        if (!tool) continue;
+        expect(
+          hasAppVisibilityHint(tool),
+          `${name} should carry the ui/visibility: ["app"] hint by default`,
+        ).toBe(true);
+      }
+    } finally {
+      await close();
+    }
+  });
 });
+
+function hasAppVisibilityHint(tool: { _meta?: unknown }): boolean {
+  const meta = tool._meta as Record<string, unknown> | undefined;
+  const uiVisibility = meta?.["ui/visibility"];
+  return Array.isArray(uiVisibility) && uiVisibility.includes("app");
+}

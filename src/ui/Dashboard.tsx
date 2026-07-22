@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { type VizHint, extractVizHint } from "../lib/viz-hint.js";
 import type { BreadcrumbItem } from "./breadcrumb/Breadcrumb.js";
 import { Breadcrumb } from "./breadcrumb/Breadcrumb.js";
+import { buildCsvFromView, triggerCsvDownload } from "./csv-export.js";
 import type { ToolResult } from "./useAppBridge.js";
 import { useAppBridge } from "./useAppBridge.js";
 import { ViewDispatcher } from "./views/_dispatch.js";
@@ -103,6 +104,7 @@ export function Dashboard() {
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([
     { label: "全国", level: "nation" },
   ]);
+  const [csvFallback, setCsvFallback] = useState<string | null>(null);
   const lastCallRef = useRef<string>("");
 
   // ── Tool call helper ────────────────────────────────────────────────────
@@ -189,6 +191,27 @@ export function Dashboard() {
     [breadcrumbs, runTool, setState],
   );
 
+  // ── CSV export ("take this view home") ──────────────────────────────────
+
+  const handleCsvDownload = useCallback(() => {
+    const csvText = buildCsvFromView(state.vizHint, state.vizData);
+    if (!csvText) {
+      setError("ダウンロードできる表形式データがありません。先にデータを表示してください。");
+      return;
+    }
+    // Anchor-click downloads are blocked on some sandboxed MCP Apps hosts;
+    // always also surface the raw CSV so the user has a working
+    // copy-to-clipboard fallback either way ("Interoperability over
+    // optimization" — every capability needs a fallback).
+    triggerCsvDownload(csvText, `agriops-${state.prefectureCode}-${Date.now()}.csv`);
+    setCsvFallback(csvText);
+  }, [state.vizHint, state.vizData, state.prefectureCode]);
+
+  const handleCsvCopy = useCallback(() => {
+    if (!csvFallback) return;
+    void navigator.clipboard?.writeText(csvFallback);
+  }, [csvFallback]);
+
   // ── Initial load ────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -220,6 +243,14 @@ export function Dashboard() {
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            className="csv-download-btn"
+            onClick={handleCsvDownload}
+            title="現在表示中のデータをCSVでダウンロード"
+          >
+            CSV ダウンロード
+          </button>
         </div>
       </header>
 
@@ -271,6 +302,26 @@ export function Dashboard() {
         {state.summaryText && (
           <div className="summary-panel">
             <pre className="summary-text">{state.summaryText}</pre>
+          </div>
+        )}
+
+        {/* CSV export fallback — some MCP Apps hosts sandbox the iframe and
+            silently drop the anchor-click download, so we also always show
+            the raw CSV with a copy button once a download is requested. */}
+        {csvFallback && (
+          <div className="csv-fallback-panel">
+            <div className="csv-fallback-header">
+              <span>CSV（ダウンロードが動作しない場合はコピーしてください）</span>
+              <div>
+                <button type="button" onClick={handleCsvCopy}>
+                  コピー
+                </button>
+                <button type="button" onClick={() => setCsvFallback(null)}>
+                  閉じる
+                </button>
+              </div>
+            </div>
+            <textarea className="csv-fallback-textarea" readOnly value={csvFallback} />
           </div>
         )}
       </main>

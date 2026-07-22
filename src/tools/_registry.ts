@@ -45,6 +45,25 @@ import { registerSnapshotStatus } from "./snapshot-status.js";
 import { registerSprayWindow } from "./spray-window.js";
 
 /**
+ * Legacy/deprecated tools that the AgriOps Dashboard MCP App calls
+ * internally (breadcrumb drill-down, quick actions) regardless of
+ * `AGRIOPS_ENABLE_LEGACY_TOOLS`. When the flag is off (the Directory
+ * default), these register with `ui/visibility: ["app"]` so they stay
+ * LLM-invisible but remain callable by the dashboard's `callTool` bridge —
+ * the same mechanism `registerAppOnlyTool` uses for Phase 5 helpers. When
+ * the flag is on, they register exactly as before (model-visible,
+ * `deprecated: true`) for self-hosted operators who already depend on
+ * calling them directly. See docs/anthropic-directory-submission.md.
+ */
+const DASHBOARD_HELPER_TOOL_NAMES = new Set([
+  "get_municipality_stats",
+  "get_labor_shortage_stats",
+  "get_ssw_crop_compatibility",
+  "get_livestock_regional_stats",
+  "get_market_price",
+]);
+
+/**
  * Single source of truth for tool registration.
  *
  * Tools are registered conditionally on the deps that are present, so a
@@ -62,7 +81,13 @@ import { registerSprayWindow } from "./spray-window.js";
  *     connection is not shown ~20 extra tools.
  *   - `config.enableLegacyTools` (env `AGRIOPS_ENABLE_LEGACY_TOOLS`):
  *     the seven tools already flagged `deprecated: true` in
- *     `surface-catalog.ts` (Phase 7-11 market/SSW/e-Stat tools).
+ *     `surface-catalog.ts` (Phase 7-11 market/SSW/e-Stat tools). Five of
+ *     these seven (`DASHBOARD_HELPER_TOOL_NAMES` above) are actually
+ *     registered *unconditionally* because the AgriOps Dashboard MCP App
+ *     calls them internally; the flag only controls whether they are
+ *     model-visible (`true`) or LLM-invisible app tools (`false`, the
+ *     Directory default). The remaining two (`get_prefecture_crop_profile`,
+ *     `get_estat_stats`) stay fully gated behind the flag as before.
  *
  * Both default to `false`. Neither flag renames, removes, or changes the
  * schema of a published tool — see `docs/anthropic-directory-submission.md`
@@ -76,10 +101,20 @@ import { registerSprayWindow } from "./spray-window.js";
  * the metrics registry.
  *
  * Returns the names of tools that were actually registered, so the
- * Server Card builder can advertise only what is live.
+ * Server Card builder can advertise only what is live — plus, separately,
+ * which of those names are only `ui/visibility: ["app"]` for this instance
+ * despite their static catalog entry saying `visibility: "model"` (see
+ * `RegisteredSurface.appOnlyToolNames`).
  */
-export function registerAllTools(server: McpServer, deps: Deps): string[] {
+export function registerAllTools(
+  server: McpServer,
+  deps: Deps,
+): { tools: string[]; appOnlyToolNames: string[] } {
   const registered: string[] = [];
+
+  const extended = deps.config.enableExtendedTools;
+  const legacy = deps.config.enableLegacyTools;
+  const appOnlyToolNames = legacy ? [] : [...DASHBOARD_HELPER_TOOL_NAMES];
 
   // Patch server.registerTool to wrap handlers with automatic metrics
   // tracking when a metrics registry is available.
@@ -97,9 +132,21 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
     handler: (input: unknown) => Promise<{ isError?: boolean }>,
   ) => {
     const meta = TOOL_METADATA[toolName];
-    const finalConfig = meta?.deprecated
+    let finalConfig = meta?.deprecated
       ? { ...(config as Record<string, unknown>), deprecated: true }
       : config;
+
+    if (!legacy && DASHBOARD_HELPER_TOOL_NAMES.has(toolName)) {
+      const cfg = finalConfig as Record<string, unknown>;
+      finalConfig = {
+        ...cfg,
+        _meta: {
+          ...(cfg._meta as Record<string, unknown> | undefined),
+          "ui/visibility": ["app"],
+          "openai/widgetAccessible": true,
+        },
+      };
+    }
 
     let finalHandler = handler;
     if (deps.metrics) {
@@ -126,9 +173,6 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
     fn();
     registered.push(name);
   };
-
-  const extended = deps.config.enableExtendedTools;
-  const legacy = deps.config.enableLegacyTools;
 
   // ----- Core model-visible surface (always on when deps allow) -----
   // These 8 tools are the entire default surface. They are the set an
@@ -190,24 +234,30 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
 
   // ----- Legacy / deprecated surface (AGRIOPS_ENABLE_LEGACY_TOOLS=true) -----
   // All seven are already flagged `deprecated: true` in surface-catalog.ts.
+  // Five of them (DASHBOARD_HELPER_TOOL_NAMES) register unconditionally
+  // below because the AgriOps Dashboard MCP App depends on them; this
+  // block only covers the two that nothing else needs by default.
   if (legacy) {
     // Phase 7 — Sugu-kuru regional expansion + market data.
-    reg("get_market_price", () => registerGetMarketPrice(server, deps));
     reg("get_prefecture_crop_profile", () => registerGetPrefectureCropProfile(server, deps));
-
-    // Phase 8-9 — SSW strategic intelligence layer.
-    reg("get_ssw_crop_compatibility", () => registerGetSswCropCompatibility(server, deps));
-    reg("get_labor_shortage_stats", () => registerGetLaborShortageStats(server, deps));
-    reg("get_livestock_regional_stats", () => registerGetLivestockRegionalStats(server, deps));
-
-    // Phase 10 — municipality drill-down.
-    reg("get_municipality_stats", () => registerGetMunicipalityStats(server, deps));
 
     // Phase 11 — e-Stat live government statistics.
     if (deps.estat) {
       reg("get_estat_stats", () => registerGetEstatStats(server, deps));
     }
   }
+
+  // ----- Dashboard-helper legacy tools (always on; see DASHBOARD_HELPER_TOOL_NAMES) -----
+  // Model-visible + deprecated when AGRIOPS_ENABLE_LEGACY_TOOLS=true (unchanged
+  // behaviour for existing self-hosted operators); LLM-invisible app tools
+  // otherwise (Directory default) so the dashboard's breadcrumb drill-down
+  // and quick-action buttons keep working without inflating the model-visible
+  // surface. See docs/anthropic-directory-submission.md.
+  reg("get_market_price", () => registerGetMarketPrice(server, deps));
+  reg("get_ssw_crop_compatibility", () => registerGetSswCropCompatibility(server, deps));
+  reg("get_labor_shortage_stats", () => registerGetLaborShortageStats(server, deps));
+  reg("get_livestock_regional_stats", () => registerGetLivestockRegionalStats(server, deps));
+  reg("get_municipality_stats", () => registerGetMunicipalityStats(server, deps));
 
   // ----- Phase 5 app-only helpers (LLM-invisible; always on) -----
   if (deps.emaff) {
@@ -226,5 +276,5 @@ export function registerAllTools(server: McpServer, deps: Deps): string[] {
   // Restore the original registerTool after all registrations are complete.
   serverRecord.registerTool = originalRegisterTool;
 
-  return registered;
+  return { tools: registered, appOnlyToolNames };
 }

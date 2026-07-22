@@ -45,6 +45,12 @@ function buildAllowedHosts(config: Config): string[] {
   } catch {
     // Ignore malformed baseUrl; loopback fallbacks remain.
   }
+  // Additional hosts the deployment platform assigns alongside (or
+  // instead of) the canonical `baseUrl` — see `allowedHosts` in
+  // `src/lib/config.ts` for why this matters on Cloud Run.
+  for (const h of config.allowedHosts) {
+    hosts.add(h);
+  }
   return Array.from(hosts);
 }
 

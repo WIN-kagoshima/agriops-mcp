@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { toCsv } from "../../lib/csv.js";
 import type { Deps } from "../../server/deps.js";
 import { registerAppOnlyTool } from "./_helpers.js";
 
@@ -30,22 +31,14 @@ export function registerExportPlanCsv(server: McpServer, deps: Deps): void {
       deps,
     },
     async (args) => {
-      const header = "fieldId,dispatchDate,staffCount";
-      const body = args.rows
-        .map((r) => `${csv(r.fieldId)},${csv(r.dispatchDate)},${r.staffCount}`)
-        .join("\n");
-      const csvText = `${header}\n${body}\n`;
+      const csvText = toCsv(
+        ["fieldId", "dispatchDate", "staffCount"],
+        args.rows.map((r) => [r.fieldId, r.dispatchDate, r.staffCount]),
+      );
       return {
         content: [{ type: "text", text: `Generated CSV with ${args.rows.length} row(s).` }],
         structuredContent: { csv: csvText, rowCount: args.rows.length },
       };
     },
   );
-}
-
-function csv(value: string): string {
-  if (/[",\n]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`;
-  }
-  return value;
 }

@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { elicitForm } from "../elicitation/form.js";
+import { summaryRowCsvResource } from "../lib/artifacts.js";
 import { safeErrorMessage } from "../lib/errors.js";
 import type { Deps } from "../server/deps.js";
 import { getToolAnnotations } from "../server/surface-catalog.js";
@@ -37,6 +38,26 @@ interface ResolvedArgs {
   includeWeekend: boolean;
 }
 
+/**
+ * Covers both response shapes this tool can return: the full draft plan,
+ * and the sparser `{ status: "declined" }` shape used when Form elicitation
+ * is cancelled or unsupported by the client. Plan-only fields are optional
+ * rather than a discriminated union so a single schema validates either
+ * shape — matching the non-`.strict()` pattern already used by other
+ * multi-shape tool outputs in this codebase (e.g. get-labor-shortage-stats.ts).
+ */
+const outputSchema = z.object({
+  status: z.enum(["draft", "declined"]),
+  reason: z.string().optional().describe("Present only when status is 'declined'."),
+  farmRegion: z.string().optional(),
+  periodDays: z.number().int().optional(),
+  includeWeekend: z.boolean().optional(),
+  fieldCount: z.number().int().optional(),
+  estimatedStaffDays: z.number().int().optional(),
+  generatedAt: z.string().optional(),
+  attribution: z.string().optional(),
+});
+
 export function registerCreateStaffDeployPlan(server: McpServer, deps: Deps): void {
   if (!deps.emaff) return;
   server.registerTool(
@@ -48,6 +69,7 @@ export function registerCreateStaffDeployPlan(server: McpServer, deps: Deps): vo
         "If `farmRegion` or `periodDays` is missing, the server uses a Form-mode elicitation to ask the user. " +
         "Returns a textual plan plus structured data; nothing is persisted or sent.",
       inputSchema: inputSchema.shape,
+      outputSchema: outputSchema.shape,
       annotations: getToolAnnotations(meta.name),
     },
     async (raw: unknown) => {
@@ -131,6 +153,10 @@ export function registerCreateStaffDeployPlan(server: McpServer, deps: Deps): vo
               type: "text",
               text: `Drafted a deployment plan for ${resolved.farmRegion} over ${resolved.periodDays} day(s)${resolved.includeWeekend ? " including weekends" : ""}. This is a non-binding draft.`,
             },
+            summaryRowCsvResource(
+              meta.name,
+              plan as unknown as Record<string, string | number | boolean | null>,
+            ),
           ],
           structuredContent: plan as unknown as Record<string, unknown>,
         };

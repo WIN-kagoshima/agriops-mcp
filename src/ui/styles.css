@@ -245,6 +245,63 @@ body,
   cursor: pointer;
 }
 
+.csv-download-btn {
+  font-size: 0.85rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.csv-download-btn:hover {
+  background: rgba(52, 211, 153, 0.1);
+}
+
+.csv-fallback-panel {
+  margin-top: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.csv-fallback-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+  gap: 0.5rem;
+}
+
+.csv-fallback-header button {
+  font-size: 0.78rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  cursor: pointer;
+  margin-left: 0.4rem;
+}
+
+.csv-fallback-textarea {
+  width: 100%;
+  min-height: 120px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.72rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  padding: 0.5rem;
+  resize: vertical;
+}
+
 /* Breadcrumb */
 .breadcrumb-bar {
   padding: 0.4rem 1rem;

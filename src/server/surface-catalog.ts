@@ -431,8 +431,17 @@ export interface RegisteredSurface {
   tools: string[];
   prompts: string[];
   resources: string[];
+  /**
+   * Subset of `tools` whose static `TOOL_METADATA[name].visibility` says
+   * `"model"` but that registered with the runtime `ui/visibility: ["app"]`
+   * hint for *this* server instance (currently: the 5 dashboard-helper
+   * tools in `src/tools/_registry.ts` when `AGRIOPS_ENABLE_LEGACY_TOOLS` is
+   * unset). `buildServerCard` uses this to report the tool's actual
+   * runtime visibility instead of blindly trusting the static catalog.
+   */
+  appOnlyToolNames: string[];
 }
 
 export function emptyRegisteredSurface(): RegisteredSurface {
-  return { tools: [], prompts: [], resources: [] };
+  return { tools: [], prompts: [], resources: [], appOnlyToolNames: [] };
 }

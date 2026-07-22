@@ -17,46 +17,55 @@ import { registerStrategyRoomDashboardPrompt } from "./strategy-room-dashboard.j
 import { registerWeatherRiskAlertPrompt } from "./weather-risk-alert.js";
 
 /**
- * 15 user-controlled prompts (slash commands). They are exposed
- * unconditionally; the underlying tools they reference may not be available
- * in early phases, in which case the prompt simply tells the LLM to
- * apologise and explain what is missing.
+ * 15 user-controlled prompts (slash commands).
+ *
+ * Ten are exposed unconditionally. Five instruct the LLM to call specific
+ * extended/legacy tools by name (`snapshot_status`, `get_market_price`,
+ * `get_prefecture_crop_profile`, `crop_calendar`, ...) that are not
+ * model-visible on the Directory default surface — showing them there would
+ * mean a reviewer or first connection who runs the prompt gets steered
+ * towards a tool call that fails. They register only when the tools they
+ * depend on are actually model-visible
+ * (`AGRIOPS_ENABLE_EXTENDED_TOOLS=true` and, where noted,
+ * `AGRIOPS_ENABLE_LEGACY_TOOLS=true`). See
+ * docs/anthropic-directory-submission.md.
  *
  * Returns the names of registered prompts for Server Card consumption.
  */
 export function registerAllPrompts(server: McpServer, deps: Deps): string[] {
-  registerFieldSummaryPrompt(server, deps);
-  registerPesticideAdvicePrompt(server, deps);
-  registerStaffDeployPlanPrompt(server, deps);
-  registerAreaBriefingPrompt(server, deps);
-  registerWeatherRiskAlertPrompt(server, deps);
-  registerIrrigationSchedulePrompt(server, deps);
-  registerDataFreshnessCheckPrompt(server, deps);
-  registerHarvestReadinessPrompt(server, deps);
-  registerDailyBriefingPrompt(server, deps);
-  registerFieldVisitChecklistPrompt(server, deps);
-  registerMarketTrendBriefingPrompt(server, deps);
-  registerRegionDispatchDemandPrompt(server, deps);
-  registerAnnualDispatchPlanPrompt(server, deps);
-  registerSswStrategyBriefingPrompt(server, deps);
-  registerStrategyRoomDashboardPrompt(server, deps);
-  return [
-    "field_summary",
-    "pesticide_advice",
-    "staff_deploy_plan",
-    "area_briefing",
-    "weather_risk_alert",
-    "irrigation_schedule",
-    "data_freshness_check",
-    "harvest_readiness",
-    "daily_briefing",
-    "field_visit_checklist",
-    "market_trend_briefing",
-    "region_dispatch_demand",
-    "annual_dispatch_plan",
-    "ssw_strategy_briefing",
-    "strategy_room_dashboard",
-  ];
+  const registered: string[] = [];
+  const reg = (name: string, fn: () => void) => {
+    fn();
+    registered.push(name);
+  };
+  const extended = deps.config.enableExtendedTools;
+  const legacy = deps.config.enableLegacyTools;
+
+  reg("field_summary", () => registerFieldSummaryPrompt(server, deps));
+  reg("pesticide_advice", () => registerPesticideAdvicePrompt(server, deps));
+  reg("staff_deploy_plan", () => registerStaffDeployPlanPrompt(server, deps));
+  reg("area_briefing", () => registerAreaBriefingPrompt(server, deps));
+  reg("weather_risk_alert", () => registerWeatherRiskAlertPrompt(server, deps));
+  reg("irrigation_schedule", () => registerIrrigationSchedulePrompt(server, deps));
+  reg("harvest_readiness", () => registerHarvestReadinessPrompt(server, deps));
+  reg("daily_briefing", () => registerDailyBriefingPrompt(server, deps));
+  reg("field_visit_checklist", () => registerFieldVisitChecklistPrompt(server, deps));
+  reg("strategy_room_dashboard", () => registerStrategyRoomDashboardPrompt(server, deps));
+
+  // Needs `snapshot_status` (extended-only).
+  if (extended) {
+    reg("data_freshness_check", () => registerDataFreshnessCheckPrompt(server, deps));
+  }
+
+  // Need `crop_calendar` (extended) plus one or more legacy market/SSW tools.
+  if (extended && legacy) {
+    reg("market_trend_briefing", () => registerMarketTrendBriefingPrompt(server, deps));
+    reg("region_dispatch_demand", () => registerRegionDispatchDemandPrompt(server, deps));
+    reg("annual_dispatch_plan", () => registerAnnualDispatchPlanPrompt(server, deps));
+    reg("ssw_strategy_briefing", () => registerSswStrategyBriefingPrompt(server, deps));
+  }
+
+  return registered;
 }
 
 export const PROMPT_COUNT = 15;
