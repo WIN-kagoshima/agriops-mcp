@@ -389,7 +389,9 @@ export const RESOURCE_METADATA: Record<string, ResourceMetadata> = {
   "ui://agriops/dashboard.html": {
     title: "AgriOps MCP map dashboard",
     introduced: "0.5.0",
-    mimeType: "text/html",
+    // MCP Apps Extension 2026-01-26 resource MIME type (RESOURCE_MIME_TYPE
+    // from `@modelcontextprotocol/ext-apps/server`), not a bare "text/html".
+    mimeType: "text/html;profile=mcp-app",
   },
   "tasks://{task_id}": {
     title: "Background task status",

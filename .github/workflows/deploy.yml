@@ -109,14 +109,26 @@ jobs:
           PKG_VERSION=$(node -e "process.stdout.write(require('./package.json').version)")
           echo "version=${PKG_VERSION}" >> "$GITHUB_OUTPUT"
 
-      - name: Snapshot freshness audit
-        # Fail the deploy if the GCS-backed SQLite manifests are stale (>90 days)
-        # or missing. The actual .sqlite files are validated by deploy:preflight
-        # below; this step catches stale manifests before a slow Cloud Build starts.
-        # Skip this step if snapshots/ directory doesn't have manifests yet
-        # (first-time deploy after adding this gate).
+      - name: Restore snapshots from GCS for the freshness/integrity audit
+        # Hard gate: download the real .sqlite + .manifest.json the deploy will
+        # bake into the image (same objects cloudbuild.remote.yaml restores)
+        # and audit *those*, not whatever may or may not be in the local repo
+        # checkout. Previously this step audited an empty local snapshots/
+        # directory and was continue-on-error — effectively a no-op. See the
+        # public-release-hardening plan §4.
+        run: |
+          mkdir -p snapshots
+          gcloud storage cp "gs://$SNAPSHOT_BUCKET/emaff-fude-kagoshima.sqlite" snapshots/emaff-fude-kagoshima.sqlite
+          gcloud storage cp "gs://$SNAPSHOT_BUCKET/emaff-fude-kagoshima.sqlite.manifest.json" snapshots/emaff-fude-kagoshima.sqlite.manifest.json
+          gcloud storage cp "gs://$SNAPSHOT_BUCKET/famic-pesticide-2026.sqlite" snapshots/famic-pesticide-2026.sqlite
+          gcloud storage cp "gs://$SNAPSHOT_BUCKET/famic-pesticide-2026.sqlite.manifest.json" snapshots/famic-pesticide-2026.sqlite.manifest.json
+
+      - name: Snapshot freshness audit (hard gate)
+        # Fails the deploy outright if a manifest is missing, stale (>90 days),
+        # or its SHA-256/size no longer matches the .sqlite file — no
+        # continue-on-error. The image build below bakes in exactly these
+        # objects, so this is a true pre-build gate, not an advisory check.
         run: npm run snapshots:audit -- --max-age-days=90
-        continue-on-error: true
 
       - name: Run deploy preflight
         run: |

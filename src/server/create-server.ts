@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { LoggingLevel } from "@modelcontextprotocol/sdk/types.js";
 import { EmaffSqliteAdapter } from "../adapters/emaff-fude.js";
 import { EstatApiAdapter } from "../adapters/estat.js";
 import { FamicSqliteAdapter } from "../adapters/famic-pesticide.js";
@@ -8,7 +9,7 @@ import { OpenMeteoWeatherAdapter } from "../adapters/weather/open-meteo.js";
 import { InMemoryTokenStore } from "../auth/token-store.js";
 import { InMemoryElicitationStore } from "../elicitation/store.js";
 import type { Config } from "../lib/config.js";
-import type { Logger } from "../lib/logger.js";
+import { type Level, type Logger, withMcpSink } from "../lib/logger.js";
 import { registerAllPrompts } from "../prompts/_registry.js";
 import { registerAllResources } from "../resources/_registry.js";
 import { initIotDb } from "../services/iot/iot-db.js";
@@ -48,6 +49,14 @@ export interface CreateServerOptions {
   overrides?: Partial<Deps>;
 }
 
+/** RFC 5424-ish severity mapping from our internal `Level` to the MCP `LoggingLevel` enum. */
+const MCP_LOG_LEVEL: Record<Level, LoggingLevel> = {
+  debug: "debug",
+  info: "info",
+  warn: "warning",
+  error: "error",
+};
+
 /**
  * Build a fully-wired MCP server. Pure factory: no transport, no listening,
  * no global side effects. The caller picks stdio or Streamable HTTP and
@@ -58,7 +67,31 @@ export function createServer(options: CreateServerOptions): {
   deps: Deps;
   surface: RegisteredSurface;
 } {
-  const { config, logger, version, overrides } = options;
+  const { config, version, overrides } = options;
+
+  // Backs the `logging: {}` capability declared below with a real
+  // implementation: every `logger.warn`/`.error` (and `.debug`/`.info`) call
+  // made through this server's `deps.logger` — including `.child()`
+  // loggers used by adapters/tools — also becomes a `notifications/message`
+  // once a client session connects. `serverRef` is filled in after the
+  // `McpServer` is constructed further down; the sink closes over the
+  // `let` binding so early log calls made during adapter construction
+  // (before `serverRef` exists, or before `.connect()` is called) are
+  // silently skipped rather than throwing.
+  // biome-ignore lint/style/useConst: reassigned below once the McpServer is constructed; the sink closure needs the `let` binding to observe that later assignment.
+  let serverRef: McpServer | undefined;
+  const logger = withMcpSink(options.logger, (level, msg, fields) => {
+    if (!serverRef?.isConnected()) return;
+    serverRef
+      .sendLoggingMessage({
+        level: MCP_LOG_LEVEL[level],
+        logger: "agriops-mcp",
+        data: { message: msg, ...fields },
+      })
+      .catch(() => {
+        // Best-effort only — never let logging delivery break the caller.
+      });
+  });
 
   const emaff =
     overrides?.emaff !== undefined
@@ -173,7 +206,17 @@ export function createServer(options: CreateServerOptions): {
         tools: { listChanged: true },
         prompts: { listChanged: true },
         resources: { listChanged: true, subscribe: false },
+        // Backed by a real `notifications/message` sink — see `logger`
+        // above (`withMcpSink`) — instead of an unused declaration.
         logging: {},
+        // `area_briefing`'s completable `prefecture` argument and the
+        // `farmland://{fude_id}` Resource Template register unconditionally
+        // (see docs/phase-plan.md Phase 13), so this capability is always
+        // true at runtime; the SDK would auto-enable it on first use
+        // anyway, but declaring it upfront means `initialize` already
+        // reflects the full capability set instead of only after the
+        // first `completion/complete` request.
+        completions: {},
       },
       // Built after we know which optional tools will actually register
       // (see below) so a default (no env flags) connection is never told
@@ -184,6 +227,7 @@ export function createServer(options: CreateServerOptions): {
       }),
     },
   );
+  serverRef = server;
 
   const surface: RegisteredSurface = emptyRegisteredSurface();
   const toolSurface = registerAllTools(server, deps);

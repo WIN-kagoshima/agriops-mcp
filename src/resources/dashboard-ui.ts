@@ -2,12 +2,19 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { RESOURCE_MIME_TYPE, registerAppResource } from "@modelcontextprotocol/ext-apps/server";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Deps } from "../server/deps.js";
 import { DASHBOARD_URI } from "../tools/open-dashboard.js";
 
 /**
  * Register the MCP Apps UI resource at `ui://agriops/dashboard.html`.
+ *
+ * Uses the official `@modelcontextprotocol/ext-apps` `registerAppResource`
+ * helper, which defaults the MIME type to `RESOURCE_MIME_TYPE`
+ * (`"text/html;profile=mcp-app"` — MCP Apps Extension 2026-01-26 §resources)
+ * instead of a bare `"text/html"` that a generic (non-Apps) resource would
+ * also use.
  *
  * The HTML is produced by `npm run build:ui` (Vite + vite-plugin-singlefile)
  * into `dist/ui/dashboard.html`. If the bundle is missing (e.g. the user is
@@ -16,13 +23,13 @@ import { DASHBOARD_URI } from "../tools/open-dashboard.js";
  * to the user that the UI bundle is not ready.
  */
 export function registerDashboardUiResource(server: McpServer, deps: Deps): void {
-  server.registerResource(
+  registerAppResource(
+    server,
     "agriops-dashboard",
     DASHBOARD_URI,
     {
       title: "AgriOps MCP map dashboard",
       description: "Single-file React + MapLibre GL UI bundle. Rendered inline by MCP Apps hosts.",
-      mimeType: "text/html",
     },
     async () => {
       const html = await loadHtml(deps);
@@ -30,7 +37,7 @@ export function registerDashboardUiResource(server: McpServer, deps: Deps): void
         contents: [
           {
             uri: DASHBOARD_URI,
-            mimeType: "text/html",
+            mimeType: RESOURCE_MIME_TYPE,
             text: html,
           },
         ],

@@ -1,0 +1,134 @@
+name: Deploy public (anonymous) Cloud Run
+
+# Deploys the dedicated, deliberately anonymous `agriops-mcp-public` Cloud Run
+# service in the mcp-service-492010 project — the listing endpoint for MCP
+# registries / the Anthropic Connectors Directory. This is separate from the
+# IAM-protected operational deployment driven by deploy.yml; see
+# docs/anthropic-directory-submission.md §2 and the
+# public-release-hardening plan §3.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PROJECT_ID: ${{ secrets.GCP_PUBLIC_PROJECT_ID }}
+  REGION: asia-northeast1
+  REPOSITORY: agriops-mcp
+  SERVICE: agriops-mcp-public
+  MCP_BASE_URL: ${{ secrets.MCP_PUBLIC_BASE_URL }}
+  GCP_WIF_PROVIDER: ${{ secrets.GCP_PUBLIC_WIF_PROVIDER }}
+  GCP_DEPLOYER_SERVICE_ACCOUNT: ${{ secrets.GCP_PUBLIC_DEPLOYER_SERVICE_ACCOUNT }}
+  GCP_RUNTIME_SERVICE_ACCOUNT: ${{ secrets.GCP_PUBLIC_RUNTIME_SERVICE_ACCOUNT }}
+  SNAPSHOT_BUCKET: ${{ secrets.PUBLIC_SNAPSHOT_BUCKET }}
+
+jobs:
+  deploy:
+    name: Build and deploy (anonymous)
+    runs-on: ubuntu-latest
+    environment: public
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate and normalise deployment inputs
+        id: deploy-inputs
+        run: |
+          PROJECT_ID="$(printf '%s' "$PROJECT_ID" | tr -d '\r\n' | xargs)"
+          MCP_BASE_URL="$(printf '%s' "$MCP_BASE_URL" | tr -d '\r\n' | xargs)"
+          GCP_WIF_PROVIDER="$(printf '%s' "$GCP_WIF_PROVIDER" | tr -d '\r\n' | xargs)"
+          GCP_DEPLOYER_SERVICE_ACCOUNT="$(printf '%s' "$GCP_DEPLOYER_SERVICE_ACCOUNT" | tr -d '\r\n' | xargs)"
+          GCP_RUNTIME_SERVICE_ACCOUNT="$(printf '%s' "$GCP_RUNTIME_SERVICE_ACCOUNT" | tr -d '\r\n' | xargs)"
+          SNAPSHOT_BUCKET="$(printf '%s' "$SNAPSHOT_BUCKET" | tr -d '\r\n' | xargs)"
+          test -n "$PROJECT_ID" || { echo "GCP_PUBLIC_PROJECT_ID secret is empty"; exit 1; }
+          test -n "$MCP_BASE_URL" || { echo "MCP_PUBLIC_BASE_URL secret is empty"; exit 1; }
+          test -n "$GCP_WIF_PROVIDER" || { echo "GCP_PUBLIC_WIF_PROVIDER secret is empty"; exit 1; }
+          test -n "$GCP_DEPLOYER_SERVICE_ACCOUNT" || { echo "GCP_PUBLIC_DEPLOYER_SERVICE_ACCOUNT secret is empty"; exit 1; }
+          test -n "$GCP_RUNTIME_SERVICE_ACCOUNT" || { echo "GCP_PUBLIC_RUNTIME_SERVICE_ACCOUNT secret is empty"; exit 1; }
+          test -n "$SNAPSHOT_BUCKET" || { echo "PUBLIC_SNAPSHOT_BUCKET secret is empty"; exit 1; }
+          {
+            echo "PROJECT_ID=$PROJECT_ID"
+            echo "MCP_BASE_URL=$MCP_BASE_URL"
+            echo "GCP_WIF_PROVIDER=$GCP_WIF_PROVIDER"
+            echo "GCP_DEPLOYER_SERVICE_ACCOUNT=$GCP_DEPLOYER_SERVICE_ACCOUNT"
+            echo "GCP_RUNTIME_SERVICE_ACCOUNT=$GCP_RUNTIME_SERVICE_ACCOUNT"
+            echo "SNAPSHOT_BUCKET=$SNAPSHOT_BUCKET"
+          } >> "$GITHUB_ENV"
+          {
+            echo "project_id=$PROJECT_ID"
+            echo "mcp_base_url=$MCP_BASE_URL"
+            echo "gcp_wif_provider=$GCP_WIF_PROVIDER"
+            echo "gcp_deployer_service_account=$GCP_DEPLOYER_SERVICE_ACCOUNT"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ steps.deploy-inputs.outputs.gcp_wif_provider }}
+          service_account: ${{ steps.deploy-inputs.outputs.gcp_deployer_service_account }}
+          project_id: ${{ steps.deploy-inputs.outputs.project_id }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Pin gcloud project + quota project
+        run: |
+          gcloud config set core/project "$PROJECT_ID"
+          gcloud config set billing/quota_project "$PROJECT_ID"
+
+      - name: Install smoke-test dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Capture package version
+        id: package
+        run: |
+          PKG_VERSION=$(node -e "process.stdout.write(require('./package.json').version)")
+          echo "version=${PKG_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Restore snapshots from GCS for the freshness/integrity audit
+        # Hard gate, mirroring deploy.yml — audit the real objects
+        # cloudbuild.public.yaml will bake into the public image, not an
+        # empty local checkout. See public-release-hardening plan §4.
+        run: |
+          mkdir -p snapshots
+          gcloud storage cp "gs://$SNAPSHOT_BUCKET/emaff/emaff-fude-kagoshima.sqlite" snapshots/emaff-fude-kagoshima.sqlite
+          gcloud storage cp "gs://$SNAPSHOT_BUCKET/emaff/emaff-fude-kagoshima.sqlite.manifest.json" snapshots/emaff-fude-kagoshima.sqlite.manifest.json
+          gcloud storage cp "gs://$SNAPSHOT_BUCKET/famic/famic-pesticide-2026.sqlite" snapshots/famic-pesticide-2026.sqlite
+          gcloud storage cp "gs://$SNAPSHOT_BUCKET/famic/famic-pesticide-2026.sqlite.manifest.json" snapshots/famic-pesticide-2026.sqlite.manifest.json
+
+      - name: Snapshot freshness audit (hard gate)
+        run: npm run snapshots:audit -- --max-age-days=90
+
+      - name: Configure docker for Artifact Registry
+        run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
+
+      - name: Submit Cloud Build
+        env:
+          CLOUDSDK_BILLING_QUOTA_PROJECT: ${{ env.PROJECT_ID }}
+        run: |
+          gcloud builds submit \
+            --no-source \
+            --config=cloudbuild.public.yaml \
+            --project=$PROJECT_ID \
+            --substitutions=_REGION=$REGION,_REPO=$REPOSITORY,_MCP_BASE_URL=$MCP_BASE_URL,_SERVICE_ACCOUNT=$GCP_RUNTIME_SERVICE_ACCOUNT,_SESSION_COOKIE_SECRET=agriops-public-session-cookie-secret,_SNAPSHOT_BUCKET=$SNAPSHOT_BUCKET,_GIT_SHA=$GITHUB_SHA
+
+      - name: Print Cloud Run URL
+        run: |
+          gcloud run services describe $SERVICE \
+            --region=$REGION --format='value(status.url)'
+
+      - name: Smoke test Cloud Run (anonymous — no bearer token)
+        run: |
+          npm run deploy:smoke -- \
+            --base-url="$MCP_BASE_URL" \
+            --health-path=/livez \
+            --expected-version="${{ steps.package.outputs.version }}"

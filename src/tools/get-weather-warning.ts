@@ -67,9 +67,8 @@ export function registerGetWeatherWarning(server: McpServer, deps: Deps): void {
       description:
         "Returns active 警報・注意報 (warnings/advisories) issued by JMA (気象庁) for the given prefecture, " +
         "filtered to the requested severity floor. Source: official JMA Disaster XML feed under the " +
-        "Japan Meteorological Business Act (気象業務法). Cache TTL is capped at 10 minutes; do not " +
-        "treat the result as real-time. The `attribution` string MUST be cited when surfacing data to " +
-        "end users. Read-only.",
+        "Japan Meteorological Business Act (気象業務法). Cache TTL is capped at 10 minutes, so the " +
+        "result is not real-time. Includes an `attribution` string identifying the source. Read-only.",
       inputSchema: inputSchema.shape,
       outputSchema: outputSchema.shape,
       annotations: getToolAnnotations(meta.name),

@@ -29,6 +29,11 @@ export interface WellKnownOptions {
  */
 export function buildServerCard(options: WellKnownOptions): Record<string, unknown> {
   const appOnly = new Set(options.surface.appOnlyToolNames ?? []);
+  // The default (Directory-facing) surface never registers `get_estat_stats`
+  // (it needs both AGRIOPS_ENABLE_LEGACY_TOOLS=true and ESTAT_APP_ID) — a
+  // one-line description hardcoding "government statistics (e-Stat)" would
+  // overclaim what an anonymous reviewer's connection can actually call.
+  const hasEstat = options.surface.tools.includes("get_estat_stats");
   const tools = options.surface.tools
     .filter((name) => TOOL_METADATA[name])
     .map((name) => {
@@ -79,10 +84,7 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
   return {
     name: "AgriOps MCP",
     version: options.version,
-    description:
-      "Japanese agricultural land + 1 km mesh weather + pesticide registration + government statistics (e-Stat) MCP server " +
-      "for Specified Skilled Worker (SSW) workforce dispatching. Reference implementation of " +
-      "MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.",
+    description: `Japanese agricultural land + 1 km mesh weather + pesticide registration${hasEstat ? " + government statistics (e-Stat)" : ""} MCP server for Specified Skilled Worker (SSW) workforce dispatching. Reference implementation of MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.`,
     homepage: "https://github.com/WIN-kagoshima/agriops-mcp",
     repository: "https://github.com/WIN-kagoshima/agriops-mcp",
     license: "Apache-2.0",
@@ -90,6 +92,16 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
       issues: "https://github.com/WIN-kagoshima/agriops-mcp/issues",
       security: "info@win-g-c.com",
     },
+    /**
+     * Public HTTPS privacy policy — Anthropic Directory requires this at a
+     * stable URL (GitHub Pages is acceptable per the docs). See
+     * docs/anthropic-directory-submission.md §2 and §"public-docs" in
+     * docs/anthropic-directory-submission.md. Kept as a plain top-level
+     * field (not nested under `contact`) since several registries scrape
+     * this specific key name.
+     */
+    privacyPolicy: "https://win-kagoshima.github.io/agriops-mcp/privacy-policy/",
+    supportUrl: "https://win-kagoshima.github.io/agriops-mcp/support/",
     endpoints: {
       mcp: `${options.baseUrl}/mcp`,
       health: `${options.baseUrl}/healthz`,

@@ -1,0 +1,150 @@
+/*
+ * Shared stylesheet for the AgriOps MCP public docs site
+ * (Privacy Policy / Support / Data License), published via GitHub Pages.
+ * Deliberately plain: no build step, no framework, so this site has zero
+ * moving parts to keep secure or update. See .github/workflows/pages.yml.
+ */
+
+:root {
+  --bg: #f7f7f5;
+  --fg: #1f2933;
+  --muted: #5b6673;
+  --accent: #2f7d4f;
+  --border: #e0e2e0;
+  --card-bg: #ffffff;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Hiragino Sans", "Noto Sans JP", "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.7;
+}
+
+.page {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+header.site-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+header.site-header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+}
+
+header.site-header .site-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+header.site-header .site-title a {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+nav.site-nav {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+  font-size: 0.9rem;
+}
+
+nav.site-nav a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+nav.site-nav a:hover {
+  text-decoration: underline;
+}
+
+h1 {
+  font-size: 1.7rem;
+  margin-bottom: 0.25rem;
+}
+
+h2.lang-heading {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 3px solid var(--accent);
+  font-size: 1.3rem;
+}
+
+h2.lang-heading:first-of-type {
+  margin-top: 2rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin-top: 1.75rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.92rem;
+}
+
+th,
+td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: #eef3ef;
+}
+
+code {
+  background: #eef0ee;
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.9em;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+}
+
+footer.site-footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+footer.site-footer a {
+  color: var(--muted);
+}
+
+a {
+  color: var(--accent);
+}

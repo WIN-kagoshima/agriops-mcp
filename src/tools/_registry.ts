@@ -132,16 +132,32 @@ export function registerAllTools(
     handler: (input: unknown) => Promise<{ isError?: boolean }>,
   ) => {
     const meta = TOOL_METADATA[toolName];
-    let finalConfig = meta?.deprecated
-      ? { ...(config as Record<string, unknown>), deprecated: true }
-      : config;
+    const isAppOnlyDashboardHelper = !legacy && DASHBOARD_HELPER_TOOL_NAMES.has(toolName);
+    // Dashboard-helper tools are catalogued `deprecated: true` for their
+    // legacy model-visible role (AGRIOPS_ENABLE_LEGACY_TOOLS=true), but the
+    // AgriOps Dashboard MCP App actively depends on them in their app-only
+    // role — stamping `deprecated: true` on a tool the client isn't even
+    // shown, and that isn't actually going away, would be a misleading
+    // signal to any host that still lists app-only tools. Skip the stamp in
+    // that case; every other `deprecated` tool keeps the stamp as before.
+    let finalConfig =
+      meta?.deprecated && !isAppOnlyDashboardHelper
+        ? { ...(config as Record<string, unknown>), deprecated: true }
+        : config;
 
-    if (!legacy && DASHBOARD_HELPER_TOOL_NAMES.has(toolName)) {
+    if (isAppOnlyDashboardHelper) {
       const cfg = finalConfig as Record<string, unknown>;
+      const existingMeta = cfg._meta as Record<string, unknown> | undefined;
+      const existingUi = existingMeta?.ui as Record<string, unknown> | undefined;
       finalConfig = {
         ...cfg,
         _meta: {
-          ...(cfg._meta as Record<string, unknown> | undefined),
+          ...existingMeta,
+          // Official MCP Apps Extension (2026-01-26) nested format, plus
+          // the deprecated flat key for hosts that only check `ui/visibility`
+          // — mirrors what `registerAppTool` does for `resourceUri`. See
+          // `hasAppVisibilityHint` in tests/conformance/directory-surface.test.ts.
+          ui: { ...existingUi, visibility: ["app"] },
           "ui/visibility": ["app"],
           "openai/widgetAccessible": true,
         },
