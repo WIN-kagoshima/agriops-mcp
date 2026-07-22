@@ -1,10 +1,14 @@
 # Security Policy
 
+> Also published as a public HTTPS page (日本語 → English → Bahasa Indonesia) at
+> <https://win-kagoshima.github.io/agriops-mcp/support/> — see [docs/support.md](docs/support.md) for the
+> source-controlled version this generates from.
+
 ## Supported versions
 
 | Version | Status |
 |---|---|
-| `1.x` | **Supported** (current stable: 1.14.2) |
+| `1.x` | **Supported** (current stable: see `package.json`) |
 | `0.5.x` | Security patches only |
 | `0.4.x` and earlier | End of life |
 
@@ -23,6 +27,13 @@ We will acknowledge within 3 business days and aim to ship a fix or a documented
 
 ## Hardening notes for operators
 
+- **Two reference Cloud Run deployments exist**: an IAM-protected operational one (internal use) and a
+  deliberately anonymous, rate-limited, read-mostly one used for MCP registry / Anthropic Connectors
+  Directory listing (`agriops-mcp-public`, project `mcp-service-492010`). The anonymous deployment only
+  ever registers the default 8-tool surface (no `AGRIOPS_ENABLE_EXTENDED_TOOLS` / `AGRIOPS_ENABLE_LEGACY_TOOLS`)
+  and enforces the same per-IP rate limiting (`src/server/rate-limit.ts`) and Host/Origin allowlisting
+  (`AGRIOPS_ALLOWED_HOSTS`) as any other deployment — anonymous access is a scoping decision, not a
+  reduction in input validation or output bounding.
 - Run the server under a least-privilege OS user. The server only needs read access to the `snapshots/` SQLite files.
 - For Streamable HTTP, restrict the public origin via `MCP_BASE_URL` and the built-in DNS rebinding protection.
 - Never expose the `/connect/{provider}` endpoint to the public internet without TLS.

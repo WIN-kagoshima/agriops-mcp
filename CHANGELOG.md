@@ -8,6 +8,42 @@ From `1.0.0` onward, tool names, input/output schemas, resource URIs, and prompt
 
 Pre-`1.0.0` releases were explicitly **experimental**.
 
+## [1.15.3] — 2026-07-22 — Public-release hardening (anonymous Cloud Run, Pages, npm trusted publishing)
+
+### Added
+- **Dedicated anonymous public Cloud Run deployment** for MCP registry / Anthropic Connectors Directory listing: a new `agriops-mcp-public` service in a separate GCP project (`mcp-service-492010`), built reproducibly from [`cloudbuild.public.yaml`](cloudbuild.public.yaml) and [`.github/workflows/deploy-public.yml`](.github/workflows/deploy-public.yml). It runs the same unmodified server image as the operational deployment, `--allow-unauthenticated`, the default 8-tool surface only (`AGRIOPS_ENABLE_EXTENDED_TOOLS`/`AGRIOPS_ENABLE_LEGACY_TOOLS` never set), and real eMAFF/FAMIC snapshots rebuilt from official public sources (筆ポリゴン公開サイト FlatGeobuf export for two Kagoshima villages, FAMIC pesticide-registration CSV export) — not the unit-test fixtures. Least-privilege runtime/deployer service accounts and Workload Identity Federation (no long-lived GCP keys in GitHub).
+- **GitHub Pages public documentation site** (`site/`, [`.github/workflows/pages.yml`](.github/workflows/pages.yml)): Privacy Policy, Support, and Data License pages published in 日本語 → English → Bahasa Indonesia at `https://win-kagoshima.github.io/agriops-mcp/`, wired into the Server Card (`privacyPolicy`, `supportUrl`) and referenced from `README.md`/`README.ja.md`/`SECURITY.md`. New `docs/support.md` is the source-controlled origin for the Support page. A `verify` job checks all three pages resolve HTTP 200 after every deploy.
+- **`.github/workflows/production-smoke-public.yml`**: hourly anonymous-only smoke test (no bearer token, unlike `production-smoke.yml`) against the public Cloud Run URL — `/livez` version match, `/readyz`, `.well-known/mcp-server.json`, anonymous `initialize`, exactly 8 model-visible tools, and a real `tools/call get_weather_1km`.
+- **`scripts/deploy-smoke.ts`**: new `--expect-tool-count` (filters out `_meta["ui/visibility"]: ["app"]` helpers before counting, so it asserts the actual model-visible surface, not the raw `tools/list` length) and `--call-tool` (functional `get_weather_1km` call, not just metadata) flags.
+- **`.github/workflows/ci.yml`**: new `well-known-drift` job — regenerates `.well-known/mcp-server.json` via `npm run snapshot:well-known` and fails the build if the committed snapshot has drifted from the live default surface.
+- **npm trusted publishing**: `.github/workflows/release.yml` now publishes stable tags to npm via OIDC (no `NPM_TOKEN`/`PUBLISH_TO_NPM`). See `docs/npm-first-publish.md` for the one-time Trusted Publisher setup.
+- **`tests/conformance/anonymous-access.test.ts`**: asserts `/livez`, `/readyz`, `.well-known/mcp-server.json`, `initialize`, and `tools/list` all succeed over the real `startHttp` transport with zero `Authorization` header — the code-level contract behind the anonymous public Cloud Run deployment.
+
+### Changed
+- **`.github/workflows/deploy.yml` / `deploy-public.yml`**: the snapshot freshness/integrity audit (`npm run snapshots:audit`) is now a hard gate — both pipelines download the real GCS-backed `.sqlite`/`.manifest.json` objects into the runner before auditing, and no longer set `continue-on-error: true`. A stale (>90 days) or missing/corrupted snapshot now blocks the deploy outright instead of being silently ignored.
+- **`src/server/well-known.ts`**: `privacyPolicy` / `supportUrl` now point at the GitHub Pages URLs above instead of placeholder values.
+- **`docs/anthropic-directory-submission.md`**: the "Live endpoint reachable anonymously" and "Privacy Policy" / "Support contact" checklist rows are now Done, pointing at the real public URL and Pages site; §2 rewritten to describe the dedicated anonymous service instead of asking an operator to loosen IAM on the shared operational one.
+- **`README.md` / `README.ja.md`**: document both Cloud Run deployments (IAM-protected operational, anonymous public) with the real public URL and a copy-pasteable anonymous smoke-test command.
+- **`AGENTS.md`**: phase/version table corrected — `1.12.x` is no longer marked "(current)"; `1.13.x`–`1.15.x` is the current Stable+ range (additive hardening only, same 8-tool default surface).
+
+### Fixed
+- Removed the stale root-level `deployment.yaml` Kubernetes manifest (unreferenced anywhere; the project deploys to Cloud Run, not Kubernetes).
+- Corrected lingering "Node 20" references in `docs/runbook.md` and two `.cursor/rules/*.mdc` files to Node 22, matching `package.json` `engines.node` and the Dockerfile.
+- `CODE_OF_CONDUCT.md`'s placeholder `conduct@agriops.dev` contact address replaced with the real `info@win-g-c.com` address already used in `SECURITY.md`.
+
+## [1.15.2] — 2026-07-22 — Dockerfile ERESOLVE fix (Cloud Run deploy)
+
+### Fixed
+- **Cloud Build `docker build` ERESOLVE**: the `deps` and `prod-deps` stages in `Dockerfile` `COPY`'d `package.json package-lock.json*` but not the `.npmrc` added in 1.15.1, so `npm ci` inside the Docker build still hit the same `react@19.2.6` vs `react@^18.3.1` peer conflict that `.npmrc`'s `legacy-peer-deps=true` was supposed to fix — this is what actually broke the first post-fix Cloud Run deploy (`gcloud builds submit` build step 3). Both stages now `COPY package.json package-lock.json* .npmrc ./`. Verified with a full local `docker build .` + container smoke test (`/livez` → `200 {"version":"1.15.2", ...}`).
+
+## [1.15.1] — 2026-07-22 — CI unblock + IoT snapshot seeding race fix
+
+### Fixed
+- **CI `npm ci` ERESOLVE** (`.npmrc`): every GitHub Actions workflow (`ci.yml`, `codeql.yml`, `deploy.yml`, `production-smoke.yml`, `release.yml`) had been failing at the `npm ci` step since 2026-07-15 — the root `react@19.2.6` devDependency and the vendored `@modelcontextprotocol/inspector-client`'s radix-ui peer requirement on `react@^18.3.1` trip npm's strict peer resolver even though the lockfile already nests a private `react@18.3.1` copy that makes this work at runtime. Added `legacy-peer-deps=true` to a new `.npmrc`.
+- **Corrupted `package-lock.json` entry**: `@types/qs@6.15.0` carried a bogus `os: ["linux"]` restriction, wrong `license`, and a nonexistent `engines` field (none present in the real published package — same integrity hash, so not a supply-chain substitution, just bad lockfile data) that broke `npm ci`/`npm install` on non-Linux machines. Regenerated the lockfile via `npm install`, which also refreshed a stale `@types/react-dom@18.3.7` entry to `19.2.3` to match `@types/react@^19`.
+- **IoT snapshot seed race** (`src/services/iot/iot-db.ts`): `initIotDb()`'s "seed if empty" check-then-insert was not atomic across concurrent connections to the same on-disk SQLite file (parallel test workers, or multiple Cloud Run instances cold-starting against the same GCS-restored snapshot), causing an intermittent `UNIQUE constraint failed: machine_telemetry.machine_id`. The seed check and inserts now run inside a single `BEGIN IMMEDIATE` transaction (serializes concurrent seeders; the loser re-checks and finds the data already there) with a 5s `busy_timeout`, and the machine/batch inserts use `INSERT OR IGNORE` as defense-in-depth.
+- 4 pre-existing Biome lint errors in `market-mcp/` (literal-key and template-literal style violations) that were hidden behind the `npm ci` failure and would have failed CI's lint step next — fixed via `biome check --write --unsafe`.
+
 ## [1.15.0] — 2026-07-22 — Directory UX & artifact portability
 
 ### Added
@@ -508,7 +544,17 @@ This release marks the first stable API surface. Tool names, prompt names, resou
 - eMAFF and FAMIC SQLite snapshot build pipeline under `scripts/build-snapshots/`.
 - Cloud Run-ready Dockerfile and GitHub Actions deploy workflow.
 
-[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.3...HEAD
+[Unreleased]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.3...HEAD
+[1.15.3]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.2...v1.15.3
+[1.15.2]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.1...v1.15.2
+[1.15.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.15.0...v1.15.1
+[1.15.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.14.2...v1.15.0
+[1.14.2]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.14.1...v1.14.2
+[1.14.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.14.0...v1.14.1
+[1.14.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.13.0...v1.14.0
+[1.13.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.12.0...v1.13.0
+[1.12.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.11.0...v1.12.0
+[1.11.0]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.3...v1.11.0
 [1.10.3]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.2...v1.10.3
 [1.10.2]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.1...v1.10.2
 [1.10.1]: https://github.com/WIN-kagoshima/agriops-mcp/compare/v1.10.0...v1.10.1

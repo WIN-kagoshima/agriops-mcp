@@ -23,7 +23,7 @@ Gemini Enterprise Agent Gateway, etc.), see
 | GCP project & billing account | REQUIRED | Use a dedicated project — Cloud Run, Secret Manager, Cloud Build, Artifact Registry, Cloud Logging are all enabled per project. |
 | Domain + TLS cert | REQUIRED | Register `MCP_BASE_URL` (e.g. `https://mcp.agriops.example.com`) and provision a managed cert via Cloud Run domain mapping or Global Load Balancer. |
 | GitHub repo with branch protection | REQUIRED | `main` only via PR + CI green. The `release.yml` workflow gates artifacts on the same. |
-| Node.js 20 + npm locally | REQUIRED | `node --version` ≥ 20.0 and `npm --version` ≥ 10. |
+| Node.js 22 + npm locally | REQUIRED | `node --version` ≥ 22.0 and `npm --version` ≥ 10 (matches `package.json` `engines.node` and `.nvmrc`). |
 
 **Do NOT** run the production server with the in-memory `TokenStore`.
 The encrypted `FileTokenStore` is the minimum bar; for multi-instance

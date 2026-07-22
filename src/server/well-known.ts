@@ -29,6 +29,11 @@ export interface WellKnownOptions {
  */
 export function buildServerCard(options: WellKnownOptions): Record<string, unknown> {
   const appOnly = new Set(options.surface.appOnlyToolNames ?? []);
+  // The default (Directory-facing) surface never registers `get_estat_stats`
+  // (it needs both AGRIOPS_ENABLE_LEGACY_TOOLS=true and ESTAT_APP_ID) — a
+  // one-line description hardcoding "government statistics (e-Stat)" would
+  // overclaim what an anonymous reviewer's connection can actually call.
+  const hasEstat = options.surface.tools.includes("get_estat_stats");
   const tools = options.surface.tools
     .filter((name) => TOOL_METADATA[name])
     .map((name) => {
@@ -79,10 +84,7 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
   return {
     name: "AgriOps MCP",
     version: options.version,
-    description:
-      "Japanese agricultural land + 1 km mesh weather + pesticide registration + government statistics (e-Stat) MCP server " +
-      "for Specified Skilled Worker (SSW) workforce dispatching. Reference implementation of " +
-      "MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.",
+    description: `Japanese agricultural land + 1 km mesh weather + pesticide registration${hasEstat ? " + government statistics (e-Stat)" : ""} MCP server for Specified Skilled Worker (SSW) workforce dispatching. Reference implementation of MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.`,
     homepage: "https://github.com/WIN-kagoshima/agriops-mcp",
     repository: "https://github.com/WIN-kagoshima/agriops-mcp",
     license: "Apache-2.0",
@@ -90,6 +92,16 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
       issues: "https://github.com/WIN-kagoshima/agriops-mcp/issues",
       security: "info@win-g-c.com",
     },
+    /**
+     * Public HTTPS privacy policy — Anthropic Directory requires this at a
+     * stable URL (GitHub Pages is acceptable per the docs). See
+     * docs/anthropic-directory-submission.md §2 and §"public-docs" in
+     * docs/anthropic-directory-submission.md. Kept as a plain top-level
+     * field (not nested under `contact`) since several registries scrape
+     * this specific key name.
+     */
+    privacyPolicy: "https://win-kagoshima.github.io/agriops-mcp/privacy-policy/",
+    supportUrl: "https://win-kagoshima.github.io/agriops-mcp/support/",
     endpoints: {
       mcp: `${options.baseUrl}/mcp`,
       health: `${options.baseUrl}/healthz`,
@@ -176,7 +188,7 @@ export function buildServerCard(options: WellKnownOptions): Record<string, unkno
       scenarios: 23,
       conformanceChecks: 17,
       lastRun: "2026-07-22",
-      note: "v1.15.0: Directory UX/spec-compliance pass — AGRIOPS_ALLOWED_HOSTS for multi-hostname Cloud Run deployments; dashboard-helper tools now register unconditionally as ui/visibility:['app'] (Server Card reports runtime visibility, not just the static catalog) fixing a tool-not-found gap in the MCP Apps dashboard/prompts on the default surface; create_staff_deploy_plan gained an outputSchema; search_farmland/nearby_farms/get_pesticide_rules/create_staff_deploy_plan now embed a GeoJSON or CSV resource block ('take this artifact home'); dashboard gained a CSV-download button with a copy-to-clipboard fallback; assets/logo.png (was a mislabeled JPEG) re-encoded to a true PNG; 5 dashboard screenshots captured via npm run capture:screenshots. v1.14.2 shipped developer-trust distribution content (Zenn/dev.to 7-primitives writeups, Show HN draft, note.com writeup, README Demo/Roadmap, awesome-list PRs). v1.14.1 verified the Anthropic Directory submission packet locally. v1.14.0 shipped craft signals (fast-check PBT, non-empty attribution schema, tinybench, CI hard gate).",
+      note: "v1.15.2: fixed the Cloud Build docker build ERESOLVE that 1.15.1's .npmrc missed — Dockerfile's deps/prod-deps stages now COPY .npmrc alongside package.json/package-lock.json so npm ci inside the image build also gets legacy-peer-deps. v1.15.1: fixed a CI-blocking npm ci ERESOLVE (added .npmrc legacy-peer-deps) plus a corrupted package-lock.json entry, and closed a check-then-insert race in initIotDb() that could throw a UNIQUE constraint error under concurrent seeding (parallel test workers / multi-instance cold starts) — no tool/schema changes. v1.15.0: Directory UX/spec-compliance pass — AGRIOPS_ALLOWED_HOSTS for multi-hostname Cloud Run deployments; dashboard-helper tools now register unconditionally as ui/visibility:['app'] (Server Card reports runtime visibility, not just the static catalog) fixing a tool-not-found gap in the MCP Apps dashboard/prompts on the default surface; create_staff_deploy_plan gained an outputSchema; search_farmland/nearby_farms/get_pesticide_rules/create_staff_deploy_plan now embed a GeoJSON or CSV resource block ('take this artifact home'); dashboard gained a CSV-download button with a copy-to-clipboard fallback; assets/logo.png (was a mislabeled JPEG) re-encoded to a true PNG; 5 dashboard screenshots captured via npm run capture:screenshots. v1.14.2 shipped developer-trust distribution content (Zenn/dev.to 7-primitives writeups, Show HN draft, note.com writeup, README Demo/Roadmap, awesome-list PRs). v1.14.1 verified the Anthropic Directory submission packet locally. v1.14.0 shipped craft signals (fast-check PBT, non-empty attribution schema, tinybench, CI hard gate).",
       repository: "https://github.com/WIN-kagoshima/agriops-mcp/tree/main/tests",
     },
     /**

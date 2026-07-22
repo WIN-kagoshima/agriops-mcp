@@ -1,0 +1,71 @@
+name: Publish public docs (GitHub Pages)
+
+# Publishes the static Privacy Policy / Support / Data License site under
+# site/ to GitHub Pages. Deliberately no build step (plain HTML/CSS, .nojekyll)
+# so there is nothing here to keep secure or update beyond the HTML itself —
+# see docs/anthropic-directory-submission.md §2 ("Privacy Policy (public
+# HTTPS URL)") and the public-release-hardening plan §2.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Upload site/ as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  verify:
+    name: HTTP 200 + link smoke
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the three public pages resolve over HTTPS
+        env:
+          BASE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          BASE_URL="${BASE_URL%/}"
+          for path in "" "privacy-policy/" "support/" "data-license/"; do
+            url="$BASE_URL/$path"
+            echo "GET $url"
+            code="$(curl -s -o /dev/null -w '%{http_code}' --retry 5 --retry-delay 3 --retry-all-errors "$url")"
+            if [ "$code" != "200" ]; then
+              echo "::error::$url returned HTTP $code, expected 200"
+              exit 1
+            fi
+          done
+          echo "All public docs pages returned HTTP 200."

@@ -201,6 +201,10 @@ describe("Directory surface (default, no feature flags)", () => {
           hasAppVisibilityHint(tool),
           `${name} should carry the ui/visibility: ["app"] hint by default`,
         ).toBe(true);
+        expect(
+          (tool as { deprecated?: boolean }).deprecated,
+          `${name} is actively used by the dashboard in its app-only role and should not be stamped deprecated:true by default (only its legacy model-visible role is deprecated)`,
+        ).not.toBe(true);
       }
     } finally {
       await close();

@@ -1,3 +1,4 @@
+import { RESOURCE_MIME_TYPE, registerAppTool } from "@modelcontextprotocol/ext-apps/server";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { safeErrorMessage } from "../lib/errors.js";
@@ -55,7 +56,8 @@ export const inputSchema = z
  * pattern.
  */
 export function registerOpenDashboard(server: McpServer, deps: Deps): void {
-  server.registerTool(
+  registerAppTool(
+    server,
     meta.name,
     {
       title: "Open the AgriOps Strategic Dashboard",
@@ -70,8 +72,16 @@ export function registerOpenDashboard(server: McpServer, deps: Deps): void {
       outputSchema: outputSchema.shape,
       annotations: getToolAnnotations(meta.name),
       _meta: {
+        // OpenAI Apps SDK compatibility keys (kept alongside the official
+        // MCP Apps `ui.resourceUri` below — different hosts read different
+        // keys, and both point at the same `DASHBOARD_URI`).
         "openai/widgetAccessible": true,
         "openai/outputTemplate": DASHBOARD_URI,
+        // Official MCP Apps Extension (2026-01-26) tool metadata.
+        // `registerAppTool` also mirrors this into the deprecated flat
+        // `_meta["ui/resourceUri"]` key for hosts that have not yet
+        // upgraded to the nested format.
+        ui: { resourceUri: DASHBOARD_URI },
       },
     },
     async (raw: unknown) => {
@@ -113,10 +123,13 @@ export function registerOpenDashboard(server: McpServer, deps: Deps): void {
               type: "resource_link",
               uri: DASHBOARD_URI,
               name: "AgriOps 戦略室ダッシュボード",
-              mimeType: "text/html",
+              mimeType: RESOURCE_MIME_TYPE,
             },
           ],
           structuredContent: structured as unknown as Record<string, unknown>,
+          // (No `ui.resourceUri` here: the MCP Apps spec documents that
+          // field on the tool *definition* — see `registerAppTool` above —
+          // not on individual `tools/call` results.)
           _meta: {
             "openai/outputTemplate": DASHBOARD_URI,
           },

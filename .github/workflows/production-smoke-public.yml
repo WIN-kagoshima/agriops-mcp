@@ -1,0 +1,57 @@
+name: Production smoke (public, anonymous)
+
+# Anonymous-only smoke test of the dedicated agriops-mcp-public Cloud Run
+# service (mcp-service-492010) — the MCP registry / Anthropic Connectors
+# Directory listing endpoint. Unlike production-smoke.yml this never mints a
+# bearer token: a reviewer or registry crawler hits this service with no
+# credentials at all, so the smoke test must prove that path works, not just
+# that our own WIF identity can authenticate.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "47 * * * *"
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  MCP_PUBLIC_BASE_URL: ${{ secrets.MCP_PUBLIC_BASE_URL }}
+
+jobs:
+  smoke:
+    name: Anonymous Cloud Run MCP smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate inputs
+        run: |
+          MCP_PUBLIC_BASE_URL="$(printf '%s' "$MCP_PUBLIC_BASE_URL" | tr -d '\r\n' | xargs)"
+          test -n "$MCP_PUBLIC_BASE_URL" || { echo "MCP_PUBLIC_BASE_URL secret is empty"; exit 1; }
+          echo "MCP_PUBLIC_BASE_URL=$MCP_PUBLIC_BASE_URL" >> "$GITHUB_ENV"
+
+      - name: Install smoke-test dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Capture package version
+        id: package
+        run: |
+          PKG_VERSION=$(node -e "process.stdout.write(require('./package.json').version)")
+          echo "version=${PKG_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test public Cloud Run (no credentials)
+        run: |
+          npm run deploy:smoke -- \
+            --base-url="$MCP_PUBLIC_BASE_URL" \
+            --health-path=/livez \
+            --expected-version="${{ steps.package.outputs.version }}" \
+            --expect-tool-count=8 \
+            --call-tool

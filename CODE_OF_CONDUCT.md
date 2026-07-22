@@ -37,10 +37,10 @@ and orientation.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may
-be reported to the project maintainers at
-**`conduct@agriops.dev`** (placeholder — replace with your real address
-before publishing). All complaints will be reviewed and investigated
-promptly and fairly.
+be reported to the project maintainers at **`info@win-g-c.com`** (the same
+address used for security reports in [SECURITY.md](SECURITY.md) and the
+public [Support page](https://win-kagoshima.github.io/agriops-mcp/support/)).
+All complaints will be reviewed and investigated promptly and fairly.
 
 All maintainers are obligated to respect the privacy and security of
 the reporter of any incident.

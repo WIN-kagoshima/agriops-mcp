@@ -1,6 +1,6 @@
 {
   "name": "@sugukuru/agriops-mcp",
-  "version": "1.15.0",
+  "version": "1.15.3",
   "description": "AgriOps MCP server — Japanese agricultural land + weather + pesticide data for SSW workforce dispatching. Reference implementation of MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.",
   "type": "module",
   "license": "Apache-2.0",
@@ -77,7 +77,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@modelcontextprotocol/inspector": "^0.22.0",
+    "@modelcontextprotocol/inspector": "^1.0.0",
     "@playwright/test": "^1.49.0",
     "@types/better-sqlite3": "^7.6.12",
     "@types/cookie-parser": "^1.4.7",

@@ -12,4 +12,6 @@ import { z } from "zod";
 export const AttributionSchema = z
   .string()
   .min(1, "attribution must be a non-empty string — see docs/data-license.md")
-  .describe("License attribution string. MUST be quoted when surfacing this data to end users.");
+  .describe(
+    "License attribution string identifying the data source, e.g. for display to end users.",
+  );

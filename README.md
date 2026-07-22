@@ -127,15 +127,39 @@ The server exposes:
 
 Production deployment, key rotation, incident response, and SLO targets are documented in [`docs/runbook.md`](docs/runbook.md). Metrics, log format, rate limiting, and alerting recommendations are in [`docs/observability.md`](docs/observability.md). For system design and the adapter/tool/phase model, see [`docs/architecture.md`](docs/architecture.md).
 
-### Deployed reference endpoint
+### Deployed reference endpoints
 
-The first production Cloud Run deployment is live at:
+Two Cloud Run deployments exist. Both run the same unmodified server image; only IAM and env vars differ.
+
+**Operational (IAM-protected):**
 
 ```text
 https://agriops-mcp-n5vdix22hq-an.a.run.app
 ```
 
-It is IAM-protected by default. Operators can verify it with:
+**Public (anonymous, default 8-tool surface, for MCP registries / Anthropic Connectors Directory):**
+
+```text
+https://agriops-mcp-public-731026511067.asia-northeast1.run.app
+```
+
+A dedicated `agriops-mcp-public` Cloud Run service in the `mcp-service-492010` project, built from
+[`cloudbuild.public.yaml`](cloudbuild.public.yaml) and [`.github/workflows/deploy-public.yml`](.github/workflows/deploy-public.yml),
+documented in [`docs/anthropic-directory-submission.md`](docs/anthropic-directory-submission.md). It
+never enables `AGRIOPS_ENABLE_EXTENDED_TOOLS` / `AGRIOPS_ENABLE_LEGACY_TOOLS` and applies the same rate
+limiting and Host/Origin allowlisting as the operational deployment. Its eMAFF/FAMIC snapshots are real
+data reproducibly built from the official public sources (筆ポリゴン公開サイト FlatGeobuf export, FAMIC
+CSV export) — see [`snapshots/README.md`](snapshots/README.md) — not the unit-test fixtures. Verify it
+anonymously with:
+
+```bash
+npm run deploy:smoke -- \
+  --base-url=https://agriops-mcp-public-731026511067.asia-northeast1.run.app \
+  --health-path=/livez \
+  --expected-version="$(node -p "require('./package.json').version")"
+```
+
+Operators can verify the IAM-protected deployment with:
 
 ```bash
 TOKEN="$(gcloud auth print-identity-token)"
@@ -228,6 +252,7 @@ Reverse-proxy / Agent Gateway deployment guidance lives in
 - DNS rebinding protection enabled on Streamable HTTP transport.
 - Origin / Host allowlist on HTTP transport.
 - See [SECURITY.md](./SECURITY.md) for vulnerability reporting and [docs/privacy-policy.md](docs/privacy-policy.md) for what data this server processes and retains.
+- Public HTTPS copies (日本語 / English / Bahasa Indonesia) are published via GitHub Pages: [Privacy Policy](https://win-kagoshima.github.io/agriops-mcp/privacy-policy/) · [Support](https://win-kagoshima.github.io/agriops-mcp/support/) · [Data License](https://win-kagoshima.github.io/agriops-mcp/data-license/).
 
 ## Roadmap
 

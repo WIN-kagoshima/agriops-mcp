@@ -1,7 +1,7 @@
 {
   "name": "AgriOps MCP",
-  "version": "1.15.0",
-  "description": "Japanese agricultural land + 1 km mesh weather + pesticide registration + government statistics (e-Stat) MCP server for Specified Skilled Worker (SSW) workforce dispatching. Reference implementation of MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.",
+  "version": "1.15.3",
+  "description": "Japanese agricultural land + 1 km mesh weather + pesticide registration MCP server for Specified Skilled Worker (SSW) workforce dispatching. Reference implementation of MCP Spec 2025-11-25 + MCP Apps Extension 2026-01-26.",
   "homepage": "https://github.com/WIN-kagoshima/agriops-mcp",
   "repository": "https://github.com/WIN-kagoshima/agriops-mcp",
   "license": "Apache-2.0",
@@ -9,6 +9,8 @@
     "issues": "https://github.com/WIN-kagoshima/agriops-mcp/issues",
     "security": "info@win-g-c.com"
   },
+  "privacyPolicy": "https://win-kagoshima.github.io/agriops-mcp/privacy-policy/",
+  "supportUrl": "https://win-kagoshima.github.io/agriops-mcp/support/",
   "endpoints": {
     "mcp": "https://agriops-mcp-n5vdix22hq-an.a.run.app/mcp",
     "health": "https://agriops-mcp-n5vdix22hq-an.a.run.app/healthz"
@@ -467,7 +469,7 @@
     "scenarios": 23,
     "conformanceChecks": 17,
     "lastRun": "2026-07-22",
-    "note": "v1.15.0: Directory UX/spec-compliance pass — AGRIOPS_ALLOWED_HOSTS for multi-hostname Cloud Run deployments; dashboard-helper tools now register unconditionally as ui/visibility:['app'] (Server Card reports runtime visibility, not just the static catalog) fixing a tool-not-found gap in the MCP Apps dashboard/prompts on the default surface; create_staff_deploy_plan gained an outputSchema; search_farmland/nearby_farms/get_pesticide_rules/create_staff_deploy_plan now embed a GeoJSON or CSV resource block ('take this artifact home'); dashboard gained a CSV-download button with a copy-to-clipboard fallback; assets/logo.png (was a mislabeled JPEG) re-encoded to a true PNG; 5 dashboard screenshots captured via npm run capture:screenshots. v1.14.2 shipped developer-trust distribution content (Zenn/dev.to 7-primitives writeups, Show HN draft, note.com writeup, README Demo/Roadmap, awesome-list PRs). v1.14.1 verified the Anthropic Directory submission packet locally. v1.14.0 shipped craft signals (fast-check PBT, non-empty attribution schema, tinybench, CI hard gate).",
+    "note": "v1.15.2: fixed the Cloud Build docker build ERESOLVE that 1.15.1's .npmrc missed — Dockerfile's deps/prod-deps stages now COPY .npmrc alongside package.json/package-lock.json so npm ci inside the image build also gets legacy-peer-deps. v1.15.1: fixed a CI-blocking npm ci ERESOLVE (added .npmrc legacy-peer-deps) plus a corrupted package-lock.json entry, and closed a check-then-insert race in initIotDb() that could throw a UNIQUE constraint error under concurrent seeding (parallel test workers / multi-instance cold starts) — no tool/schema changes. v1.15.0: Directory UX/spec-compliance pass — AGRIOPS_ALLOWED_HOSTS for multi-hostname Cloud Run deployments; dashboard-helper tools now register unconditionally as ui/visibility:['app'] (Server Card reports runtime visibility, not just the static catalog) fixing a tool-not-found gap in the MCP Apps dashboard/prompts on the default surface; create_staff_deploy_plan gained an outputSchema; search_farmland/nearby_farms/get_pesticide_rules/create_staff_deploy_plan now embed a GeoJSON or CSV resource block ('take this artifact home'); dashboard gained a CSV-download button with a copy-to-clipboard fallback; assets/logo.png (was a mislabeled JPEG) re-encoded to a true PNG; 5 dashboard screenshots captured via npm run capture:screenshots. v1.14.2 shipped developer-trust distribution content (Zenn/dev.to 7-primitives writeups, Show HN draft, note.com writeup, README Demo/Roadmap, awesome-list PRs). v1.14.1 verified the Anthropic Directory submission packet locally. v1.14.0 shipped craft signals (fast-check PBT, non-empty attribution schema, tinybench, CI hard gate).",
     "repository": "https://github.com/WIN-kagoshima/agriops-mcp/tree/main/tests"
   },
   "toolSurfacePolicy": {

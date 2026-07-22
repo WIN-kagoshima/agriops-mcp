@@ -44,6 +44,11 @@ snapshots/raw/
 !snapshots/README.md
 !snapshots/.gitkeep
 
+# Scratch build output for the anonymous public Cloud Run deployment
+# (real eMAFF/FAMIC snapshots built from public sources; never committed —
+# see docs/runbook.md and the public-release-hardening plan §3).
+.public-deploy/
+
 # Cloud Run / build artifacts
 .gcloudignore-effective
 build/

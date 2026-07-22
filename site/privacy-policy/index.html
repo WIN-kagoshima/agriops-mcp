@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Privacy Policy — AgriOps MCP</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="AgriOps MCP Privacy Policy in 日本語 / English / Bahasa Indonesia." />
+  <link rel="icon" href="../assets/logo.png" />
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-header">
+      <img src="../assets/logo.png" alt="AgriOps MCP logo" />
+      <div class="site-title"><a href="../">AgriOps MCP — Public Docs</a></div>
+    </header>
+    <nav class="site-nav">
+      <a href="../">Home</a>
+      <a href="./">Privacy Policy</a>
+      <a href="../support/">Support</a>
+      <a href="../data-license/">Data License</a>
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp">GitHub</a>
+    </nav>
+
+    <h1>Privacy Policy — AgriOps MCP</h1>
+    <p class="muted">最終更新 / Last updated / Terakhir diperbarui: 2026-07-22 (v1.15.3)</p>
+
+    <h2 class="lang-heading">日本語</h2>
+    <p>
+      このポリシーは <code>@sugukuru/agriops-mcp</code> サーバー（以下「本サーバー」）を対象とします。運営者は
+      WIN Kagoshima（以下「当社」）です。対象範囲には
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/README.md">README.md</a>
+      に記載の公開リファレンスデプロイ（IAM保護版・匿名公開版の両方）と、改変なしでセルフホストするすべての環境を含みます。
+    </p>
+
+    <h3>1. 本サーバーが行うこと</h3>
+    <p>
+      本サーバーは、日本の公開農業データ ― 農地ポリゴン（eMAFF）、1kmメッシュ気象（Open-Meteo）、
+      気象庁の災害警報（JMA）、農薬登録情報（FAMIC） ― を Model Context Protocol 経由で AI エージェント
+      （Claude、Cursor、ChatGPT コネクタ、Google ADK など）に提供します。オプションの拡張・レガシーツール
+      （<code>AGRIOPS_ENABLE_EXTENDED_TOOLS</code>、<code>AGRIOPS_ENABLE_LEGACY_TOOLS</code>）は、
+      派生した農業計算・IoTセンサーデモ・政府統計（e-Stat）検索を追加します。全ツール一覧は
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/api-reference.md">docs/api-reference.md</a>
+      を参照してください。
+    </p>
+
+    <h3>2. 取り扱うデータ</h3>
+    <table>
+      <thead><tr><th>種別</th><th>例</th><th>保存の有無</th></tr></thead>
+      <tbody>
+        <tr><td>ツール呼び出しの引数</td><td>座標、都道府県・作物名、圃場ID など</td><td>いいえ ― リクエスト処理のみに使用し、ディスクやDBに書き込みません。</td></tr>
+        <tr><td>公開農業データ</td><td>eMAFF/FAMICのスナップショット行、Open-Meteo/JMAのAPI応答</td><td>メモリ内キャッシュのみ（TTL最大24時間、ソースによる）。個人データではありません。</td></tr>
+        <tr><td><code>create_staff_deploy_plan</code> の入力</td><td>圃場ID、派遣期間、自由記述メモ</td><td>Elicitationフローの間だけメモリ保持（<code>InMemoryElicitationStore</code>）。期限切れまたはプロセス再起動で消去。ディスクには書き込みません。</td></tr>
+        <tr><td>OAuthトークン（URL方式Elicitation, Phase 4）</td><td>連携先プロバイダのアクセス/リフレッシュトークン</td><td><code>AGRIOPS_TOKEN_ENC_KEY</code> または <code>AGRIOPS_TOKEN_ENC_PASSPHRASE</code> を設定した場合のみ、AES-256-GCM暗号化ファイルストアに保存（運営者管理下）。未設定時はメモリのみで再起動時に消失。トークン値はログに出力しません。</td></tr>
+        <tr><td>運用ログ</td><td>リクエストのメソッド/パス、ツール名、結果、レイテンシ、トレースID</td><td>構造化JSONログ。ツール引数・秘密情報・リクエスト本文全体は含めません（<code>tests/conformance/secret-leakage.test.ts</code>で検証）。</td></tr>
+        <tr><td>監査専用ヘッダー</td><td><code>AGRIOPS_AGENT_ID_HEADER</code> / <code>AGRIOPS_AGENT_OWNER_HEADER</code>（運営者が信頼済みゲートウェイ配下で有効化した場合）</td><td>監査目的のみでログに記録。認可判定には使用しません。</td></tr>
+      </tbody>
+    </table>
+    <p>
+      在留カード・パスポート画像などの本人確認書類、チャット履歴、会話の要約、その他1回のツール呼び出しに
+      不要なデータは一切収集しません。詳しいセキュリティ対策は
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/SECURITY.md">SECURITY.md</a> を参照してください。
+    </p>
+
+    <h3>3. サードパーティのデータソース</h3>
+    <p>
+      ツールの結果には Open-Meteo（CC-BY 4.0）、農林水産省 eMAFF、FAMIC、気象庁（JMA）、（有効化時は）e-Stat
+      のデータが含まれます。各ソースのライセンスと帰属表示の要件は
+      <a href="../data-license/">Data License</a> に記載しており、対象となるすべてのツール結果に
+      <code>structuredContent.attribution</code> としてソース名を含めます。これらのデータを販売・共有・
+      その他の形でツール応答以外に転送することはありません。
+    </p>
+
+    <h3>4. データの保持期間</h3>
+    <ul>
+      <li>ツール呼び出しの引数・応答: リクエスト処理後は保持しません。</li>
+      <li>メモリ内キャッシュ（気象、Elicitationセッション）: 有効期限付きで自動消去。Cloud Runのステートレス実行モデルにより、コールドスタート時にリクエスト間の状態は残りません。</li>
+      <li>運用ログ: 運営者のログシンク方針に従う（例: Cloud Logging既定の保持期間）。ツール引数はログに含みません。</li>
+      <li>暗号化OAuthトークン（設定時）: 運営者がトークンストアをローテーション・削除するまで保持。</li>
+    </ul>
+
+    <h3>5. 利用者側でできること</h3>
+    <ul>
+      <li>セルフホスト運営者は <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/.env.example">.env.example</a> に記載の環境変数で、保持期間・ログ送信先・暗号鍵をすべて管理できます。</li>
+      <li>既定（匿名）ツールサーフェスの利用にアカウント登録は不要です ― 削除すべき利用者プロフィールは存在しません。</li>
+      <li>OAuth URL方式Elicitationフローについては、MCPクライアント側で連携を解除すれば接続が失効します。トークンストアのディレクトリを削除すれば暗号化トークンも削除されます。</li>
+    </ul>
+
+    <h3>6. お問い合わせ</h3>
+    <p>
+      プライバシー・セキュリティに関するお問い合わせ: <code>info@win-g-c.com</code>
+      （脆弱性報告の手順は <a href="../support/">Support</a> ページを参照）。
+      本ポリシーはこのリポジトリでバージョン管理されており、変更履歴は
+      <code>git log docs/privacy-policy.md</code> で確認できます。
+    </p>
+
+    <h2 class="lang-heading">English</h2>
+    <p>
+      This policy covers the <code>@sugukuru/agriops-mcp</code> server (the "Server"), operated by WIN
+      Kagoshima ("we", "us"). Scope includes the public reference deployments described in
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/README.md">README.md</a> (both the
+      IAM-protected and the anonymous public Cloud Run services) and any self-hosted deployment running
+      unmodified server code.
+    </p>
+
+    <h3>1. What the Server does</h3>
+    <p>
+      The Server exposes Japanese public agricultural data — farmland polygons (eMAFF), 1&nbsp;km mesh
+      weather (Open-Meteo), JMA disaster warnings, and pesticide registrations (FAMIC) — to AI agents
+      (Claude, Cursor, ChatGPT connectors, Google ADK, etc.) over the Model Context Protocol. Optional
+      extended/legacy tools (<code>AGRIOPS_ENABLE_EXTENDED_TOOLS</code>, <code>AGRIOPS_ENABLE_LEGACY_TOOLS</code>)
+      add derived agronomy calculations, IoT sensor demos, and government statistics lookups. See
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/api-reference.md">docs/api-reference.md</a>
+      for the full tool catalog.
+    </p>
+
+    <h3>2. What data we process</h3>
+    <table>
+      <thead><tr><th>Category</th><th>Examples</th><th>Persisted?</th></tr></thead>
+      <tbody>
+        <tr><td>Tool call arguments</td><td>Coordinates, prefecture/crop names, field IDs you supply</td><td>No — used only to serve the request, not written to disk or a database.</td></tr>
+        <tr><td>Public agricultural data</td><td>eMAFF/FAMIC snapshot rows, Open-Meteo/JMA API responses</td><td>Cached in-memory only (TTL ≤ 24h depending on source). Not personal data.</td></tr>
+        <tr><td><code>create_staff_deploy_plan</code> draft input</td><td>Farm IDs, dispatch period, free-text notes you provide</td><td>Held in-memory for the duration of the elicitation flow only (<code>InMemoryElicitationStore</code>), evicted on expiry or process restart. Never written to disk.</td></tr>
+        <tr><td>OAuth tokens (URL-mode elicitation, Phase 4)</td><td>Access/refresh tokens for a connected provider</td><td>Stored only if <code>AGRIOPS_TOKEN_ENC_KEY</code> or <code>AGRIOPS_TOKEN_ENC_PASSPHRASE</code> is configured, in an AES-256-GCM encrypted file store under operator control. Without either, tokens live in-memory only and are lost on restart. We never log token values.</td></tr>
+        <tr><td>Operational logs</td><td>Request method/path, tool name, outcome, latency, trace ID</td><td>Structured JSON logs. Never include tool arguments, secrets, or full request bodies (enforced by <code>tests/conformance/secret-leakage.test.ts</code>).</td></tr>
+        <tr><td>Audit-only headers</td><td><code>AGRIOPS_AGENT_ID_HEADER</code> / <code>AGRIOPS_AGENT_OWNER_HEADER</code>, if an operator enables them behind a trusted gateway</td><td>Logged for audit only; never used for authorization decisions.</td></tr>
+      </tbody>
+    </table>
+    <p>
+      We do <strong>not</strong> collect: passport/residence-card images, other identity documents, chat
+      history, conversation summaries, or any data beyond what a single tool call needs to answer it. See
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/SECURITY.md">SECURITY.md</a> for the
+      full hardening notes.
+    </p>
+
+    <h3>3. Third-party data sources</h3>
+    <p>
+      Tool results include data from Open-Meteo (CC-BY 4.0), 農林水産省 eMAFF, FAMIC, 気象庁 (JMA), and
+      optionally e-Stat. Each source's license and attribution requirement is documented on the
+      <a href="../data-license/">Data License</a> page; every applicable tool result carries
+      <code>structuredContent.attribution</code> naming the source. We do not sell, share, or otherwise
+      transfer this data beyond returning it in the tool response.
+    </p>
+
+    <h3>4. Data retention</h3>
+    <ul>
+      <li>Tool call arguments and responses: not retained beyond the request lifecycle.</li>
+      <li>In-memory caches (weather, elicitation sessions): bounded TTL, evicted automatically. Cloud Run's stateless-per-request model means no cross-request session state survives a cold start.</li>
+      <li>Operational logs: retained per the operator's log-sink policy (e.g. Cloud Logging default retention); no tool arguments are logged.</li>
+      <li>Encrypted OAuth tokens (if configured): retained until the operator rotates or deletes the token store directory.</li>
+    </ul>
+
+    <h3>5. Your controls</h3>
+    <ul>
+      <li>Self-hosted operators control all retention, logging destinations, and encryption keys via environment variables documented in <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/.env.example">.env.example</a>.</li>
+      <li>No account or sign-up is required to use the default (anonymous) tool surface — there is no user profile to delete.</li>
+      <li>For the OAuth URL-mode elicitation flow, disconnecting the provider from your MCP client revokes the connection; deleting the token store directory removes the encrypted token.</li>
+    </ul>
+
+    <h3>6. Contact</h3>
+    <p>
+      Privacy or security questions: <code>info@win-g-c.com</code> (see the <a href="../support/">Support</a>
+      page for the vulnerability-reporting process). This policy is versioned in this repository; changes
+      are visible in <code>git log docs/privacy-policy.md</code>.
+    </p>
+
+    <h2 class="lang-heading">Bahasa Indonesia</h2>
+    <p>
+      Kebijakan ini mencakup server <code>@sugukuru/agriops-mcp</code> ("Server"), yang dioperasikan oleh
+      WIN Kagoshima ("kami"). Cakupannya meliputi deployment referensi publik yang dijelaskan di
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/README.md">README.md</a> (baik versi
+      yang dilindungi IAM maupun versi Cloud Run publik anonim) serta setiap deployment mandiri (self-hosted)
+      yang menjalankan kode server tanpa modifikasi.
+    </p>
+
+    <h3>1. Apa yang dilakukan Server</h3>
+    <p>
+      Server ini menyediakan data pertanian publik Jepang — poligon lahan pertanian (eMAFF), prakiraan cuaca
+      grid 1&nbsp;km (Open-Meteo), peringatan bencana JMA, dan data registrasi pestisida (FAMIC) — kepada
+      agen AI (Claude, Cursor, ChatGPT connectors, Google ADK, dll.) melalui Model Context Protocol. Alat
+      tambahan opsional (<code>AGRIOPS_ENABLE_EXTENDED_TOOLS</code>, <code>AGRIOPS_ENABLE_LEGACY_TOOLS</code>)
+      menambahkan kalkulasi agronomi turunan, demo sensor IoT, dan pencarian statistik pemerintah. Lihat
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/docs/api-reference.md">docs/api-reference.md</a>
+      untuk daftar lengkap alat (tools).
+    </p>
+
+    <h3>2. Data apa yang kami proses</h3>
+    <table>
+      <thead><tr><th>Kategori</th><th>Contoh</th><th>Disimpan?</th></tr></thead>
+      <tbody>
+        <tr><td>Argumen pemanggilan tool</td><td>Koordinat, nama prefektur/tanaman, ID lahan yang Anda berikan</td><td>Tidak — hanya digunakan untuk melayani permintaan, tidak ditulis ke disk atau basis data.</td></tr>
+        <tr><td>Data pertanian publik</td><td>Baris snapshot eMAFF/FAMIC, respons API Open-Meteo/JMA</td><td>Hanya di-cache dalam memori (TTL maksimum 24 jam, tergantung sumber). Bukan data pribadi.</td></tr>
+        <tr><td>Input draf <code>create_staff_deploy_plan</code></td><td>ID lahan, periode penempatan, catatan bebas yang Anda berikan</td><td>Disimpan di memori hanya selama proses elicitation (<code>InMemoryElicitationStore</code>), dihapus saat kedaluwarsa atau server dimulai ulang. Tidak pernah ditulis ke disk.</td></tr>
+        <tr><td>Token OAuth (elicitation mode URL, Fase 4)</td><td>Token akses/refresh untuk provider yang terhubung</td><td>Hanya disimpan jika <code>AGRIOPS_TOKEN_ENC_KEY</code> atau <code>AGRIOPS_TOKEN_ENC_PASSPHRASE</code> dikonfigurasi, dalam penyimpanan file terenkripsi AES-256-GCM di bawah kendali operator. Tanpa itu, token hanya ada di memori dan hilang saat restart. Kami tidak pernah mencatat nilai token dalam log.</td></tr>
+        <tr><td>Log operasional</td><td>Metode/path permintaan, nama tool, hasil, latensi, trace ID</td><td>Log JSON terstruktur. Tidak pernah menyertakan argumen tool, rahasia (secrets), atau isi permintaan lengkap (dijamin oleh <code>tests/conformance/secret-leakage.test.ts</code>).</td></tr>
+        <tr><td>Header khusus audit</td><td><code>AGRIOPS_AGENT_ID_HEADER</code> / <code>AGRIOPS_AGENT_OWNER_HEADER</code>, jika operator mengaktifkannya di belakang gateway tepercaya</td><td>Dicatat hanya untuk audit; tidak pernah digunakan untuk keputusan otorisasi.</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Kami <strong>tidak</strong> mengumpulkan: gambar paspor/kartu izin tinggal, dokumen identitas lain,
+      riwayat obrolan, ringkasan percakapan, atau data apa pun di luar yang diperlukan untuk menjawab satu
+      pemanggilan tool. Lihat
+      <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/SECURITY.md">SECURITY.md</a> untuk
+      catatan pengamanan lengkap.
+    </p>
+
+    <h3>3. Sumber data pihak ketiga</h3>
+    <p>
+      Hasil tool menyertakan data dari Open-Meteo (CC-BY 4.0), 農林水産省 eMAFF, FAMIC, 気象庁 (JMA), dan
+      opsional e-Stat. Lisensi dan persyaratan atribusi setiap sumber didokumentasikan di halaman
+      <a href="../data-license/">Data License</a>; setiap hasil tool yang berlaku menyertakan
+      <code>structuredContent.attribution</code> yang menyebutkan sumbernya. Kami tidak menjual, membagikan,
+      atau mentransfer data ini selain mengembalikannya dalam respons tool.
+    </p>
+
+    <h3>4. Retensi data</h3>
+    <ul>
+      <li>Argumen dan respons pemanggilan tool: tidak disimpan setelah siklus permintaan selesai.</li>
+      <li>Cache dalam memori (cuaca, sesi elicitation): TTL terbatas, dihapus otomatis. Model Cloud Run yang stateless-per-request berarti tidak ada state sesi lintas-permintaan yang bertahan setelah cold start.</li>
+      <li>Log operasional: disimpan sesuai kebijakan log-sink operator (misalnya retensi default Cloud Logging); argumen tool tidak dicatat.</li>
+      <li>Token OAuth terenkripsi (jika dikonfigurasi): disimpan hingga operator merotasi atau menghapus direktori penyimpanan token.</li>
+    </ul>
+
+    <h3>5. Kendali Anda</h3>
+    <ul>
+      <li>Operator self-hosted mengendalikan semua retensi, tujuan logging, dan kunci enkripsi melalui variabel lingkungan yang didokumentasikan di <a href="https://github.com/WIN-kagoshima/agriops-mcp/blob/main/.env.example">.env.example</a>.</li>
+      <li>Tidak diperlukan akun atau pendaftaran untuk menggunakan permukaan tool default (anonim) — tidak ada profil pengguna yang perlu dihapus.</li>
+      <li>Untuk alur elicitation mode URL OAuth, memutuskan koneksi provider dari klien MCP Anda akan mencabut koneksi tersebut; menghapus direktori penyimpanan token akan menghapus token terenkripsi.</li>
+    </ul>
+
+    <h3>6. Kontak</h3>
+    <p>
+      Pertanyaan privasi atau keamanan: <code>info@win-g-c.com</code> (lihat halaman
+      <a href="../support/">Support</a> untuk proses pelaporan kerentanan). Kebijakan ini dikelola versinya
+      di repositori ini; perubahan dapat dilihat melalui <code>git log docs/privacy-policy.md</code>.
+    </p>
+
+    <footer class="site-footer">
+      <p>© WIN Kagoshima — <a href="https://github.com/WIN-kagoshima/agriops-mcp">agriops-mcp</a> (Apache-2.0)</p>
+    </footer>
+  </div>
+</body>
+</html>
