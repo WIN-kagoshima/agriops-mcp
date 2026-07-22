@@ -12,6 +12,11 @@ export function initIotDb(dbPath: string, logger?: Logger): Db {
 
   const db = new Database(dbPath);
   logger?.info("connected to IoT unified database", { path: dbPath });
+  // Multiple processes/workers can call initIotDb() against the same
+  // on-disk file concurrently (e.g. parallel test workers, or multiple
+  // Cloud Run instances cold-starting against the same GCS-restored
+  // snapshot). Wait for the writer lock instead of failing outright.
+  db.pragma("busy_timeout = 5000");
 
   // Create tables
   db.exec(`
@@ -46,11 +51,21 @@ export function initIotDb(dbPath: string, logger?: Logger): Db {
     );
   `);
 
-  // Check if we need to seed mock data
-  const sensorCount = db.prepare("SELECT COUNT(*) as count FROM sensor_logs").get() as {
-    count: number;
-  };
-  if (sensorCount.count === 0) {
+  // Check-then-seed, but atomically: `.immediate()` takes the SQLite
+  // write lock (BEGIN IMMEDIATE) before the COUNT check runs, so a second
+  // concurrent caller blocks (per the busy_timeout above) until the first
+  // caller's seed transaction commits, then re-checks and finds the table
+  // already populated instead of racing on the same fixed-machine-id
+  // INSERTs (see CHANGELOG 1.15.1 — this used to throw
+  // "UNIQUE constraint failed: machine_telemetry.machine_id" under
+  // parallel test workers / concurrent cold starts).
+  const seedIfNeeded = db.transaction(() => {
+    const sensorCount = db.prepare("SELECT COUNT(*) as count FROM sensor_logs").get() as {
+      count: number;
+    };
+    if (sensorCount.count !== 0) {
+      return;
+    }
     logger?.info("seeding initial mock IoT data...");
 
     // Seed Sensors
@@ -72,7 +87,7 @@ export function initIotDb(dbPath: string, logger?: Logger): Db {
 
     // Seed Machines
     const insertMachine = db.prepare(`
-      INSERT INTO machine_telemetry (machine_id, model, activity, location_lat, location_lng, battery, fuel, last_seen)
+      INSERT OR IGNORE INTO machine_telemetry (machine_id, model, activity, location_lat, location_lng, battery, fuel, last_seen)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
@@ -82,7 +97,7 @@ export function initIotDb(dbPath: string, logger?: Logger): Db {
 
     // Seed Traceability Batches
     const insertBatch = db.prepare(`
-      INSERT INTO traceability_batches (batch_id, farm_id, crop, planted_at, harvested_at, shipped_at, pesticides_applied)
+      INSERT OR IGNORE INTO traceability_batches (batch_id, farm_id, crop, planted_at, harvested_at, shipped_at, pesticides_applied)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
@@ -110,7 +125,8 @@ export function initIotDb(dbPath: string, logger?: Logger): Db {
       null,
       JSON.stringify([]),
     );
-  }
+  });
+  seedIfNeeded.immediate();
 
   return db;
 }
