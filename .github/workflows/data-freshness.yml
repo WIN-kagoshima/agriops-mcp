@@ -50,29 +50,29 @@ jobs:
           for (const name of manifests) {
             const p = join(SNAPSHOT_DIR, name);
             if (!existsSync(p)) {
-              issues.push(\`MISSING: \${name} - file not found at \${p}\`);
+              issues.push(`MISSING: ${name} - file not found at ${p}`);
               continue;
             }
             let manifest;
             try {
               manifest = JSON.parse(readFileSync(p, "utf8"));
             } catch {
-              issues.push(\`CORRUPT: \${name} - not valid JSON\`);
+              issues.push(`CORRUPT: ${name} - not valid JSON`);
               continue;
             }
             const built = new Date(manifest.builtAt ?? manifest.built_at ?? "");
             if (isNaN(built.getTime())) {
-              issues.push(\`INVALID_DATE: \${name} - builtAt field missing or unparseable\`);
+              issues.push(`INVALID_DATE: ${name} - builtAt field missing or unparseable`);
               continue;
             }
             const ageMs = now - built;
             const ageDays = ageMs / (1000 * 60 * 60 * 24);
             if (ageDays > STALE_DAYS) {
               issues.push(
-                \`STALE: \${name} - built \${built.toISOString()} (\${ageDays.toFixed(1)} days ago, limit \${STALE_DAYS} days)\`
+                `STALE: ${name} - built ${built.toISOString()} (${ageDays.toFixed(1)} days ago, limit ${STALE_DAYS} days)`
               );
             } else {
-              console.log(\`OK: \${name} - \${ageDays.toFixed(1)} days old\`);
+              console.log(`OK: ${name} - ${ageDays.toFixed(1)} days old`);
             }
           }
 
@@ -81,13 +81,13 @@ jobs:
             issues.forEach(i => console.error("  " + i));
             // Write to GITHUB_OUTPUT for later steps
             const fs = await import("fs");
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, \`stale=true\n\`);
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, \`issues<<BODY\n\${issues.join("\\n")}\nBODY\n\`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `stale=true\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `issues<<BODY\n${issues.join("\n")}\nBODY\n`);
             process.exit(0); // Don't fail the step; let the issue-creation step handle it
           } else {
             console.log("All snapshots are fresh.");
             const fs = await import("fs");
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, \`stale=false\n\`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `stale=false\n`);
           }
           EOF
 
